@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | PUSAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+    <nav class="bg-blue-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex-shrink-0 flex items-center space-x-2">
+                        <i class="fa-solid fa-building-columns text-2xl"></i>
+                        <span class="font-bold text-xl">PUSAP</span>
+                    </a>
+                    <div class="hidden md:ml-6 md:flex md:space-x-2">
+                        <% if (!user) { %>
+                            <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition">Inicio</a>
+                            <a href="/seguimiento" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition">Consulta Pública</a>
+                        <% } else { %>
+                            <a href="/panel" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</a>
+                            <a href="/panel/nuevo" class="px-3 py-2 bg-blue-700 rounded-md text-sm font-bold hover:bg-blue-600 transition"><i class="fa-solid fa-plus mr-1"></i> Alta Trámite</a>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <% if (user) { %>
+                        <div class="text-sm mr-4 hidden sm:block">
+                            <span class="font-bold"><%= user.name %></span> <br>
+                            <span class="text-blue-300 text-xs"><%= user.area %></span>
+                        </div>
+                        <a href="/logout" class="px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-sm transition" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+                    <% } else { %>
+                        <a href="/login" class="px-4 py-2 rounded-md bg-blue-800 border border-blue-400 hover:bg-blue-700 text-sm font-bold shadow-md transition"><i class="fa-solid fa-lock mr-2"></i> Iniciar Sesión (Personal)</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">

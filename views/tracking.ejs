@@ -1,0 +1,90 @@
+<%- include('partials/header') %>
+
+<div class="max-w-2xl mx-auto my-12 bg-white p-8 rounded-xl shadow-md border-t-4 border-blue-800">
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-800 mb-4">
+            <i class="fa-solid fa-magnifying-glass text-3xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Consulta Pública de Trámites</h2>
+        <p class="text-gray-500 mt-2">Ingresá tu código de seguimiento y DNI para conocer el estado actual de tu expediente.</p>
+    </div>
+
+    <% if (error) { %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline"><i class="fa-solid fa-circle-exclamation mr-1"></i> <%= error %></span>
+        </div>
+    <% } %>
+
+    <form action="/seguimiento" method="POST" class="mb-8">
+        <div class="flex flex-col md:flex-row gap-4">
+            <input type="text" name="tracking_code" placeholder="Código (Ej: PUSAP-XXXXXX)" required class="flex-grow px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-sm uppercase">
+            <input type="text" name="dni" placeholder="Tu DNI" required class="flex-grow px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+            <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-md shadow transition duration-300 whitespace-nowrap">
+                Consultar
+            </button>
+        </div>
+    </form>
+
+    <% if (ticket) { %>
+        <div class="border rounded-lg overflow-hidden">
+            <div class="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                <span class="font-bold text-gray-700">Expediente: <span class="font-mono text-blue-800"><%= ticket.tracking_code %></span></span>
+                
+                <% 
+                   let badgeClass = 'bg-gray-200 text-gray-800';
+                   let icon = 'fa-clock';
+                   if(ticket.status === 'Iniciado') badgeClass = 'bg-blue-100 text-blue-800';
+                   if(ticket.status === 'En Revisión') badgeClass = 'bg-purple-100 text-purple-800';
+                   if(ticket.status === 'Pendiente de Documentación') { badgeClass = 'bg-orange-100 text-orange-800 border-orange-300 border'; icon = 'fa-exclamation-triangle'; }
+                   if(ticket.status === 'Aprobado') { badgeClass = 'bg-green-100 text-green-800'; icon = 'fa-check'; }
+                   if(ticket.status === 'Rechazado') { badgeClass = 'bg-red-100 text-red-800'; icon = 'fa-xmark'; }
+                %>
+                
+                <span class="px-3 py-1 rounded-full text-xs font-bold <%= badgeClass %> flex items-center">
+                    <i class="fa-solid <%= icon %> mr-1"></i> <%= ticket.status %>
+                </span>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Solicitante</p>
+                        <p class="text-gray-900 font-medium"><%= ticket.first_name %> <%= ticket.last_name %></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Trámite</p>
+                        <p class="text-gray-900 font-medium"><%= ticket.category %></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Área Actual</p>
+                        <p class="text-blue-700 font-bold"><i class="fa-solid fa-building mr-1"></i> <%= ticket.area %></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Ingreso</p>
+                        <p class="text-gray-900 font-medium"><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY') %></p>
+                    </div>
+                </div>
+
+                <% if (ticket.expiration_date) { 
+                    const exp = moment(ticket.expiration_date);
+                    const now = moment();
+                    const isExpiring = exp.diff(now, 'days') <= 7 && exp.diff(now, 'days') >= 0;
+                    const isExpired = exp.diff(now, 'days') < 0;
+                %>
+                    <div class="mt-4 p-3 rounded border <%= isExpired ? 'bg-red-50 border-red-200 text-red-800' : (isExpiring ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-gray-50 border-gray-200 text-gray-600') %>">
+                        <strong><i class="fa-regular fa-calendar-xmark mr-1"></i> Fecha de Vencimiento / Límite:</strong> <%= exp.format('DD/MM/YYYY') %>
+                        <% if (isExpired) { %> <span class="ml-2 font-bold uppercase">(Vencido)</span> <% } %>
+                    </div>
+                <% } %>
+                
+                <% if (ticket.status === 'Pendiente de Documentación') { %>
+                    <div class="mt-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded text-sm text-orange-800">
+                        <strong class="block mb-1"><i class="fa-solid fa-circle-info"></i> Acción Requerida:</strong>
+                        Se requiere que complete documentación faltante o corrija la entregada. Por favor, revise su correo electrónico o comuníquese con el área de <strong><%= ticket.area %></strong> a la brevedad.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<%- include('partials/footer') %>

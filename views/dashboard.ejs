@@ -1,0 +1,145 @@
+<%- include('partials/header') %>
+
+<div class="max-w-7xl mx-auto">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900"><i class="fa-solid fa-chart-line text-blue-800 mr-2"></i> Panel de Gestión Institucional</h2>
+            <p class="text-gray-500 mt-1">Área actual: <strong class="text-blue-800"><%= user.area %></strong></p>
+        </div>
+        <div>
+            <a href="/panel/nuevo" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center transition">
+                <i class="fa-solid fa-file-circle-plus mr-2 text-xl"></i> Crear Nuevo Trámite
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-gray-400">
+            <p class="text-xs text-gray-500 font-bold uppercase">Total</p>
+            <p class="text-2xl font-bold text-gray-800"><%= stats.total %></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-blue-400">
+            <p class="text-xs text-gray-500 font-bold uppercase">Iniciados</p>
+            <p class="text-2xl font-bold text-blue-600"><%= stats.iniciados %></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-purple-400">
+            <p class="text-xs text-gray-500 font-bold uppercase">En Revisión</p>
+            <p class="text-2xl font-bold text-purple-600"><%= stats.en_revision %></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-orange-400">
+            <p class="text-xs text-gray-500 font-bold uppercase">Falta Doc.</p>
+            <p class="text-2xl font-bold text-orange-600"><%= stats.pendientes_doc %></p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-green-500">
+            <p class="text-xs text-gray-500 font-bold uppercase">Aprobados</p>
+            <p class="text-2xl font-bold text-green-600"><%= stats.aprobados %></p>
+        </div>
+        <div class="bg-red-50 rounded-lg shadow p-4 border-b-4 border-red-500">
+            <p class="text-xs text-red-800 font-bold uppercase"><i class="fa-solid fa-clock"></i> Por Vencer</p>
+            <p class="text-2xl font-bold text-red-600"><%= stats.por_vencer %></p>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg border">
+        <% if (tickets.length === 0) { %>
+            <div class="p-12 text-center text-gray-500">
+                <i class="fa-regular fa-folder-open text-6xl mb-4 text-gray-300"></i>
+                <p class="text-lg">No hay expedientes en esta área.</p>
+            </div>
+        <% } else { %>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seguimiento</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trámite / Ingreso</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área / Estado</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% tickets.forEach(function(ticket) { %>
+                            <tr class="hover:bg-blue-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-mono font-bold text-blue-800"><%= ticket.tracking_code %></div>
+                                    <% if (ticket.expiration_date) { 
+                                        const isExpiring = moment(ticket.expiration_date).diff(moment(), 'days') <= 7;
+                                    %>
+                                        <div class="text-xs mt-1 <%= isExpiring ? 'text-red-600 font-bold' : 'text-gray-500' %>">
+                                            Vence: <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
+                                        </div>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900"><%= ticket.first_name %> <%= ticket.last_name %></div>
+                                    <div class="text-xs text-gray-500">DNI: <%= ticket.dni %></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 font-medium"><%= ticket.category %></div>
+                                    <div class="text-xs text-gray-500"><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-gray-700 mb-1"><i class="fa-solid fa-building text-gray-400 mr-1"></i> <%= ticket.area %></div>
+                                    <% 
+                                       let badgeClass = 'bg-gray-100 text-gray-800';
+                                       if(ticket.status === 'Iniciado') badgeClass = 'bg-blue-100 text-blue-800';
+                                       if(ticket.status === 'En Revisión') badgeClass = 'bg-purple-100 text-purple-800';
+                                       if(ticket.status === 'Pendiente de Documentación') badgeClass = 'bg-orange-100 text-orange-800 font-bold border border-orange-300';
+                                       if(ticket.status === 'Aprobado') badgeClass = 'bg-green-100 text-green-800';
+                                       if(ticket.status === 'Rechazado') badgeClass = 'bg-red-100 text-red-800';
+                                    %>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= badgeClass %>">
+                                        <%= ticket.status %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="/panel/tramite/<%= ticket.id %>" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-md text-sm font-bold transition">
+                                        Ver / Gestionar
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<% if (typeof success_ticket !== 'undefined' && success_ticket) { %>
+    <!-- Alerta Flotante de Éxito -->
+    <div id="successToast" class="fixed bottom-5 right-5 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg z-50 flex items-center">
+        <i class="fa-solid fa-circle-check text-2xl mr-3"></i>
+        <div>
+            <p class="font-bold">¡Trámite guardado con éxito!</p>
+            <p class="text-sm">El talón de recepción se está descargando automáticamente.</p>
+        </div>
+        <button onclick="document.getElementById('successToast').style.display='none'" class="ml-4 text-green-700 hover:text-green-900">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Script de autodescarga -->
+    <script>
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = '/panel/comprobante/<%= success_ticket %>';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Auto ocultar la alerta después de 5 segundos
+            setTimeout(() => {
+                const toast = document.getElementById('successToast');
+                if(toast) toast.style.display = 'none';
+            }, 5000);
+        }, 500); // Pequeño retraso para que la interfaz cargue primero
+    </script>
+<% } %>
+
+<%- include('partials/footer') %>

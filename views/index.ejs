@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+
+<div class="bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl mx-auto my-8 border-t-4 border-blue-800">
+    <div class="md:flex">
+        <div class="md:shrink-0 bg-blue-800 flex items-center justify-center p-8 md:w-1/3">
+            <i class="fa-solid fa-building-columns text-6xl text-white"></i>
+        </div>
+        <div class="p-8 md:w-2/3 text-center md:text-left">
+            <div class="uppercase tracking-wide text-sm text-blue-600 font-semibold mb-1">Centro Universitario PUSAP</div>
+            <h1 class="block mt-1 text-2xl md:text-3xl leading-tight font-bold text-gray-900 mb-4">Bienvenido a la Mesa de Entrada Virtual</h1>
+            <p class="mt-2 text-gray-500 mb-6">
+                Este portal está diseñado para agilizar y facilitar tus trámites universitarios. Si ya enviaste tus documentos, podés realizar el seguimiento de tu expediente y conocer su estado en tiempo real.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <a href="/nuevo-tramite" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                    <i class="fa-solid fa-file-signature mr-2"></i> Iniciar Trámite
+                </a>
+                <a href="/seguimiento" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Seguir mi Trámite
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-12">
+    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500 text-center">
+        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-4">
+            <i class="fa-solid fa-bolt text-xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Centralizado</h3>
+        <p class="text-gray-500 text-sm">Todos los trámites se gestionan unificadamente por nuestro personal administrativo.</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-green-500 text-center">
+        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-green-100 text-green-500 mb-4">
+            <i class="fa-solid fa-eye text-xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Transparente</h3>
+        <p class="text-gray-500 text-sm">Hacé el seguimiento de tu trámite en tiempo real usando tu código y DNI.</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-yellow-500 text-center">
+        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-500 mb-4">
+            <i class="fa-solid fa-bell text-xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Notificaciones</h3>
+        <p class="text-gray-500 text-sm">Recibí alertas por email cada vez que tu trámite avance o cambie de estado.</p>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

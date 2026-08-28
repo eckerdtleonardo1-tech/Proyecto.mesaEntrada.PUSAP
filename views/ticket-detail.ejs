@@ -1,0 +1,112 @@
+<%- include('partials/header') %>
+
+<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <!-- Detalle Principal -->
+    <div class="md:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-800">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Expediente: <span class="font-mono text-blue-700"><%= ticket.tracking_code %></span></h2>
+                    <p class="text-sm text-gray-500 mt-1">Ingresado el: <%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></p>
+                </div>
+                <a href="/panel/comprobante/<%= ticket.id %>" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded border"><i class="fa-solid fa-print"></i> Imprimir Talón</a>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-sm mt-6">
+                <div><strong class="text-gray-700 block">Solicitante:</strong> <%= ticket.first_name %> <%= ticket.last_name %></div>
+                <div><strong class="text-gray-700 block">DNI / CUIL:</strong> <%= ticket.dni %> / <%= ticket.cuil || 'N/A' %></div>
+                <div><strong class="text-gray-700 block">Contacto:</strong> <%= ticket.email %> | <%= ticket.phone %></div>
+                <div><strong class="text-gray-700 block">Trámite:</strong> <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold"><%= ticket.category %></span></div>
+                
+                <% if (ticket.expiration_date) { %>
+                    <div class="col-span-2 bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <strong class="text-yellow-800">Vencimiento / Límite:</strong> <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Gestión de Estado y Área -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-arrows-turn-right text-gray-400 mr-2"></i> Actualizar Trámite</h3>
+            <form action="/panel/tramite/<%= ticket.id %>" method="POST" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Estado Actual</label>
+                        <select name="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 font-bold">
+                            <option value="Iniciado" <%= ticket.status === 'Iniciado' ? 'selected' : '' %>>Iniciado</option>
+                            <option value="En Revisión" <%= ticket.status === 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
+                            <option value="Pendiente de Documentación" <%= ticket.status === 'Pendiente de Documentación' ? 'selected' : '' %>>Pendiente de Documentación</option>
+                            <option value="Aprobado" <%= ticket.status === 'Aprobado' ? 'selected' : '' %>>Aprobado</option>
+                            <option value="Rechazado" <%= ticket.status === 'Rechazado' ? 'selected' : '' %>>Rechazado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Derivar a Área</label>
+                        <select name="area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="Mesa de Entrada" <%= ticket.area === 'Mesa de Entrada' ? 'selected' : '' %>>Mesa de Entrada</option>
+                            <option value="Dto. Ingresos" <%= ticket.area === 'Dto. Ingresos' ? 'selected' : '' %>>Dto. Ingresos</option>
+                            <option value="Secretaría Académica" <%= ticket.area === 'Secretaría Académica' ? 'selected' : '' %>>Secretaría Académica</option>
+                            <option value="Dto. Sistema" <%= ticket.area === 'Dto. Sistema' ? 'selected' : '' %>>Dto. Sistema</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Modificar Fecha de Vencimiento / Límite</label>
+                        <input type="date" name="expiration_date" value="<%= ticket.expiration_date ? moment(ticket.expiration_date).format('YYYY-MM-DD') : '' %>" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Borra la fecha si quieres que el trámite ya no tenga vencimiento.</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Comentario (Se enviará al alumno por mail)</label>
+                    <textarea name="comments" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Especifique si falta algún documento o justifique la decisión..."></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded shadow transition">
+                        Actualizar y Notificar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar: Archivos e Historial -->
+    <div class="space-y-6">
+        <!-- Archivos -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-paperclip mr-2 text-gray-500"></i> Documentación Adjunta</h3>
+            <% if (attachments && attachments.length > 0) { %>
+                <ul class="space-y-2">
+                    <% attachments.forEach(file => { %>
+                        <li class="flex items-center justify-between text-sm p-2 bg-gray-50 rounded border">
+                            <span class="truncate pr-2" title="<%= file.original_name %>"><%= file.original_name %></span>
+                            <a href="/uploads/<%= file.filename %>" target="_blank" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-download"></i></a>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p class="text-sm text-gray-500 italic">No hay archivos adjuntos.</p>
+            <% } %>
+        </div>
+
+        <!-- Historial -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-clock-rotate-left mr-2 text-gray-500"></i> Historial</h3>
+            <div class="relative border-l border-gray-200 ml-3 space-y-6">
+                <% history.forEach(h => { %>
+                    <div class="mb-6 ml-4">
+                        <div class="absolute w-3 h-3 bg-blue-500 rounded-full mt-1.5 -left-1.5 border border-white"></div>
+                        <time class="mb-1 text-xs font-normal leading-none text-gray-400"><%= moment.utc(h.created_at).local().format('DD/MM/YYYY HH:mm') %></time>
+                        <h4 class="text-sm font-semibold text-gray-900"><%= h.new_status %> <span class="font-normal text-gray-500">en</span> <%= h.new_area %></h4>
+                        <p class="text-xs text-gray-500 mt-1">Por: <%= h.user_name %></p>
+                        <% if (h.comments && h.comments !== 'N/A') { %>
+                            <p class="mb-4 text-xs font-normal text-gray-600 bg-gray-100 p-2 rounded mt-2 border"><%= h.comments %></p>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

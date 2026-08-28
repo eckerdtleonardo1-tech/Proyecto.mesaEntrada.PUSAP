@@ -1,0 +1,104 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md border-t-4 border-blue-800 my-8">
+    
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="text-center">
+            <i class="fa-solid fa-circle-check text-green-500 text-6xl mb-4"></i>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">¡Trámite Iniciado con Éxito!</h2>
+            <p class="text-lg text-gray-600 mb-6">Tu solicitud ha sido recibida y se encuentra en revisión.</p>
+            
+            <div class="bg-blue-50 border-2 border-blue-200 p-6 rounded-lg inline-block text-center mb-6">
+                <span class="block text-gray-500 mb-2 uppercase font-bold text-sm">Tu Código de Seguimiento</span>
+                <span class="block font-mono text-4xl font-bold text-blue-800 tracking-wider"><%= tracking_code %></span>
+            </div>
+            
+            <p class="text-red-600 font-bold mb-6"><i class="fa-solid fa-triangle-exclamation"></i> Guarda este código. Lo necesitarás junto con tu DNI para consultar el estado del trámite.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/comprobante/<%= tracking_code %>" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded shadow transition flex items-center justify-center">
+                    <i class="fa-solid fa-file-pdf mr-2"></i> Descargar Talón (PDF)
+                </a>
+                <a href="/seguimiento" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded shadow transition flex items-center justify-center">
+                    Ir a Seguimiento
+                </a>
+            </div>
+        </div>
+    <% } else { %>
+
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-900"><i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Iniciar Nuevo Trámite</h2>
+            <p class="text-gray-500 mt-2">Completa tus datos personales, selecciona el trámite a realizar y adjunta la documentación solicitada (PDF o fotos).</p>
+        </div>
+
+        <form action="/nuevo-tramite" method="POST" enctype="multipart/form-data" class="space-y-6">
+            
+            <!-- Datos del Solicitante -->
+            <fieldset class="border p-4 rounded-md bg-gray-50">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Datos Personales</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                        <input type="text" name="first_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Apellido</label>
+                        <input type="text" name="last_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">DNI (Sin puntos)</label>
+                        <input type="text" name="dni" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">CUIL (Opcional)</label>
+                        <input type="text" name="cuil" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono (Celular)</label>
+                        <input type="text" name="phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Correo Electrónico (Para recibir notificaciones)</label>
+                        <input type="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Datos del Trámite -->
+            <fieldset class="border p-4 rounded-md bg-gray-50">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Solicitud</legend>
+                <div class="mt-2">
+                    <label class="block text-sm font-medium text-gray-700">¿Qué trámite desea realizar?</label>
+                    <select name="category" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        <option value="" disabled selected>Seleccione una opción...</option>
+                        <option value="Inscripción">Inscripción a Carrera</option>
+                        <option value="Solicitud de Equivalencias">Solicitud de Equivalencias</option>
+                        <option value="Pago / Aranceles">Envío de Comprobante de Pago</option>
+                        <option value="Certificado de Alumno Regular">Solicitud Certificado Alumno Regular</option>
+                        <option value="Presentación de Título">Presentación de Título Analítico</option>
+                        <option value="Otros">Otros (Aclarar en documentación adjunta)</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <!-- Documentación Adjunta -->
+            <fieldset class="border p-4 rounded-md bg-gray-50">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Documentación Adjunta</legend>
+                <div class="mt-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sube aquí fotos de tu DNI, Títulos o PDFs (Puedes seleccionar varios)</label>
+                    <input type="file" name="attachments" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 border border-gray-300 rounded-md p-2 bg-white">
+                    <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-circle-info"></i> Formatos aceptados: PDF, JPG, PNG.</p>
+                </div>
+            </fieldset>
+
+            <div class="flex justify-center pt-4">
+                <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded shadow-lg transition text-lg">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> Enviar Trámite
+                </button>
+            </div>
+        </form>
+
+    <% } %>
+</div>
+
+<%- include('partials/footer') %>
