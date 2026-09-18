@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/css/fontawesome.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.css" />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.js.iife.js"></script>
-    <style type="text/tailwindcss">
+    <style>
         [x-cloak] { display: none !important; }
         
         /* Base animations */
@@ -29,6 +29,16 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Tooltip */
+        .has-tooltip:hover .tooltip-content { opacity: 1; visibility: visible; transform: translateY(0); }
+        .tooltip-content { opacity: 0; visibility: hidden; transform: translateY(5px); transition: all 0.2s ease; }
+        
+        /* Mobile menu animation */
+        #mobileMenu { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        #mobileMenu.open { max-height: 400px; opacity: 1; }
+    </style>
+    <style type="text/tailwindcss">
         
         /* Sidebar and Nav links */
         .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300; }
@@ -39,18 +49,10 @@
         .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: white; transition: all 0.3s ease; transform: translateX(-50%); }
         .nav-link:hover::after { width: 80%; }
         
-        /* Tooltip */
-        .has-tooltip:hover .tooltip-content { opacity: 1; visibility: visible; transform: translateY(0); }
-        .tooltip-content { opacity: 0; visibility: hidden; transform: translateY(5px); transition: all 0.2s ease; }
-        
         /* Progress Bar Custom */
         .step-active .step-icon { @apply bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 scale-110; }
         .step-completed .step-icon { @apply bg-green-500 text-white border-green-500; }
         .step-pending .step-icon { @apply bg-slate-100 text-slate-400 border-slate-200; }
-        
-        /* Mobile menu animation */
-        #mobileMenu { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
-        #mobileMenu.open { max-height: 400px; opacity: 1; }
     </style>
 </head>
 <body class="bg-slate-50 flex flex-col min-h-screen font-sans text-slate-800">
