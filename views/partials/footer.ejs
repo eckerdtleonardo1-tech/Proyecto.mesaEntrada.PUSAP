@@ -1,20 +1,82 @@
-    </main>
+        </main>
+    </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0 text-center md:text-left">
-                    <h3 class="text-lg font-bold">Centro Universitario PUSAP</h3>
-                    <p class="text-gray-400 text-sm mt-1">Mesa de Entrada Virtual. Todos los derechos reservados &copy; <%= new Date().getFullYear() %></p>
+<% if (!user) { %>
+    <!-- Footer Público -->
+    <footer class="bg-slate-900 text-slate-300 mt-auto border-t-[6px] border-blue-700">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fa-solid fa-building-columns text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-xl text-white block leading-tight">PUSAP</span>
+                            <span class="text-blue-400 text-xs uppercase tracking-widest font-bold">Centro Universitario</span>
+                        </div>
+                    </div>
+                    <p class="text-sm leading-relaxed max-w-sm mb-6">Sistema integral de Mesa de Entrada Virtual. Gestioná tus trámites académicos de manera 100% digital, rápida y transparente.</p>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"><i class="fa-brands fa-facebook-f text-sm"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"><i class="fa-brands fa-instagram text-sm"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"><i class="fa-brands fa-x-twitter text-sm"></i></a>
+                    </div>
                 </div>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                
+                <div>
+                    <h4 class="font-bold text-white mb-5 text-sm uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-link text-blue-500"></i> Accesos</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Inicio</a></li>
+                        <li><a href="/nuevo-tramite" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Iniciar un Trámite</a></li>
+                        <li><a href="/seguimiento" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Estado de Trámite</a></li>
+                        <li><a href="/login" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Acceso Institucional</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-white mb-5 text-sm uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-address-card text-blue-500"></i> Contacto</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-envelope text-blue-500 mt-1"></i>
+                            <div>
+                                <p class="text-white font-medium">Email Institucional</p>
+                                <a href="mailto:mesaentrada@pusap.edu.ar" class="hover:text-blue-400 transition">mesaentrada@pusap.edu.ar</a>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-phone text-blue-500 mt-1"></i>
+                            <div>
+                                <p class="text-white font-medium">Atención Telefónica</p>
+                                <span>0800-PUSAP-123 (L a V 8-14hs)</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+                <p>© <%= new Date().getFullYear() %> PUSAP. Todos los derechos reservados.</p>
+                <div class="flex items-center gap-1 font-medium bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Sistema Operativo y en línea
                 </div>
             </div>
         </div>
     </footer>
+<% } else { %>
+    <!-- Footer interno -->
+    <footer class="border-t border-slate-200 bg-white mt-auto">
+        <div class="px-6 py-4 text-xs text-slate-500 flex justify-between items-center bg-slate-50">
+            <span>© <%= new Date().getFullYear() %> PUSAP — Mesa de Entrada</span>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span>Sesión activa: <span class="text-blue-700 font-bold"><%= user.area %></span></span>
+            </div>
+        </div>
+    </footer>
+<% } %>
+
 </body>
 </html>

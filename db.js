@@ -22,10 +22,11 @@ db.serialize(() => {
     db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
         if (row && row.count === 0) {
             const stmt = db.prepare("INSERT INTO users (username, password, name, role, area) VALUES (?, ?, ?, ?, ?)");
-            stmt.run("mesa", "1234", "Operador Mesa", "operador", "Mesa de Entrada");
-            stmt.run("ingresos", "1234", "Dto. Ingresos", "interno", "Dto. Ingresos");
-            stmt.run("academica", "1234", "Sec. Académica", "interno", "Secretaría Académica");
-            stmt.run("sistema", "1234", "Dto. Sistema", "interno", "Dto. Sistema");
+            const defaultPass = "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi";
+            stmt.run("mesa", defaultPass, "Operador Mesa", "operador", "Mesa de Entrada");
+            stmt.run("ingresos", defaultPass, "Dto. Ingresos", "interno", "Dto. Ingresos");
+            stmt.run("academica", defaultPass, "Sec. Académica", "interno", "Secretaría Académica");
+            stmt.run("sistema", defaultPass, "Dto. Sistema", "interno", "Dto. Sistema");
             stmt.finalize();
         }
     });
@@ -72,6 +73,74 @@ db.serialize(() => {
         document_type TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (ticket_id) REFERENCES tickets(id)
+    )`);
+
+    // Config
+    db.run(`CREATE TABLE IF NOT EXISTS config (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )`);
+
+    // Areas
+    db.run(`CREATE TABLE IF NOT EXISTS areas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE
+    )`);
+
+    // Insert default areas if not exists
+    db.get("SELECT COUNT(*) as count FROM areas", (err, row) => {
+        if (row && row.count === 0) {
+            const stmt = db.prepare("INSERT INTO areas (name) VALUES (?)");
+            stmt.run("Mesa de Entrada");
+            stmt.run("Dto. Ingresos");
+            stmt.run("Secretaría Académica");
+            stmt.run("Dto. Sistema");
+            stmt.finalize();
+        }
+    });
+
+    // Modificando history para soporte de notas internas
+    db.run("ALTER TABLE ticket_history ADD COLUMN type TEXT DEFAULT 'historial'", (err) => {
+        // Ignorar si existe
+    });
+
+    // Nuevas columnas (try/catch a través de error callback)
+    db.run("ALTER TABLE tickets ADD COLUMN notes TEXT", (err) => {
+        // Ignorar error si la columna ya existe
+    });
+    db.run("ALTER TABLE tickets ADD COLUMN priority TEXT DEFAULT 'normal'", (err) => {
+        // Ignorar error si la columna ya existe
+    });
+    db.run("ALTER TABLE tickets ADD COLUMN student_notes TEXT", (err) => {
+        // Ignorar error si la columna ya existe
+    });
+
+    // Quick Replies
+    db.run(`CREATE TABLE IF NOT EXISTS quick_replies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        content TEXT
+    )`);
+
+    db.get("SELECT COUNT(*) as count FROM quick_replies", (err, row) => {
+        if (row && row.count === 0) {
+            const stmt = db.prepare("INSERT INTO quick_replies (title, content) VALUES (?, ?)");
+            stmt.run("En análisis", "Trámite en proceso de análisis de la documentación adjunta.");
+            stmt.run("Espera de firma", "Trámite procesado correctamente. Queda a la espera de firma de autoridad.");
+            stmt.run("Falta doc.", "Falta documentación adjunta o no es legible. Por favor, verifique los requisitos y envíe lo faltante.");
+            stmt.run("Aprobado", "Trámite finalizado y aprobado satisfactoriamente.");
+            stmt.finalize();
+        }
+    });
+
+    // Log de auditoria
+    db.run(`CREATE TABLE IF NOT EXISTS access_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        user_name TEXT,
+        action TEXT,
+        ip TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 });
 

@@ -1,104 +1,491 @@
 <%- include('partials/header') %>
 
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md border-t-4 border-blue-800 my-8">
-    
-    <% if (typeof success !== 'undefined' && success) { %>
-        <div class="text-center">
-            <i class="fa-solid fa-circle-check text-green-500 text-6xl mb-4"></i>
-            <h2 class="text-3xl font-bold text-gray-900 mb-2">¡Trámite Iniciado con Éxito!</h2>
-            <p class="text-lg text-gray-600 mb-6">Tu solicitud ha sido recibida y se encuentra en revisión.</p>
-            
-            <div class="bg-blue-50 border-2 border-blue-200 p-6 rounded-lg inline-block text-center mb-6">
-                <span class="block text-gray-500 mb-2 uppercase font-bold text-sm">Tu Código de Seguimiento</span>
-                <span class="block font-mono text-4xl font-bold text-blue-800 tracking-wider"><%= tracking_code %></span>
-            </div>
-            
-            <p class="text-red-600 font-bold mb-6"><i class="fa-solid fa-triangle-exclamation"></i> Guarda este código. Lo necesitarás junto con tu DNI para consultar el estado del trámite.</p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/comprobante/<%= tracking_code %>" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded shadow transition flex items-center justify-center">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> Descargar Talón (PDF)
-                </a>
-                <a href="/seguimiento" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-6 rounded shadow transition flex items-center justify-center">
-                    Ir a Seguimiento
-                </a>
-            </div>
-        </div>
-    <% } else { %>
+<div class="bg-slate-50 min-h-screen py-10 px-4">
+<div class="max-w-4xl mx-auto">
 
+<% if (typeof success !== 'undefined' && success) { %>
+    <!-- ===== VISTA DE ÉXITO ===== -->
+    <div class="max-w-2xl mx-auto scale-in">
         <div class="text-center mb-8">
-            <h2 class="text-2xl font-bold text-gray-900"><i class="fa-solid fa-file-signature text-blue-600 mr-2"></i> Iniciar Nuevo Trámite</h2>
-            <p class="text-gray-500 mt-2">Completa tus datos personales, selecciona el trámite a realizar y adjunta la documentación solicitada (PDF o fotos).</p>
+            <div class="relative inline-block mb-6">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center relative z-10">
+                    <i class="fa-solid fa-check text-green-500 text-5xl"></i>
+                </div>
+                <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-3">¡Solicitud Ingresada!</h1>
+            <p class="text-slate-600 text-lg">Tu trámite ya está en nuestro sistema. El primer paso está completo.</p>
         </div>
 
-        <form action="/nuevo-tramite" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- Código de seguimiento destacado -->
+        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 text-center mb-8 relative overflow-hidden border border-slate-100">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-green-500"></div>
             
-            <!-- Datos del Solicitante -->
-            <fieldset class="border p-4 rounded-md bg-gray-50">
-                <legend class="text-lg font-semibold text-gray-700 px-2">Datos Personales</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input type="text" name="first_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Apellido</label>
-                        <input type="text" name="last_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">DNI (Sin puntos)</label>
-                        <input type="text" name="dni" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">CUIL (Opcional)</label>
-                        <input type="text" name="cuil" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Teléfono (Celular)</label>
-                        <input type="text" name="phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Correo Electrónico (Para recibir notificaciones)</label>
-                        <input type="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    </div>
+            <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Tu Código de Seguimiento Oficial</p>
+            
+            <div class="relative inline-block group cursor-pointer" onclick="navigator.clipboard.writeText('<%= tracking_code %>'); alert('Código copiado!');">
+                <div class="font-mono text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-wider bg-slate-50 py-5 px-8 rounded-2xl border-2 border-slate-200 group-hover:border-blue-400 group-hover:bg-blue-50 transition-all">
+                    <%= tracking_code %>
                 </div>
-            </fieldset>
-
-            <!-- Datos del Trámite -->
-            <fieldset class="border p-4 rounded-md bg-gray-50">
-                <legend class="text-lg font-semibold text-gray-700 px-2">Solicitud</legend>
-                <div class="mt-2">
-                    <label class="block text-sm font-medium text-gray-700">¿Qué trámite desea realizar?</label>
-                    <select name="category" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                        <option value="" disabled selected>Seleccione una opción...</option>
-                        <option value="Inscripción">Inscripción a Carrera</option>
-                        <option value="Solicitud de Equivalencias">Solicitud de Equivalencias</option>
-                        <option value="Pago / Aranceles">Envío de Comprobante de Pago</option>
-                        <option value="Certificado de Alumno Regular">Solicitud Certificado Alumno Regular</option>
-                        <option value="Presentación de Título">Presentación de Título Analítico</option>
-                        <option value="Otros">Otros (Aclarar en documentación adjunta)</option>
-                    </select>
+                <div class="absolute -right-3 -top-3 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    <i class="fa-regular fa-copy text-sm"></i>
                 </div>
-            </fieldset>
-
-            <!-- Documentación Adjunta -->
-            <fieldset class="border p-4 rounded-md bg-gray-50">
-                <legend class="text-lg font-semibold text-gray-700 px-2">Documentación Adjunta</legend>
-                <div class="mt-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sube aquí fotos de tu DNI, Títulos o PDFs (Puedes seleccionar varios)</label>
-                    <input type="file" name="attachments" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 border border-gray-300 rounded-md p-2 bg-white">
-                    <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-circle-info"></i> Formatos aceptados: PDF, JPG, PNG.</p>
-                </div>
-            </fieldset>
-
-            <div class="flex justify-center pt-4">
-                <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-8 rounded shadow-lg transition text-lg">
-                    <i class="fa-solid fa-paper-plane mr-2"></i> Enviar Trámite
-                </button>
             </div>
-        </form>
+            
+            <p class="text-sm text-slate-500 mt-4 mb-6"><i class="fa-solid fa-hand-pointer text-blue-500 mr-1"></i> Clic en el código para copiar</p>
+            
+            <div class="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm text-orange-900 text-left">
+                <div class="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="fa-solid fa-triangle-exclamation text-orange-600"></i>
+                </div>
+                <p><strong>IMPORTANTE:</strong> Guardá o anotá este código. Será la <strong>única forma</strong> que tendrás para conocer el estado de tu trámite junto con tu DNI.</p>
+            </div>
+        </div>
 
-    <% } %>
+        <!-- Botones de acción -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a href="/comprobante/<%= tracking_code %>" class="flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-base">
+                <i class="fa-solid fa-file-pdf text-xl"></i>
+                Descargar Talón PDF
+            </a>
+            <a href="/seguimiento" class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all text-base">
+                <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                Consultar Estado
+            </a>
+        </div>
+        
+        <div class="text-center mt-6">
+            <a href="/" class="text-blue-600 font-bold hover:underline inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Volver a la página principal</a>
+        </div>
+    </div>
+
+    <script>
+        // Limpiar localStorage
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+            if (key.startsWith('pusap_form_')) {
+                localStorage.removeItem(key);
+            }
+        });
+    </script>
+
+<% } else { %>
+    <!-- ===== FORMULARIO DE CARGA PÚBLICA ===== -->
+
+    <div class="text-center mb-10 slide-up">
+        <h1 class="text-3xl font-extrabold text-slate-900 mb-3">Iniciar Nuevo Trámite</h1>
+        <p class="text-slate-600 text-lg max-w-2xl mx-auto">Completá el formulario paso a paso. Te pediremos tus datos, el tipo de gestión y documentación de respaldo si corresponde.</p>
+    </div>
+
+    <!-- ProgressBar Visual -->
+    <div class="mb-10 max-w-2xl mx-auto relative">
+        <div class="absolute top-5 left-10 right-10 h-1 bg-slate-200 rounded-full -z-10"></div>
+        <div class="absolute top-5 left-10 right-10 h-1 bg-blue-600 rounded-full -z-10 transition-all duration-500 w-1/3" id="progressBarLine"></div>
+        
+        <div class="flex justify-between relative z-0">
+            <div class="flex flex-col items-center step-active" id="stepIndicator1">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm step-icon transition-all duration-300">1</div>
+                <span class="text-xs font-bold mt-2 text-blue-800">Datos Personales</span>
+            </div>
+            <div class="flex flex-col items-center step-pending" id="stepIndicator2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm step-icon transition-all duration-300 bg-white">2</div>
+                <span class="text-xs font-bold mt-2 text-slate-500" id="stepText2">Tipo de Trámite</span>
+            </div>
+            <div class="flex flex-col items-center step-pending" id="stepIndicator3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm step-icon transition-all duration-300 bg-white">3</div>
+                <span class="text-xs font-bold mt-2 text-slate-500" id="stepText3">Confirmación</span>
+            </div>
+        </div>
+    </div>
+
+    <form action="/nuevo-tramite" method="POST" enctype="multipart/form-data" id="ticketForm" class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        
+        <!-- ================= PASO 1 ================= -->
+        <div id="step1" class="transition-all duration-300">
+            <div class="bg-slate-900 px-8 py-5 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-address-card text-white"></i>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-lg text-white">Paso 1: Datos del Solicitante</h2>
+                    <p class="text-xs text-slate-400">¿A nombre de quién es el trámite?</p>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nombre -->
+                    <div class="group has-tooltip relative">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nombre/s <span class="text-red-500">*</span></label>
+                        <input type="text" name="first_name" required placeholder="Ej: María Laura" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <div class="tooltip-content absolute -top-8 left-0 bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap z-10 pointer-events-none">
+                            Tal como figura en el DNI
+                            <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                        </div>
+                    </div>
+
+                    <!-- Apellido -->
+                    <div class="group has-tooltip relative">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Apellido/s <span class="text-red-500">*</span></label>
+                        <input type="text" name="last_name" required placeholder="Ej: Gómez" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+                    <!-- DNI -->
+                    <div class="group has-tooltip relative">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">DNI <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-id-badge text-slate-400"></i>
+                            </div>
+                            <input type="text" name="dni" required placeholder="Sin puntos ni espacios" pattern="[0-9]+" class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        </div>
+                        <div class="tooltip-content absolute -top-8 left-0 bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap z-10 pointer-events-none">
+                            Solo números. Requerido para buscar el trámite.
+                            <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                        </div>
+                    </div>
+
+                    <!-- CUIL -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">CUIL <span class="font-normal text-slate-400">(Opcional)</span></label>
+                        <input type="text" name="cuil" placeholder="XX-XXXXXXXX-X" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Teléfono / Celular <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-phone text-slate-400"></i>
+                            </div>
+                            <input type="tel" name="phone" required placeholder="Ej: 299 1234567" class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="group has-tooltip relative">
+                        <label class="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                            Email <span class="text-red-500">*</span>
+                            <span class="bg-blue-100 text-blue-700 text-[10px] uppercase px-2 py-0.5 rounded font-bold"><i class="fa-solid fa-envelope mr-1"></i> Notificaciones</span>
+                        </label>
+                        <input type="email" name="email" required placeholder="tu_correo@ejemplo.com" class="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <div class="tooltip-content absolute -top-8 left-0 bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap z-10 pointer-events-none">
+                            Asegurate de que esté bien escrito
+                            <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button type="button" onclick="nextStep(1)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                        Siguiente Paso <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PASO 2 ================= -->
+        <div id="step2" class="hidden">
+            <div class="bg-slate-900 px-8 py-5 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-folder-open text-white"></i>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-lg text-white">Paso 2: Detalles del Trámite</h2>
+                    <p class="text-xs text-slate-400">¿Qué necesitás gestionar hoy?</p>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-slate-700 mb-3 text-lg">Seleccioná el tipo de gestión <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <select name="category" required class="block w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-medium text-slate-700 focus:bg-white focus:ring-0 focus:border-purple-500 outline-none transition cursor-pointer appearance-none">
+                            <option value="" disabled selected>Desplegá la lista de opciones aquí...</option>
+                            <option value="Inscripción">📋 Inscripción a Carrera</option>
+                            <option value="Solicitud de Equivalencias">🔄 Solicitud de Equivalencias</option>
+                            <option value="Pago / Aranceles">💳 Envío de Comprobante de Pago</option>
+                            <option value="Certificado de Alumno Regular">📜 Certificado Alumno Regular</option>
+                            <option value="Presentación de Título">🎓 Presentación de Título Analítico</option>
+                            <option value="Otros">📌 Otro trámite distinto</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-slate-700 mb-3 text-lg">Observaciones del estudiante <span class="font-normal text-slate-400">(Opcional)</span></label>
+                    <textarea name="student_notes" maxlength="500" rows="3" placeholder="Aclaraciones adicionales que consideres importantes para tu trámite..." class="block w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-0 focus:border-purple-500 outline-none transition resize-none"></textarea>
+                    <p class="text-xs text-slate-400 mt-1 text-right">Máximo 500 caracteres.</p>
+                </div>
+
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-6">
+                    <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-paperclip text-blue-600"></i> Documentación Respaldo
+                        <span class="bg-slate-200 text-slate-600 text-[10px] uppercase px-2 py-0.5 rounded ml-2">Opcional</span>
+                    </h3>
+                    
+                    <div class="border-2 border-dashed border-blue-200 bg-white rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer group" onclick="document.getElementById('pubFileInput').click()">
+                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-cloud-arrow-up text-blue-500 text-2xl"></i>
+                        </div>
+                        <p class="text-base font-bold text-slate-700 mb-1">Tocá o arrastrá archivos aquí</p>
+                        <p class="text-xs text-slate-500 mb-1">Soportamos PDF, JPG y PNG. Máximo 5MB total.</p>
+                        <p class="text-xs text-slate-500 font-medium mb-4">(En tu celular podés usar la cámara directamente)</p>
+                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-4 py-2 rounded-lg">Seleccionar archivo o Tomar foto</span>
+                        <input type="file" id="pubFileInput" name="attachments" multiple accept="image/jpeg,image/png,application/pdf" class="hidden" onchange="showPubFileList(this)">
+                    </div>
+                    
+                    <div id="pubFileList" class="mt-4 space-y-2 hidden">
+                        <p class="text-xs font-bold text-slate-600 uppercase tracking-widest">Archivos cargados listos para enviar:</p>
+                        <!-- Items injected by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between">
+                    <button type="button" onclick="prevStep(2)" class="text-slate-500 hover:text-slate-800 font-bold py-3 px-6 rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </button>
+                    <button type="button" onclick="nextStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                        Revisar y Enviar <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PASO 3 ================= -->
+        <div id="step3" class="hidden">
+            <div class="bg-slate-900 px-8 py-5 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-check-double text-white"></i>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-lg text-white">Paso 3: Confirmación Final</h2>
+                    <p class="text-xs text-slate-400">Verificá que todo esté correcto antes de enviar</p>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4 mb-8">
+                    <i class="fa-solid fa-shield-halved text-amber-600 text-2xl mt-1"></i>
+                    <div>
+                        <h4 class="font-bold text-amber-900 mb-1">Declaración Jurada</h4>
+                        <p class="text-sm text-amber-800">Al enviar este formulario, declarás que los datos ingresados y la documentación adjunta son verdaderos y te hacés responsable por los mismos. Toda comunicación oficial será enviada al correo registrado.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="col-span-2 sm:col-span-1">
+                        <p class="text-xs font-bold text-slate-400 uppercase">Solicitante</p>
+                        <p class="font-bold text-slate-800" id="reviewName">-</p>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <p class="text-xs font-bold text-slate-400 uppercase">DNI</p>
+                        <p class="font-bold text-slate-800" id="reviewDni">-</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs font-bold text-slate-400 uppercase">Trámite Solicitado</p>
+                        <p class="font-bold text-blue-700" id="reviewCat">-</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row justify-between gap-4">
+                    <button type="button" onclick="prevStep(3)" class="text-slate-500 hover:text-slate-800 font-bold py-4 px-6 rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Corregir datos
+                    </button>
+                    
+                    <button type="submit" id="submitBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 px-8 rounded-xl shadow-lg shadow-green-500/30 hover:-translate-y-1 transition-all text-lg flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-paper-plane" id="submitIcon"></i>
+                        <i class="fa-solid fa-spinner fa-spin hidden" id="submitSpinner"></i>
+                        <span id="submitText">Confirmar y Enviar Trámite</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+<% } %>
 </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('ticketForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
+        inputs.forEach(input => {
+            const saved = localStorage.getItem('pusap_form_' + input.name);
+            if (saved !== null) {
+                input.value = saved;
+            }
+            input.addEventListener('input', () => {
+                localStorage.setItem('pusap_form_' + input.name, input.value);
+            });
+        });
+    }
+});
+
+// --- Multi-step Logic ---
+function nextStep(current) {
+    const form = document.getElementById('ticketForm');
+    
+    // HTML5 Validation before moving
+    if(current === 1) {
+        const inputs = ['first_name', 'last_name', 'dni', 'phone', 'email'];
+        let valid = true;
+        inputs.forEach(id => {
+            const el = form.querySelector(`[name="${id}"]`);
+            if(!el.checkValidity()) {
+                el.reportValidity();
+                valid = false;
+            }
+        });
+        if(!valid) return;
+        
+        // Populate review
+        document.getElementById('reviewName').textContent = form.querySelector('[name="first_name"]').value + ' ' + form.querySelector('[name="last_name"]').value;
+        document.getElementById('reviewDni').textContent = form.querySelector('[name="dni"]').value;
+        
+        // Animate progress bar
+        document.getElementById('progressBarLine').style.width = '66%';
+        const step1 = document.getElementById('stepIndicator1');
+        step1.classList.remove('step-active');
+        step1.classList.add('step-completed');
+        step1.querySelector('.step-icon').innerHTML = '<i class="fa-solid fa-check"></i>';
+        
+        const step2 = document.getElementById('stepIndicator2');
+        step2.classList.remove('step-pending');
+        step2.classList.add('step-active');
+        document.getElementById('stepText2').classList.replace('text-slate-500', 'text-blue-800');
+    }
+    
+    if(current === 2) {
+        const cat = form.querySelector('[name="category"]');
+        if(!cat.value) {
+            cat.setCustomValidity('Por favor seleccioná una opción');
+            cat.reportValidity();
+            return;
+        }
+        cat.setCustomValidity('');
+        
+        // Populate review
+        document.getElementById('reviewCat').textContent = cat.value;
+
+        // Animate progress bar
+        document.getElementById('progressBarLine').style.width = '100%';
+        const step2 = document.getElementById('stepIndicator2');
+        step2.classList.remove('step-active');
+        step2.classList.add('step-completed');
+        step2.querySelector('.step-icon').innerHTML = '<i class="fa-solid fa-check"></i>';
+        
+        const step3 = document.getElementById('stepIndicator3');
+        step3.classList.remove('step-pending');
+        step3.classList.add('step-active');
+        document.getElementById('stepText3').classList.replace('text-slate-500', 'text-blue-800');
+    }
+
+    // Switch views
+    document.getElementById(`step${current}`).classList.add('hidden');
+    document.getElementById(`step${current+1}`).classList.remove('hidden');
+    document.getElementById(`step${current+1}`).classList.add('slide-up');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function prevStep(current) {
+    if(current === 2) {
+        document.getElementById('progressBarLine').style.width = '33%';
+        const step1 = document.getElementById('stepIndicator1');
+        step1.classList.remove('step-completed');
+        step1.classList.add('step-active');
+        step1.querySelector('.step-icon').innerHTML = '1';
+        
+        const step2 = document.getElementById('stepIndicator2');
+        step2.classList.remove('step-active');
+        step2.classList.add('step-pending');
+        document.getElementById('stepText2').classList.replace('text-blue-800', 'text-slate-500');
+    }
+    if(current === 3) {
+        document.getElementById('progressBarLine').style.width = '66%';
+        const step2 = document.getElementById('stepIndicator2');
+        step2.classList.remove('step-completed');
+        step2.classList.add('step-active');
+        step2.querySelector('.step-icon').innerHTML = '2';
+        
+        const step3 = document.getElementById('stepIndicator3');
+        step3.classList.remove('step-active');
+        step3.classList.add('step-pending');
+        document.getElementById('stepText3').classList.replace('text-blue-800', 'text-slate-500');
+    }
+
+    document.getElementById(`step${current}`).classList.add('hidden');
+    document.getElementById(`step${current-1}`).classList.remove('hidden');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// --- File Handling ---
+function showPubFileList(input) {
+    const container = document.getElementById('pubFileList');
+    container.innerHTML = '<p class="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Archivos listos para enviar:</p>';
+    if (input.files.length > 0) {
+        container.classList.remove('hidden');
+        Array.from(input.files).forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center gap-3 text-sm text-slate-700 bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm slide-up';
+            
+            let icon = 'fa-file';
+            let color = 'text-blue-500';
+            if(file.type.includes('pdf')) { icon = 'fa-file-pdf'; color = 'text-red-500'; }
+            else if(file.type.includes('image')) { icon = 'fa-file-image'; color = 'text-green-500'; }
+
+            item.innerHTML = `<i class="fa-solid ${icon} ${color} text-xl"></i><span class="truncate flex-1 font-medium">${file.name}</span><span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded">(${(file.size / 1024).toFixed(0)} KB)</span>`;
+            container.appendChild(item);
+        });
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
+// --- Drag & Drop ---
+document.addEventListener('DOMContentLoaded', () => {
+    const dropArea = document.querySelector('.border-dashed');
+    if (dropArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('border-blue-500', 'bg-blue-100'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-blue-500', 'bg-blue-100'), false);
+        });
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('pubFileInput').files = files;
+            showPubFileList(document.getElementById('pubFileInput'));
+        });
+    }
+
+    // Submit animation
+    const form = document.getElementById('ticketForm');
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            const btn = document.getElementById('submitBtn');
+            if (btn.disabled) return e.preventDefault();
+            btn.disabled = true;
+            document.getElementById('submitIcon').classList.add('hidden');
+            document.getElementById('submitSpinner').classList.remove('hidden');
+            document.getElementById('submitText').textContent = 'Procesando trámite...';
+        });
+    }
+});
+</script>
 
 <%- include('partials/footer') %>

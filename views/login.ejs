@@ -1,51 +1,132 @@
 <%- include('partials/header') %>
 
-<div class="flex items-center justify-center min-h-[60vh]">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border-t-4 border-gray-800">
-        <div class="text-center mb-6">
-            <i class="fa-solid fa-user-shield text-4xl text-gray-800 mb-2"></i>
-            <h2 class="text-2xl font-bold text-gray-900">Acceso Administrativo</h2>
-            <p class="text-gray-500 text-sm mt-1">Ingreso exclusivo personal PUSAP</p>
+<div class="min-h-[calc(100vh-80px)] bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Abstract Background -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl z-0 pointer-events-none opacity-40">
+        <div class="absolute top-0 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <style>
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+    </style>
+
+    <div class="w-full max-w-md relative z-10 scale-in">
+        <!-- Logo / Branding -->
+        <div class="text-center mb-8">
+            <div class="inline-flex w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-700 to-blue-900 items-center justify-center mb-4 shadow-xl shadow-blue-900/20">
+                <i class="fa-solid fa-building-columns text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Acceso PUSAP</h1>
+            <p class="text-slate-500 text-sm mt-1">Portal Exclusivo para Personal Institucional</p>
         </div>
 
-        <% if (error) { %>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center text-sm" role="alert">
-                <span class="block sm:inline"><i class="fa-solid fa-triangle-exclamation mr-1"></i> <%= error %></span>
-            </div>
-        <% } %>
+        <!-- Card -->
+        <div class="bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-white overflow-hidden">
+            <!-- Header decor -->
+            <div class="h-2 w-full bg-gradient-to-r from-blue-600 to-purple-600"></div>
 
-        <form action="/login" method="POST" class="space-y-4">
-            <div>
-                <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-                <div class="mt-1 relative rounded-md shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-user text-gray-400"></i>
+            <!-- Form -->
+            <div class="px-8 py-8">
+                <% if (error) { %>
+                    <div class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm slide-up">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
+                        <span><%= error %></span>
                     </div>
-                    <input type="text" name="username" id="username" required class="focus:ring-gray-800 focus:border-gray-800 block w-full pl-10 px-4 py-2 sm:text-sm border-gray-300 rounded-md border">
+                <% } %>
+
+                <form action="/login" method="POST" class="space-y-6" id="loginForm">
+                    <!-- Usuario -->
+                    <div class="space-y-2">
+                        <label for="username" class="block text-sm font-bold text-slate-700">Usuario de Sistema</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-user text-slate-400 group-focus-within:text-blue-600 transition-colors"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                name="username" 
+                                id="username" 
+                                required 
+                                autocomplete="username"
+                                placeholder="Ej: admin_mesa"
+                                class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="space-y-2">
+                        <label for="password" class="block text-sm font-bold text-slate-700">Contraseña</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-slate-400 group-focus-within:text-blue-600 transition-colors"></i>
+                            </div>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                id="password" 
+                                required 
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                                class="block w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                            >
+                            <!-- Toggle password visibility -->
+                            <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-600 transition-colors focus:outline-none">
+                                <i class="fa-solid fa-eye text-sm" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" id="loginBtn" class="w-full bg-slate-900 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 text-sm mt-4 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-right-to-bracket" id="loginIcon"></i>
+                        <i class="fa-solid fa-spinner fa-spin hidden" id="loginSpinner"></i>
+                        <span id="loginText">Ingresar al Sistema</span>
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <p class="text-center text-sm text-slate-500">
+                        ¿Sos estudiante o docente? <br>
+                        <a href="/" class="text-blue-600 hover:text-blue-800 hover:underline font-bold mt-1 inline-block"><i class="fa-solid fa-arrow-left text-xs mr-1"></i> Volvé al portal público</a>
+                    </p>
                 </div>
             </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                <div class="mt-1 relative rounded-md shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-lock text-gray-400"></i>
-                    </div>
-                    <input type="password" name="password" id="password" required class="focus:ring-gray-800 focus:border-gray-800 block w-full pl-10 px-4 py-2 sm:text-sm border-gray-300 rounded-md border">
-                </div>
-            </div>
-
-            <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition">
-                    Ingresar al Panel
-                </button>
-            </div>
-        </form>
-        
-        <div class="mt-6 border-t border-gray-200 pt-4 text-center text-xs text-gray-400">
-            <p>Datos de prueba: admin / puasap2024</p>
         </div>
     </div>
 </div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            if (btn.disabled) return e.preventDefault();
+            btn.disabled = true;
+            document.getElementById('loginIcon').classList.add('hidden');
+            document.getElementById('loginSpinner').classList.remove('hidden');
+            document.getElementById('loginText').textContent = 'Verificando credenciales...';
+        });
+    }
+});
+</script>
 
 <%- include('partials/footer') %>

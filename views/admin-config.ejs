@@ -1,0 +1,129 @@
+<%- include('partials/header') %>
+
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-gears text-blue-700"></i>
+            Configuración del Sistema
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">Ajustes generales, email y áreas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Configuración SMTP -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-envelope text-blue-700 text-xl"></i>
+                <h3 class="font-bold text-slate-800">Servidor SMTP</h3>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Configura las credenciales de correo electrónico para el envío de notificaciones.</p>
+            <form action="/panel/config/smtp" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Host</label>
+                    <input type="text" name="smtp_host" value="<%= config.smtp_host || '' %>" placeholder="ej: smtp.gmail.com" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Puerto</label>
+                    <input type="text" name="smtp_port" value="<%= config.smtp_port || '' %>" placeholder="ej: 465" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Usuario (Email)</label>
+                    <input type="text" name="smtp_user" value="<%= config.smtp_user || '' %>" placeholder="ej: noreply@institucion.edu.ar" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Contraseña</label>
+                    <input type="password" name="smtp_pass" value="<%= config.smtp_pass || '' %>" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                </div>
+                <div class="pt-2 text-right">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm text-sm transition">
+                        Guardar SMTP
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Gestión de Áreas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-sitemap text-blue-700 text-xl"></i>
+                <h3 class="font-bold text-slate-800">Áreas de Derivación</h3>
+            </div>
+            
+            <ul class="space-y-2 mb-6 flex-grow">
+                <% areas.forEach(a => { %>
+                <li class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span class="font-medium text-sm text-slate-700"><%= a.name %></span>
+                    <% if (a.name !== 'Mesa de Entrada') { %>
+                    <form action="/panel/config/areas/eliminar/<%= a.id %>" method="POST" onsubmit="return confirm('¿Eliminar área <%= a.name %>?')">
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                    <% } %>
+                </li>
+                <% }) %>
+            </ul>
+
+            <div class="border-t border-slate-100 pt-4 mt-auto">
+                <form action="/panel/config/areas" method="POST" class="flex gap-2">
+                    <input type="text" name="new_area" required placeholder="Nombre de nueva área..." class="flex-grow border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                    <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-4 rounded-xl shadow-sm text-sm transition whitespace-nowrap">
+                        Agregar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Gestión de Respuestas Rápidas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:col-span-2">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-reply text-blue-700 text-xl"></i>
+                <h3 class="font-bold text-slate-800">Respuestas Rápidas (Quick Replies)</h3>
+            </div>
+            
+            <ul class="space-y-2 mb-6 flex-grow">
+                <% quick_replies.forEach(qr => { %>
+                <li class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div>
+                        <span class="font-bold text-sm text-slate-700 block"><%= qr.title %></span>
+                        <span class="text-xs text-slate-500"><%= qr.content %></span>
+                    </div>
+                    <form action="/panel/config/quick-replies/eliminar/<%= qr.id %>" method="POST" onsubmit="return confirm('¿Eliminar respuesta rápida <%= qr.title %>?')">
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </li>
+                <% }) %>
+            </ul>
+
+            <div class="border-t border-slate-100 pt-4 mt-auto">
+                <form action="/panel/config/quick-replies/nuevo" method="POST" class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" name="title" required placeholder="Título corto (ej: Aprobado)..." class="w-full sm:w-1/4 border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                    <input type="text" name="content" required placeholder="Contenido de la respuesta (se enviará al usuario)..." class="flex-grow border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                    <button type="submit" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-4 rounded-xl shadow-sm text-sm transition whitespace-nowrap">
+                        Agregar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de Bienvenida -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <i class="fa-solid fa-bullhorn text-blue-700 text-xl"></i>
+            <h3 class="font-bold text-slate-800">Mensaje de Bienvenida del Portal</h3>
+        </div>
+        <p class="text-xs text-slate-500 mb-4">Este mensaje se mostrará de forma destacada en la página principal del portal público.</p>
+        <form action="/panel/config/general" method="POST" class="space-y-4">
+            <div>
+                <textarea name="welcome_message" rows="3" placeholder="Ej: ¡Atención! Del 10 al 15 de marzo estarán habilitadas las inscripciones a equivalencias..." class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none resize-none"><%= config.welcome_message || '' %></textarea>
+            </div>
+            <div class="pt-2 text-right">
+                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm text-sm transition">
+                    Guardar Mensaje
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

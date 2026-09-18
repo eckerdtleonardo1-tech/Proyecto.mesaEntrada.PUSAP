@@ -1,145 +1,519 @@
 <%- include('partials/header') %>
 
-<div class="max-w-7xl mx-auto">
-    
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+<!-- Banner Expiring Today -->
+<% 
+const expiringToday = tickets.filter(t => t.expiration_date && moment(t.expiration_date).isSame(moment(), 'day') && !['Aprobado', 'Rechazado'].includes(t.status));
+if (expiringToday.length > 0) { 
+%>
+<div class="bg-red-600 text-white px-4 py-3 rounded-xl mb-6 flex items-center justify-between shadow-sm animate-pulse">
+    <div class="flex items-center gap-3">
+        <i class="fa-solid fa-bell text-xl"></i>
         <div>
-            <h2 class="text-3xl font-bold text-gray-900"><i class="fa-solid fa-chart-line text-blue-800 mr-2"></i> Panel de Gestión Institucional</h2>
-            <p class="text-gray-500 mt-1">Área actual: <strong class="text-blue-800"><%= user.area %></strong></p>
-        </div>
-        <div>
-            <a href="/panel/nuevo" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center transition">
-                <i class="fa-solid fa-file-circle-plus mr-2 text-xl"></i> Crear Nuevo Trámite
-            </a>
+            <p class="font-bold">¡Atención! Hay <%= expiringToday.length %> expediente(s) que vencen HOY.</p>
+            <p class="text-red-100 text-sm">Por favor, revisalos urgentemente para evitar demoras.</p>
         </div>
     </div>
+</div>
+<% } %>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-gray-400">
-            <p class="text-xs text-gray-500 font-bold uppercase">Total</p>
-            <p class="text-2xl font-bold text-gray-800"><%= stats.total %></p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-blue-400">
-            <p class="text-xs text-gray-500 font-bold uppercase">Iniciados</p>
-            <p class="text-2xl font-bold text-blue-600"><%= stats.iniciados %></p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-purple-400">
-            <p class="text-xs text-gray-500 font-bold uppercase">En Revisión</p>
-            <p class="text-2xl font-bold text-purple-600"><%= stats.en_revision %></p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-orange-400">
-            <p class="text-xs text-gray-500 font-bold uppercase">Falta Doc.</p>
-            <p class="text-2xl font-bold text-orange-600"><%= stats.pendientes_doc %></p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-b-4 border-green-500">
-            <p class="text-xs text-gray-500 font-bold uppercase">Aprobados</p>
-            <p class="text-2xl font-bold text-green-600"><%= stats.aprobados %></p>
-        </div>
-        <div class="bg-red-50 rounded-lg shadow p-4 border-b-4 border-red-500">
-            <p class="text-xs text-red-800 font-bold uppercase"><i class="fa-solid fa-clock"></i> Por Vencer</p>
-            <p class="text-2xl font-bold text-red-600"><%= stats.por_vencer %></p>
-        </div>
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-blue-700"></i>
+            Panel de Control
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">
+            Área: <strong class="text-blue-700"><%= user.area %></strong>
+            <% if (user.role === 'operador') { %><span class="ml-2 text-xs text-slate-400">— Vista global de todos los expedientes</span><% } %>
+        </p>
     </div>
-
-    <!-- Table -->
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg border">
-        <% if (tickets.length === 0) { %>
-            <div class="p-12 text-center text-gray-500">
-                <i class="fa-regular fa-folder-open text-6xl mb-4 text-gray-300"></i>
-                <p class="text-lg">No hay expedientes en esta área.</p>
-            </div>
-        <% } else { %>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seguimiento</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trámite / Ingreso</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área / Estado</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <% tickets.forEach(function(ticket) { %>
-                            <tr class="hover:bg-blue-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-mono font-bold text-blue-800"><%= ticket.tracking_code %></div>
-                                    <% if (ticket.expiration_date) { 
-                                        const isExpiring = moment(ticket.expiration_date).diff(moment(), 'days') <= 7;
-                                    %>
-                                        <div class="text-xs mt-1 <%= isExpiring ? 'text-red-600 font-bold' : 'text-gray-500' %>">
-                                            Vence: <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
-                                        </div>
-                                    <% } %>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="text-sm font-bold text-gray-900"><%= ticket.first_name %> <%= ticket.last_name %></div>
-                                    <div class="text-xs text-gray-500">DNI: <%= ticket.dni %></div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900 font-medium"><%= ticket.category %></div>
-                                    <div class="text-xs text-gray-500"><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-gray-700 mb-1"><i class="fa-solid fa-building text-gray-400 mr-1"></i> <%= ticket.area %></div>
-                                    <% 
-                                       let badgeClass = 'bg-gray-100 text-gray-800';
-                                       if(ticket.status === 'Iniciado') badgeClass = 'bg-blue-100 text-blue-800';
-                                       if(ticket.status === 'En Revisión') badgeClass = 'bg-purple-100 text-purple-800';
-                                       if(ticket.status === 'Pendiente de Documentación') badgeClass = 'bg-orange-100 text-orange-800 font-bold border border-orange-300';
-                                       if(ticket.status === 'Aprobado') badgeClass = 'bg-green-100 text-green-800';
-                                       if(ticket.status === 'Rechazado') badgeClass = 'bg-red-100 text-red-800';
-                                    %>
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= badgeClass %>">
-                                        <%= ticket.status %>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="/panel/tramite/<%= ticket.id %>" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-md text-sm font-bold transition">
-                                        Ver / Gestionar
-                                    </a>
-                                </td>
-                            </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-            </div>
+    <div class="flex items-center gap-3">
+        <div class="text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg font-medium flex items-center gap-2 border border-slate-200">
+            <i class="fa-solid fa-arrows-rotate animate-spin-slow"></i>
+            Actualiza en <span id="refreshCounter" class="font-bold text-blue-600 w-5 text-center">60</span>s
+        </div>
+        <button class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm" onclick="alert('Próximamente...')">
+            <i class="fa-solid fa-file-export"></i> Exportar
+        </button>
+        <% if (user.role === 'operador') { %>
+        <a href="/panel/nuevo" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            Nuevo Trámite
+        </a>
         <% } %>
     </div>
 </div>
 
-<% if (typeof success_ticket !== 'undefined' && success_ticket) { %>
-    <!-- Alerta Flotante de Éxito -->
-    <div id="successToast" class="fixed bottom-5 right-5 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg z-50 flex items-center">
-        <i class="fa-solid fa-circle-check text-2xl mr-3"></i>
-        <div>
-            <p class="font-bold">¡Trámite guardado con éxito!</p>
-            <p class="text-sm">El talón de recepción se está descargando automáticamente.</p>
-        </div>
-        <button onclick="document.getElementById('successToast').style.display='none'" class="ml-4 text-green-700 hover:text-green-900">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total</p>
+        <p class="text-3xl font-extrabold text-slate-800"><%= stats.total %></p>
+        <p class="text-xs text-slate-400 mt-1">expedientes</p>
+        <i class="fa-solid fa-chart-line absolute -right-2 -bottom-2 text-5xl text-slate-50 opacity-50"></i>
     </div>
+    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">Iniciados</p>
+        <p class="text-3xl font-extrabold text-blue-700"><%= stats.iniciados %></p>
+        <div class="mt-2 w-full bg-blue-50 h-1.5 rounded-full overflow-hidden"><div class="bg-blue-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.iniciados/stats.total*100) : 0 %>%"></div></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-purple-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">En Revisión</p>
+        <p class="text-3xl font-extrabold text-purple-700"><%= stats.en_revision %></p>
+        <div class="mt-2 w-full bg-purple-50 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.en_revision/stats.total*100) : 0 %>%"></div></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-orange-400 uppercase tracking-wider mb-2">Falta Doc.</p>
+        <p class="text-3xl font-extrabold text-orange-600"><%= stats.pendientes_doc %></p>
+        <div class="mt-2 w-full bg-orange-50 h-1.5 rounded-full overflow-hidden"><div class="bg-orange-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.pendientes_doc/stats.total*100) : 0 %>%"></div></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-green-400 uppercase tracking-wider mb-2">Aprobados</p>
+        <p class="text-3xl font-extrabold text-green-700"><%= stats.aprobados %></p>
+        <div class="mt-2 w-full bg-green-50 h-1.5 rounded-full overflow-hidden"><div class="bg-green-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.aprobados/stats.total*100) : 0 %>%"></div></div>
+    </div>
+    <div class="bg-red-50 rounded-2xl border border-red-200 shadow-sm p-5 flex flex-col relative overflow-hidden">
+        <p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation text-xs"></i> Por Vencer
+        </p>
+        <p class="text-3xl font-extrabold text-red-600"><%= stats.por_vencer %></p>
+        <p class="text-xs text-red-400 mt-1">≤ 7 días</p>
+    </div>
+</div>
 
-    <!-- Script de autodescarga -->
-    <script>
-        setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = '/panel/comprobante/<%= success_ticket %>';
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Auto ocultar la alerta después de 5 segundos
-            setTimeout(() => {
-                const toast = document.getElementById('successToast');
-                if(toast) toast.style.display = 'none';
-            }, 5000);
-        }, 500); // Pequeño retraso para que la interfaz cargue primero
-    </script>
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Distribución de Trámites por Estado</h3>
+        <div class="relative h-64 w-full">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Trámites por Área</h3>
+        <div class="relative h-64 w-full">
+            <canvas id="areaChart"></canvas>
+        </div>
+    </div>
+</div>
+    
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="font-bold text-slate-800 text-sm mb-4">Actividad de los últimos 7 días</h3>
+        <div class="flex items-end justify-between h-20 mt-2 gap-2">
+            <% 
+            const maxActivity = Math.max(...Object.values(weeklyActivity), 1);
+            Object.keys(weeklyActivity).forEach(dateStr => { 
+                const count = weeklyActivity[dateStr];
+                const heightPercent = (count / maxActivity) * 100;
+            %>
+            <div class="flex flex-col items-center flex-1 group">
+                <div class="relative w-full flex justify-center h-full items-end">
+                    <div class="absolute -top-8 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10"><%= count %> trámites</div>
+                    <div class="w-full max-w-[2rem] bg-blue-200 rounded-t-sm group-hover:bg-blue-400 transition-colors" style="height: <%= heightPercent %>%"></div>
+                </div>
+                <span class="text-[10px] text-slate-400 mt-2 font-medium truncate w-full text-center"><%= moment(dateStr).format('DD/MM') %></span>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<form method="GET" action="/panel" class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-4 p-4" id="filterForm">
+    <div class="flex flex-col sm:flex-row gap-3 items-center">
+        <!-- Search -->
+        <div class="relative flex-grow w-full">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+            </div>
+            <input 
+                type="text" 
+                name="search" 
+                value="<%= query.search || '' %>"
+                placeholder="Buscar por código, nombre, DNI..." 
+                class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50"
+            >
+        </div>
+        <!-- Status filter -->
+        <select name="status" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+            <option value="">Todos los estados</option>
+            <option value="Iniciado" <%= query.status === 'Iniciado' ? 'selected' : '' %>>Iniciados</option>
+            <option value="En Revisión" <%= query.status === 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
+            <option value="Pendiente de Documentación" <%= query.status === 'Pendiente de Documentación' ? 'selected' : '' %>>Falta Doc.</option>
+            <option value="Aprobado" <%= query.status === 'Aprobado' ? 'selected' : '' %>>Aprobados</option>
+            <option value="Rechazado" <%= query.status === 'Rechazado' ? 'selected' : '' %>>Rechazados</option>
+        </select>
+        <!-- Area Filter -->
+        <% if (user.role === 'operador') { %>
+        <select name="area" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+            <option value="">Todas las áreas</option>
+            <option value="Mesa de Entrada" <%= query.area === 'Mesa de Entrada' ? 'selected' : '' %>>Mesa de Entrada</option>
+            <option value="Dto. Ingresos" <%= query.area === 'Dto. Ingresos' ? 'selected' : '' %>>Dto. Ingresos</option>
+            <option value="Secretaría Académica" <%= query.area === 'Secretaría Académica' ? 'selected' : '' %>>Sec. Académica</option>
+            <option value="Dto. Sistema" <%= query.area === 'Dto. Sistema' ? 'selected' : '' %>>Dto. Sistema</option>
+        </select>
+        <% } %>
+        <!-- Priority Filter -->
+        <select name="priority" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+            <option value="">Todas las prioridades</option>
+            <option value="urgente" <%= query.priority === 'urgente' ? 'selected' : '' %>>Urgente</option>
+            <option value="normal" <%= query.priority === 'normal' ? 'selected' : '' %>>Normal</option>
+        </select>
+        <!-- Submit / Clear -->
+        <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 rounded-xl transition font-medium">
+            <i class="fa-solid fa-filter mr-1"></i> Filtrar
+        </button>
+        <a href="/panel" class="w-full text-center sm:w-auto text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 text-sm px-4 py-2.5 rounded-xl border border-slate-200 transition font-medium">
+            Limpiar
+        </a>
+    </div>
+</form>
+
+<!-- Toggle View -->
+<div class="flex justify-end gap-2 mb-4">
+    <button id="btnViewList" onclick="setView('lista')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">📋 Lista</button>
+    <button id="btnViewKanban" onclick="setView('kanban')" class="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">🗂️ Kanban</button>
+</div>
+
+<!-- Action Bar -->
+<div id="bulkActions" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center justify-between">
+    <span class="text-sm font-semibold text-blue-800"><span id="selectedCount">0</span> seleccionados</span>
+    <div class="flex gap-2">
+        <form id="bulkForm" action="/panel/accion-masa" method="POST" class="inline">
+            <input type="hidden" name="ids" id="bulkIds">
+            <button type="submit" name="accion" value="Aprobado" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium">Aprobar</button>
+            <button type="submit" name="accion" value="Rechazado" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium">Rechazar</button>
+        </form>
+        <button onclick="exportSelected()" class="bg-slate-600 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium">Exportar</button>
+    </div>
+</div>
+
+<!-- Kanban View -->
+<div id="kanbanView" class="hidden overflow-x-auto pb-4">
+    <div class="flex gap-4 min-w-max items-start" id="kanbanContainer">
+    </div>
+</div>
+
+<!-- Table -->
+<div id="listView" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <% if (tickets.length === 0) { %>
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+                <i class="fa-regular fa-folder-open text-slate-400 text-3xl"></i>
+            </div>
+            <p class="text-slate-600 font-semibold text-lg mb-1">No hay expedientes</p>
+            <p class="text-slate-400 text-sm">Esta área no tiene expedientes asignados actualmente.</p>
+        </div>
+    <% } else { %>
+    <div class="overflow-x-auto">
+        <table class="min-w-full" id="ticketsTable">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-10">
+                        <input type="checkbox" id="selectAll" onclick="toggleAll(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                    </th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Código</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Solicitante</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Trámite / Fecha</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Prioridad</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acción</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="tableBody">
+                <% tickets.forEach(function(ticket) {
+                    const isExpiringSoon = ticket.expiration_date && moment(ticket.expiration_date).diff(moment(), 'days') <= 7 && !['Aprobado', 'Rechazado'].includes(ticket.status);
+                    const isExpired = ticket.expiration_date && moment(ticket.expiration_date).diff(moment(), 'days') < 0 && !['Aprobado', 'Rechazado'].includes(ticket.status);
+                    const isToday = ticket.expiration_date && moment(ticket.expiration_date).isSame(moment(), 'day') && !['Aprobado', 'Rechazado'].includes(ticket.status);
+                    
+                    let badgeClass = 'bg-slate-100 text-slate-700';
+                    let dotColor = 'bg-slate-400';
+                    if(ticket.status === 'Iniciado') { badgeClass = 'bg-blue-50 text-blue-700 border border-blue-200'; dotColor = 'bg-blue-500'; }
+                    if(ticket.status === 'En Revisión') { badgeClass = 'bg-purple-50 text-purple-700 border border-purple-200'; dotColor = 'bg-purple-500'; }
+                    if(ticket.status === 'Pendiente de Documentación') { badgeClass = 'bg-orange-50 text-orange-700 border border-orange-300 font-bold'; dotColor = 'bg-orange-500'; }
+                    if(ticket.status === 'Aprobado') { badgeClass = 'bg-green-50 text-green-700 border border-green-200'; dotColor = 'bg-green-500'; }
+                    if(ticket.status === 'Rechazado') { badgeClass = 'bg-red-50 text-red-700 border border-red-200'; dotColor = 'bg-red-500'; }
+                    
+                    const ticketDate = moment.utc(ticket.created_at).local().format('YYYY-MM-DD');
+                %>
+                <tr class="hover:bg-slate-50 transition-colors ticket-row" 
+                    data-search="<%= ticket.tracking_code %> <%= ticket.first_name %> <%= ticket.last_name %> <%= ticket.dni %> <%= ticket.category %>".toLowerCase()
+                    data-status="<%= ticket.status %>"
+                    data-area="<%= ticket.area %>"
+                    data-date="<%= ticketDate %>">
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <input type="checkbox" name="selectedTickets" value="<%= ticket.id %>" onchange="updateBulkActions()" class="ticket-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                    </td>
+                    <!-- Código -->
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <div class="font-mono font-bold text-blue-800 text-sm"><%= ticket.tracking_code %></div>
+                        <% if (ticket.expiration_date) { %>
+                        <div class="text-xs mt-1 flex items-center gap-1 <%= isExpired ? 'text-red-600 font-bold' : (isToday ? 'text-red-500 font-bold' : (isExpiringSoon ? 'text-orange-600 font-semibold' : 'text-slate-400')) %>">
+                            <i class="fa-regular fa-calendar-xmark text-xs"></i>
+                            Vence: <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
+                            <% if (isExpired && !isToday) { %><span class="bg-red-100 text-red-700 px-1 rounded text-[10px]">VENCIDO</span><% } %>
+                            <% if (isToday) { %><span class="bg-red-500 text-white px-1.5 rounded text-[10px] animate-pulse">HOY</span><% } %>
+                        </div>
+                        <% } %>
+                    </td>
+                    <!-- Solicitante -->
+                    <td class="px-5 py-4">
+                        <div class="font-semibold text-slate-900 text-sm"><%= ticket.first_name %> <%= ticket.last_name %></div>
+                        <div class="text-xs text-slate-500 mt-0.5">DNI: <%= ticket.dni %></div>
+                    </td>
+                    <!-- Trámite / Fecha -->
+                    <td class="px-5 py-4 hidden md:table-cell">
+                        <div class="text-sm text-slate-700 font-medium"><%= ticket.category %></div>
+                        <div class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-clock mr-1"></i><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
+                    </td>
+                    <!-- Prioridad -->
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <% if(ticket.priority === 'urgente') { %>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase border border-red-200">
+                                <i class="fa-solid fa-bolt text-red-600"></i> Urgente
+                            </span>
+                        <% } else { %>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase border border-slate-200">
+                                Normal
+                            </span>
+                        <% } %>
+                    </td>
+                    <!-- Estado -->
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1 hidden lg:block"><i class="fa-solid fa-building mr-1"></i><%= ticket.area %></div>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border <%= badgeClass %>">
+                            <span class="w-1.5 h-1.5 rounded-full <%= dotColor %>"></span>
+                            <%= ticket.status %>
+                        </span>
+                    </td>
+                    <!-- Acción -->
+                    <td class="px-5 py-4 whitespace-nowrap text-right">
+                        <a href="/panel/tramite/<%= ticket.id %>" class="inline-flex items-center justify-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-bold transition-all duration-200 shadow-sm hover:shadow">
+                            Ver <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </td>
+                </tr>
+                <% }); %>
+                <tr id="noResultsRow" style="display: none;" class="bg-slate-50">
+                    <td colspan="6" class="px-5 py-12 text-center">
+                        <i class="fa-solid fa-magnifying-glass text-slate-300 text-3xl mb-2"></i>
+                        <p class="text-slate-500 font-medium">No se encontraron expedientes</p>
+                        <p class="text-slate-400 text-xs mt-1">Intentá buscar con otros términos o filtros.</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-xs text-slate-500 font-medium">
+            Mostrando <%= total > 0 ? (page - 1) * 20 + 1 : 0 %>-<%= Math.min(page * 20, total) %> de <%= total %> expedientes
+        </div>
+        <% if (totalPages > 1) { %>
+        <div class="flex gap-1">
+            <% 
+            const urlQuery = new URLSearchParams(query);
+            urlQuery.delete('page');
+            const q = urlQuery.toString();
+            const prefix = q ? '&' + q : '';
+            %>
+            <a href="?page=<%= page - 1 %><%= prefix %>" class="px-3 py-1.5 bg-white border border-slate-200 rounded text-sm hover:bg-slate-50 <%= page <= 1 ? 'pointer-events-none opacity-50' : '' %>">Anterior</a>
+            <% for(let i=1; i<=totalPages; i++) { %>
+            <a href="?page=<%= i %><%= prefix %>" class="px-3 py-1.5 bg-white border border-slate-200 rounded text-sm hover:bg-slate-50 <%= page === i ? 'bg-blue-50 text-blue-600 border-blue-200 font-bold' : '' %>"><%= i %></a>
+            <% } %>
+            <a href="?page=<%= page + 1 %><%= prefix %>" class="px-3 py-1.5 bg-white border border-slate-200 rounded text-sm hover:bg-slate-50 <%= page >= totalPages ? 'pointer-events-none opacity-50' : '' %>">Siguiente</a>
+        </div>
+        <% } %>
+    </div>
+    <% } %>
+</div>
+
+<script>
+// Kanban Logic
+const allTickets = <%- JSON.stringify(tickets) %>;
+const viewListBtn = document.getElementById('btnViewList');
+const viewKanbanBtn = document.getElementById('btnViewKanban');
+const listView = document.getElementById('listView');
+const kanbanView = document.getElementById('kanbanView');
+const kanbanContainer = document.getElementById('kanbanContainer');
+
+function renderKanban() {
+    const columns = [
+        { id: 'Iniciado', title: '🔵 Iniciado' },
+        { id: 'En Revisión', title: '🟣 En Revisión' },
+        { id: 'Pendiente de Documentación', title: '🟠 Falta Documentación' },
+        { id: 'Aprobado', title: '🟢 Aprobado' },
+        { id: 'Rechazado', title: '🔴 Rechazado' }
+    ];
+    
+    let html = '';
+    columns.forEach(col => {
+        const colTickets = allTickets.filter(t => t.status === col.id);
+        html += `<div class="bg-slate-100 rounded-xl p-3 w-72 flex-shrink-0">`;
+        html += `<div class="flex justify-between items-center mb-3">`;
+        html += `<h3 class="font-bold text-slate-700 text-sm">${col.title}</h3>`;
+        html += `<span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">${colTickets.length}</span>`;
+        html += `</div>`;
+        html += `<div class="space-y-3">`;
+        colTickets.forEach(t => {
+            html += `<div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200">`;
+            html += `<div class="text-xs font-mono font-bold text-blue-700 mb-1">${t.tracking_code}</div>`;
+            html += `<div class="font-semibold text-sm text-slate-800">${t.first_name} ${t.last_name}</div>`;
+            html += `<div class="text-xs text-slate-500 mt-1 truncate">${t.category}</div>`;
+            html += `<div class="flex justify-between items-center mt-3">`;
+            html += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase">${t.area}</span>`;
+            html += `<a href="/panel/tramite/${t.id}" class="text-blue-600 hover:text-blue-800 text-xs font-bold">Ver &rarr;</a>`;
+            html += `</div></div>`;
+        });
+        html += `</div></div>`;
+    });
+    kanbanContainer.innerHTML = html;
+}
+
+function setView(view) {
+    if(view === 'kanban') {
+        listView.classList.add('hidden');
+        kanbanView.classList.remove('hidden');
+        viewKanbanBtn.className = 'bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition';
+        viewListBtn.className = 'bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition';
+        renderKanban();
+    } else {
+        listView.classList.remove('hidden');
+        kanbanView.classList.add('hidden');
+        viewListBtn.className = 'bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition';
+        viewKanbanBtn.className = 'bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition';
+    }
+    localStorage.setItem('dashboardView', view);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedView = localStorage.getItem('dashboardView');
+    if(savedView === 'kanban') {
+        setView('kanban');
+    }
+});
+
+// Auto Refresh
+let countdown = 60;
+const counterEl = document.getElementById('refreshCounter');
+setInterval(() => {
+    countdown--;
+    if(counterEl) counterEl.textContent = countdown;
+    if(countdown <= 0) {
+        window.location.reload();
+    }
+}, 1000);
+
+// Bulk Actions
+function toggleAll(source) {
+    const checkboxes = document.querySelectorAll('.ticket-checkbox');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const checked = document.querySelectorAll('.ticket-checkbox:checked');
+    const ids = Array.from(checked).map(cb => cb.value);
+    const count = ids.length;
+    
+    const countEl = document.getElementById('selectedCount');
+    if (countEl) countEl.textContent = count;
+    
+    const idsEl = document.getElementById('bulkIds');
+    if (idsEl) idsEl.value = ids.join(',');
+    
+    const bulkActionsEl = document.getElementById('bulkActions');
+    if (bulkActionsEl) {
+        if(count > 0) {
+            bulkActionsEl.classList.remove('hidden');
+        } else {
+            bulkActionsEl.classList.add('hidden');
+        }
+    }
+}
+
+function exportSelected() {
+    const ids = document.getElementById('bulkIds').value;
+    if(ids) {
+        window.location.href = `/panel/exportar?ids=${ids}`;
+    }
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusData = <%- JSON.stringify(stats) %>;
+    const areaData = <%- JSON.stringify(areaDistribution || {}) %>;
+    
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['Iniciados', 'En Revisión', 'Falta Doc.', 'Aprobados', 'Rechazados'],
+                datasets: [{
+                    data: [statusData.iniciados, statusData.en_revision, statusData.pendientes_doc, statusData.aprobados, statusData.rechazados],
+                    backgroundColor: ['#3b82f6', '#a855f7', '#f97316', '#22c55e', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+    
+    // Area Chart
+    const areaCtx = document.getElementById('areaChart');
+    if (areaCtx) {
+        new Chart(areaCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(areaData),
+                datasets: [{
+                    label: 'Trámites',
+                    data: Object.values(areaData),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
+            }
+        });
+    }
+});
+</script>
+
+<!-- Toast de éxito -->
+<% if (typeof success_ticket !== 'undefined' && success_ticket) { %>
+<div id="successToast" class="fixed bottom-6 right-6 bg-white border border-green-200 rounded-2xl shadow-2xl z-50 flex items-center gap-4 p-4 min-w-72 max-w-sm animate-bounce" style="animation: slideIn 0.3s ease;">
+    <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-circle-check text-green-600 text-lg"></i>
+    </div>
+    <div class="flex-1">
+        <p class="font-bold text-slate-900 text-sm">¡Trámite guardado!</p>
+        <p class="text-slate-500 text-xs mt-0.5">El talón de recepción se descargará en un momento.</p>
+    </div>
+    <button onclick="document.getElementById('successToast').remove()" class="text-slate-400 hover:text-slate-600 ml-1">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+</div>
+<script>
+    setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = '/panel/comprobante/<%= success_ticket %>';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => { const t = document.getElementById('successToast'); if(t) t.remove(); }, 5000);
+    }, 600);
+</script>
 <% } %>
 
 <%- include('partials/footer') %>

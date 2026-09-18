@@ -1,43 +1,363 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> | PUSAP</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    
+    <script>
+        if(localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <link rel="stylesheet" href="/css/fontawesome.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'">
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Base animations */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* Sidebar and Nav links */
+        .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300; }
+        .sidebar-link:hover { @apply bg-blue-700/50 text-white translate-x-1; }
+        .sidebar-link.active { @apply bg-white/15 text-white font-bold border-l-4 border-blue-400; }
+        
+        .nav-link { @apply px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 hover:text-white transition-all duration-300 relative overflow-hidden; }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: white; transition: all 0.3s ease; transform: translateX(-50%); }
+        .nav-link:hover::after { width: 80%; }
+        
+        /* Tooltip */
+        .has-tooltip:hover .tooltip-content { opacity: 1; visibility: visible; transform: translateY(0); }
+        .tooltip-content { opacity: 0; visibility: hidden; transform: translateY(5px); transition: all 0.2s ease; }
+        
+        /* Progress Bar Custom */
+        .step-active .step-icon { @apply bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30 scale-110; }
+        .step-completed .step-icon { @apply bg-green-500 text-white border-green-500; }
+        .step-pending .step-icon { @apply bg-slate-100 text-slate-400 border-slate-200; }
+        
+        /* Mobile menu animation */
+        #mobileMenu { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        #mobileMenu.open { max-height: 400px; opacity: 1; }
+    </style>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
-    <nav class="bg-blue-900 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/" class="flex-shrink-0 flex items-center space-x-2">
-                        <i class="fa-solid fa-building-columns text-2xl"></i>
-                        <span class="font-bold text-xl">PUSAP</span>
-                    </a>
-                    <div class="hidden md:ml-6 md:flex md:space-x-2">
-                        <% if (!user) { %>
-                            <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition">Inicio</a>
-                            <a href="/seguimiento" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition">Consulta Pública</a>
-                        <% } else { %>
-                            <a href="/panel" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</a>
-                            <a href="/panel/nuevo" class="px-3 py-2 bg-blue-700 rounded-md text-sm font-bold hover:bg-blue-600 transition"><i class="fa-solid fa-plus mr-1"></i> Alta Trámite</a>
-                        <% } %>
+<body class="bg-slate-50 flex flex-col min-h-screen font-sans text-slate-800">
+
+<% if (user) { %>
+<!-- ========== LAYOUT INTERNO (con sidebar) ========== -->
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-950 to-blue-900 text-white flex flex-col fixed inset-y-0 left-0 z-30 shadow-2xl hidden lg:flex">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-blue-800">
+            <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-building-columns text-white text-lg"></i>
+            </div>
+            <div>
+                <span class="font-bold text-lg text-white block leading-tight">PUSAP</span>
+                <span class="text-blue-300 text-xs">Mesa de Entrada</span>
+            </div>
+        </div>
+
+        <!-- User info -->
+        <div class="px-4 py-4 border-b border-blue-800/60 mx-3 mt-3 bg-white/5 rounded-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-blue-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    <%= user.name.charAt(0).toUpperCase() %>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-bold text-white truncate"><%= user.name %></p>
+                    <p class="text-xs text-blue-300 truncate"><%= user.area %></p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <% if (user.role === 'operador') { %>
+                    <span class="text-xs bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full font-medium">Operador Principal</span>
+                <% } else { %>
+                    <span class="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full font-medium">Área Interna</span>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="flex-grow px-3 py-4 space-y-1">
+            <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Gestión</p>
+            <a href="/panel" class="sidebar-link text-blue-100">
+                <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+                <span>Panel de Control</span>
+            </a>
+            <a href="/panel/mi-perfil" class="sidebar-link text-blue-100">
+                <i class="fa-solid fa-user-circle w-4 text-center"></i>
+                <span>Mi Perfil</span>
+            </a>
+            <% if (user.role === 'operador') { %>
+            <a href="/panel/nuevo" class="sidebar-link text-blue-100">
+                <i class="fa-solid fa-file-circle-plus w-4 text-center"></i>
+                <span>Alta de Trámite</span>
+            </a>
+            <% } %>
+            <% if (user.role === 'operador') { %>
+            <div class="pt-3 mt-3 border-t border-blue-800/60">
+                <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Administración</p>
+                <a href="/panel/usuarios" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-users-gear w-4 text-center"></i>
+                    <span>Gestión de Usuarios</span>
+                </a>
+                <a href="/panel/config" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-gears w-4 text-center"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="/panel/auditoria" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-shield-halved w-4 text-center"></i>
+                    <span>Auditoría</span>
+                </a>
+            </div>
+            <% } %>
+            <div class="pt-3 mt-3 border-t border-blue-800/60">
+                <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Portal Público</p>
+                <a href="/" target="_blank" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-arrow-up-right-from-square w-4 text-center"></i>
+                    <span>Ver Portal Web</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Bottom logout -->
+        <div class="px-3 py-4 border-t border-blue-800/60">
+            <a href="/logout" class="sidebar-link text-red-300 hover:bg-red-600/30 hover:text-red-200 w-full">
+                <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col lg:ml-64">
+        <!-- Top bar for mobile / header -->
+        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-20 dark:bg-slate-800 dark:border-slate-700">
+            <div class="flex items-center justify-between px-4 sm:px-6 h-14">
+                <!-- Mobile menu button -->
+                <button id="sidebarToggle" class="lg:hidden text-slate-500 hover:text-blue-700 hover:bg-blue-50 p-3 rounded-md transition" onclick="document.getElementById('mobileSidebar').classList.toggle('hidden')">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center gap-2 lg:hidden">
+                    <i class="fa-solid fa-building-columns text-blue-900 text-lg"></i>
+                    <span class="font-bold text-blue-900">PUSAP</span>
+                </div>
+                <!-- Right side: breadcrumb / title -->
+                <div class="hidden lg:flex items-center gap-2 text-sm text-slate-500">
+                    <i class="fa-solid fa-house text-slate-400"></i>
+                    <span>/</span>
+                    <span class="font-medium text-slate-700"><%= title %></span>
+                </div>
+                
+                <div class="flex items-center gap-4 flex-grow justify-center lg:justify-start lg:ml-6 lg:flex-grow-0">
+                    <form action="/panel" method="GET" class="relative hidden sm:block w-full max-w-xs">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                        </div>
+                        <input type="text" name="search" placeholder="Buscar código, DNI..." class="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </form>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-slate-400 hidden sm:block dark:text-slate-300"><%= new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    
+                    <!-- Dark mode toggle -->
+                    <button onclick="toggleDarkMode()" class="text-slate-500 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300">
+                        <i class="fa-solid fa-moon" id="darkIcon"></i>
+                    </button>
+                    
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button id="notifBtn" class="text-slate-500 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300 relative">
+                            <i class="fa-solid fa-bell text-lg"></i>
+                            <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full hidden">0</span>
+                        </button>
+                        <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden">
+                            <div class="p-3 border-b border-slate-100 dark:border-slate-700 font-bold text-sm text-slate-800 dark:text-slate-100">
+                                Actividad Reciente
+                            </div>
+                            <div id="notifList" class="max-h-64 overflow-y-auto">
+                                <div class="p-4 text-xs text-slate-500 text-center">Cargando...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <% if (user) { %>
-                        <div class="text-sm mr-4 hidden sm:block">
-                            <span class="font-bold"><%= user.name %></span> <br>
-                            <span class="text-blue-300 text-xs"><%= user.area %></span>
-                        </div>
-                        <a href="/logout" class="px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-sm transition" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
-                    <% } else { %>
-                        <a href="/login" class="px-4 py-2 rounded-md bg-blue-800 border border-blue-400 hover:bg-blue-700 text-sm font-bold shadow-md transition"><i class="fa-solid fa-lock mr-2"></i> Iniciar Sesión (Personal)</a>
+            </div>
+        </header>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobileSidebar" class="hidden fixed inset-0 z-40 lg:hidden fade-in">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('mobileSidebar').classList.add('hidden')"></div>
+            <aside class="absolute inset-y-0 left-0 w-64 bg-gradient-to-b from-blue-950 to-blue-900 text-white flex flex-col shadow-2xl h-full slide-up">
+                <div class="flex items-center justify-between px-6 py-5 border-b border-blue-800">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-building-columns text-white text-lg"></i>
+                        <span class="font-bold text-lg">PUSAP</span>
+                    </div>
+                    <button onclick="document.getElementById('mobileSidebar').classList.add('hidden')" class="text-blue-300 hover:text-white bg-white/10 w-8 h-8 rounded-lg flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <nav class="flex-grow px-3 py-4 space-y-1 overflow-y-auto">
+                    <a href="/panel" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-chart-pie w-4"></i> Panel de Control</a>
+                    <a href="/panel/mi-perfil" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-user-circle w-4"></i> Mi Perfil</a>
+                    <% if (user.role === 'operador') { %>
+                    <a href="/panel/nuevo" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-file-circle-plus w-4"></i> Alta de Trámite</a>
                     <% } %>
+                    <a href="/" target="_blank" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-arrow-up-right-from-square w-4"></i> Portal Público</a>
+                </nav>
+                <div class="px-3 py-4 border-t border-blue-800/60">
+                    <a href="/logout" class="sidebar-link text-red-300 hover:bg-red-600/30 w-full"><i class="fa-solid fa-right-from-bracket w-4"></i> Cerrar Sesión</a>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Page Content -->
+        <main class="flex-grow p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-900 relative">
+        
+        <% if (user.role === 'operador') { %>
+        <!-- Floating Action Button for mobile -->
+        <a href="/panel/nuevo" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg md:hidden z-50 transition-transform transform hover:scale-105">
+            <i class="fa-solid fa-plus text-2xl"></i>
+        </a>
+        <% } %>
+
+<script>
+function toggleDarkMode() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('darkMode', isDark);
+  document.getElementById('darkIcon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('darkMode') === 'true') {
+    const icon = document.getElementById('darkIcon');
+    if(icon) icon.className = 'fa-solid fa-sun';
+  }
+});
+</script>
+
+<script>
+    let notifCache = [];
+    let unreadCount = 0;
+
+    async function fetchNotifs() {
+        try {
+            const res = await fetch('/panel/api/actividad-reciente');
+            const data = await res.json();
+            
+            if (notifCache.length > 0) {
+                const newItems = data.filter(d => !notifCache.find(c => c.ticket_id === d.ticket_id && c.created_at === d.created_at));
+                if (newItems.length > 0) {
+                    unreadCount += newItems.length;
+                    const badge = document.getElementById('notifBadge');
+                    badge.textContent = unreadCount;
+                    badge.classList.remove('hidden');
+                }
+            }
+            notifCache = data;
+            
+            const list = document.getElementById('notifList');
+            if (data.length === 0) {
+                list.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">No hay actividad reciente.</div>';
+            } else {
+                list.innerHTML = data.map(n => `
+                    <a href="/panel/tramite/${n.ticket_id}" class="block p-3 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        <div class="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">${n.tracking_code}</div>
+                        <div class="text-sm text-slate-800 dark:text-slate-200">${n.first_name} ${n.last_name}</div>
+                        <div class="text-xs text-slate-500 mt-1">Cambió a: <span class="font-bold">${n.new_status}</span></div>
+                    </a>
+                `).join('');
+            }
+        } catch(e) {}
+    }
+
+    document.getElementById('notifBtn').addEventListener('click', () => {
+        const drop = document.getElementById('notifDropdown');
+        drop.classList.toggle('hidden');
+        if (!drop.classList.contains('hidden')) {
+            unreadCount = 0;
+            document.getElementById('notifBadge').classList.add('hidden');
+        }
+    });
+
+    fetchNotifs();
+    setInterval(fetchNotifs, 30000);
+</script>
+
+<% } else { %>
+<!-- ========== LAYOUT PÚBLICO (navbar top) ========== -->
+    <header class="bg-gradient-to-r from-blue-950 to-blue-900 text-white shadow-lg sticky top-0 z-40 border-b border-blue-800/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 bg-white/10 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition shadow-inner">
+                        <i class="fa-solid fa-building-columns text-white text-lg"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <span class="font-extrabold text-xl tracking-tight block leading-tight">PUSAP</span>
+                        <span class="text-blue-300 text-[10px] uppercase font-bold tracking-widest">Mesa de Entrada</span>
+                    </div>
+                    <span class="font-bold text-xl sm:hidden">PUSAP</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-2">
+                    <a href="/" class="nav-link text-blue-100"><i class="fa-solid fa-house mr-1.5 opacity-70"></i>Inicio</a>
+                    <a href="/nuevo-tramite" class="nav-link text-blue-100"><i class="fa-solid fa-file-signature mr-1.5 opacity-70"></i>Iniciar Trámite</a>
+                    <a href="/seguimiento" class="nav-link text-blue-100"><i class="fa-solid fa-magnifying-glass mr-1.5 opacity-70"></i>Ver mi Trámite</a>
+                </nav>
+
+                <!-- Right: Login & Mobile toggle -->
+                <div class="flex items-center gap-3">
+                    <a href="/login" class="hidden sm:flex items-center gap-2 bg-blue-800/50 hover:bg-blue-700 border border-blue-700/50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200">
+                        <i class="fa-solid fa-lock text-xs opacity-70"></i>
+                        <span>Acceso Institucional</span>
+                    </a>
+                    <!-- Mobile hamburger -->
+                    <button id="mobileMenuBtn" class="md:hidden text-white w-12 h-12 p-3 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition" onclick="toggleMobileMenu()">
+                        <i class="fa-solid fa-bars text-lg" id="mobileMenuIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="md:hidden">
+                <div class="py-3 border-t border-blue-800 space-y-2 pb-4">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-house"></i></div>Inicio</a>
+                    <a href="/nuevo-tramite" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-file-signature"></i></div>Iniciar Trámite</a>
+                    <a href="/seguimiento" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass"></i></div>Ver mi Trámite</a>
+                    <a href="/login" class="flex items-center gap-3 px-4 py-3.5 text-blue-300 rounded-xl hover:bg-white/10 border border-white/5 transition text-base font-medium mt-2"><div class="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center border border-blue-700"><i class="fa-solid fa-lock"></i></div>Acceso Institucional</a>
                 </div>
             </div>
         </div>
-    </nav>
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    </header>
+    
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('mobileMenuIcon');
+            menu.classList.toggle('open');
+            if (menu.classList.contains('open')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        }
+    </script>
+    <main class="flex-grow">
+<% } %>

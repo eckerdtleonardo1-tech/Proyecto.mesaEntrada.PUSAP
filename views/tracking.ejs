@@ -1,90 +1,289 @@
 <%- include('partials/header') %>
 
-<div class="max-w-2xl mx-auto my-12 bg-white p-8 rounded-xl shadow-md border-t-4 border-blue-800">
-    <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-800 mb-4">
-            <i class="fa-solid fa-magnifying-glass text-3xl"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-900">Consulta Pública de Trámites</h2>
-        <p class="text-gray-500 mt-2">Ingresá tu código de seguimiento y DNI para conocer el estado actual de tu expediente.</p>
-    </div>
+<div class="bg-slate-50 min-h-screen py-10 px-4 relative">
+    <div class="max-w-3xl mx-auto relative z-10">
 
-    <% if (error) { %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-            <span class="block sm:inline"><i class="fa-solid fa-circle-exclamation mr-1"></i> <%= error %></span>
-        </div>
-    <% } %>
-
-    <form action="/seguimiento" method="POST" class="mb-8">
-        <div class="flex flex-col md:flex-row gap-4">
-            <input type="text" name="tracking_code" placeholder="Código (Ej: PUSAP-XXXXXX)" required class="flex-grow px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-sm uppercase">
-            <input type="text" name="dni" placeholder="Tu DNI" required class="flex-grow px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-            <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-md shadow transition duration-300 whitespace-nowrap">
-                Consultar
-            </button>
-        </div>
-    </form>
-
-    <% if (ticket) { %>
-        <div class="border rounded-lg overflow-hidden">
-            <div class="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
-                <span class="font-bold text-gray-700">Expediente: <span class="font-mono text-blue-800"><%= ticket.tracking_code %></span></span>
-                
-                <% 
-                   let badgeClass = 'bg-gray-200 text-gray-800';
-                   let icon = 'fa-clock';
-                   if(ticket.status === 'Iniciado') badgeClass = 'bg-blue-100 text-blue-800';
-                   if(ticket.status === 'En Revisión') badgeClass = 'bg-purple-100 text-purple-800';
-                   if(ticket.status === 'Pendiente de Documentación') { badgeClass = 'bg-orange-100 text-orange-800 border-orange-300 border'; icon = 'fa-exclamation-triangle'; }
-                   if(ticket.status === 'Aprobado') { badgeClass = 'bg-green-100 text-green-800'; icon = 'fa-check'; }
-                   if(ticket.status === 'Rechazado') { badgeClass = 'bg-red-100 text-red-800'; icon = 'fa-xmark'; }
-                %>
-                
-                <span class="px-3 py-1 rounded-full text-xs font-bold <%= badgeClass %> flex items-center">
-                    <i class="fa-solid <%= icon %> mr-1"></i> <%= ticket.status %>
-                </span>
+        <!-- Header de la página -->
+        <div class="text-center mb-10 slide-up">
+            <div class="inline-flex w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl items-center justify-center mb-5 shadow-lg shadow-blue-900/20">
+                <i class="fa-solid fa-satellite-dish text-white text-2xl"></i>
             </div>
-            <div class="p-4 space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold">Solicitante</p>
-                        <p class="text-gray-900 font-medium"><%= ticket.first_name %> <%= ticket.last_name %></p>
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-3">Seguimiento de Expediente</h1>
+            <p class="text-slate-500 text-base max-w-md mx-auto">Conocé el estado en tiempo real de tu trámite ingresando tu código oficial y DNI.</p>
+        </div>
+
+        <!-- Formulario de búsqueda -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-8 mb-10 relative overflow-hidden">
+            <!-- Decor line -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
+
+            <% if (error) { %>
+                <div class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl text-sm font-medium animate-[fadeIn_0.3s_ease-in-out]">
+                    <i class="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0 text-red-500"></i>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <form action="/seguimiento" method="POST" id="trackingForm">
+                <div class="flex flex-col md:flex-row gap-5 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-hashtag text-blue-500"></i> Código de Seguimiento
+                        </label>
+                        <input 
+                            type="text" 
+                            name="tracking_code" 
+                            required
+                            placeholder="PUSAP-XXXXXX"
+                            class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-base font-mono font-bold uppercase text-blue-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
+                        >
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold">Trámite</p>
-                        <p class="text-gray-900 font-medium"><%= ticket.category %></p>
+                    <div class="w-full md:w-48">
+                        <label class="block text-xs font-extrabold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-blue-500"></i> Tu DNI
+                        </label>
+                        <input 
+                            type="text" 
+                            name="dni" 
+                            required
+                            placeholder="Sin puntos"
+                            class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl text-base font-bold placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
+                        >
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold">Área Actual</p>
-                        <p class="text-blue-700 font-bold"><i class="fa-solid fa-building mr-1"></i> <%= ticket.area %></p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold">Ingreso</p>
-                        <p class="text-gray-900 font-medium"><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY') %></p>
+                    <div class="w-full md:w-auto">
+                        <button type="submit" id="trackingBtn" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-base whitespace-nowrap flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+                            <i class="fa-solid fa-search text-lg" id="trackingIcon"></i>
+                            <i class="fa-solid fa-spinner fa-spin hidden text-lg" id="trackingSpinner"></i>
+                            <span id="trackingText">Rastrear</span>
+                        </button>
                     </div>
                 </div>
+            </form>
+        </div>
 
-                <% if (ticket.expiration_date) { 
-                    const exp = moment(ticket.expiration_date);
-                    const now = moment();
-                    const isExpiring = exp.diff(now, 'days') <= 7 && exp.diff(now, 'days') >= 0;
-                    const isExpired = exp.diff(now, 'days') < 0;
-                %>
-                    <div class="mt-4 p-3 rounded border <%= isExpired ? 'bg-red-50 border-red-200 text-red-800' : (isExpiring ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-gray-50 border-gray-200 text-gray-600') %>">
-                        <strong><i class="fa-regular fa-calendar-xmark mr-1"></i> Fecha de Vencimiento / Límite:</strong> <%= exp.format('DD/MM/YYYY') %>
-                        <% if (isExpired) { %> <span class="ml-2 font-bold uppercase">(Vencido)</span> <% } %>
-                    </div>
-                <% } %>
+        <!-- Resultado del trámite -->
+        <% if (ticket) { 
+            // Determinar colores y etapas del timeline
+            let statusLevel = 0;
+            let statusConfig = {
+                color: 'blue',
+                icon: 'fa-play',
+                bg: 'bg-blue-500',
+                text: 'text-blue-700',
+                lightBg: 'bg-blue-50',
+                border: 'border-blue-200'
+            };
+
+            if(ticket.status === 'Iniciado') { 
+                statusLevel = 1; 
+                statusConfig = { color: 'blue', icon: 'fa-play', bg: 'bg-blue-500', text: 'text-blue-700', lightBg: 'bg-blue-50', border: 'border-blue-200'}; 
+            }
+            if(ticket.status === 'En Revisión') { 
+                statusLevel = 2; 
+                statusConfig = { color: 'purple', icon: 'fa-rotate', bg: 'bg-purple-500', text: 'text-purple-700', lightBg: 'bg-purple-50', border: 'border-purple-200'}; 
+            }
+            if(ticket.status === 'Pendiente de Documentación') { 
+                statusLevel = 2; // se queda a la mitad pero con warning
+                statusConfig = { color: 'orange', icon: 'fa-triangle-exclamation', bg: 'bg-orange-500', text: 'text-orange-800', lightBg: 'bg-orange-50', border: 'border-orange-300'}; 
+            }
+            if(ticket.status === 'Aprobado') { 
+                statusLevel = 4; 
+                statusConfig = { color: 'green', icon: 'fa-circle-check', bg: 'bg-green-500', text: 'text-green-700', lightBg: 'bg-green-50', border: 'border-green-200'}; 
+            }
+            if(ticket.status === 'Rechazado') { 
+                statusLevel = 4; // Finalizado pero mal
+                statusConfig = { color: 'red', icon: 'fa-circle-xmark', bg: 'bg-red-500', text: 'text-red-700', lightBg: 'bg-red-50', border: 'border-red-200'}; 
+            }
+        %>
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden scale-in">
+            <!-- Header del resultado -->
+            <div class="bg-slate-900 px-8 py-6 relative overflow-hidden">
+                <!-- BG Pattern -->
+                <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]"></div>
                 
-                <% if (ticket.status === 'Pendiente de Documentación') { %>
-                    <div class="mt-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded text-sm text-orange-800">
-                        <strong class="block mb-1"><i class="fa-solid fa-circle-info"></i> Acción Requerida:</strong>
-                        Se requiere que complete documentación faltante o corrija la entregada. Por favor, revise su correo electrónico o comuníquese con el área de <strong><%= ticket.area %></strong> a la brevedad.
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Expediente Oficial</p>
+                        <h2 class="text-3xl font-extrabold text-white font-mono tracking-wider drop-shadow-md"><%= ticket.tracking_code %></h2>
                     </div>
-                <% } %>
+                    <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold <%= statusConfig.bg %> text-white shadow-lg shadow-<%= statusConfig.color %>-500/30">
+                        <i class="fa-solid <%= statusConfig.icon %>"></i>
+                        Estado: <%= ticket.status %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE VISUAL -->
+            <div class="px-8 py-10 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-route text-blue-500"></i> Progreso del Trámite</h3>
+                
+                <div class="relative">
+                    <!-- Base line -->
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -translate-y-1/2 rounded-full z-0 hidden sm:block"></div>
+                    
+                    <!-- Progress line -->
+                    <div class="absolute top-1/2 left-0 h-1 <%= statusLevel >= 4 ? 'w-full bg-green-500' : (statusLevel === 2 ? 'w-1/2 bg-blue-500' : 'w-0 bg-blue-500') %> -translate-y-1/2 rounded-full z-0 transition-all duration-1000 hidden sm:block"></div>
+
+                    <div class="relative z-10 flex flex-col sm:flex-row justify-between gap-6 sm:gap-0">
+                        <!-- Paso 1 -->
+                        <div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 text-center group">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md <%= statusLevel >= 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 border-2 border-slate-200' %> transition-colors">
+                                <i class="fa-solid <%= statusLevel >= 1 ? 'fa-check' : 'fa-play' %>"></i>
+                            </div>
+                            <div class="text-left sm:text-center">
+                                <p class="text-sm font-bold <%= statusLevel >= 1 ? 'text-slate-900' : 'text-slate-400' %>">Iniciado</p>
+                                <p class="text-xs text-slate-500"><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY') %></p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2 -->
+                        <div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 text-center group">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md 
+                                <%= statusLevel > 2 ? 'bg-blue-600 text-white' : (statusLevel === 2 ? (ticket.status === 'Pendiente de Documentación' ? 'bg-orange-500 text-white animate-pulse' : 'bg-blue-500 text-white border-4 border-blue-200') : 'bg-slate-100 text-slate-400 border-2 border-slate-200') %> transition-colors">
+                                <i class="fa-solid <%= statusLevel > 2 ? 'fa-check' : (ticket.status === 'Pendiente de Documentación' ? 'fa-triangle-exclamation' : 'fa-gears') %>"></i>
+                            </div>
+                            <div class="text-left sm:text-center">
+                                <p class="text-sm font-bold <%= statusLevel >= 2 ? 'text-slate-900' : 'text-slate-400' %>">En Proceso</p>
+                                <p class="text-xs text-slate-500"><%= statusLevel >= 2 ? ticket.area : 'Aguardando asignación' %></p>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3 -->
+                        <div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 text-center group">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md 
+                                <%= statusLevel === 4 ? (ticket.status === 'Aprobado' ? 'bg-green-500 text-white' : 'bg-red-500 text-white') : 'bg-slate-100 text-slate-400 border-2 border-slate-200' %> transition-colors">
+                                <i class="fa-solid <%= statusLevel === 4 ? (ticket.status === 'Aprobado' ? 'fa-flag-checkered' : 'fa-xmark') : 'fa-flag' %>"></i>
+                            </div>
+                            <div class="text-left sm:text-center">
+                                <p class="text-sm font-bold <%= statusLevel === 4 ? 'text-slate-900' : 'text-slate-400' %>">Resolución</p>
+                                <p class="text-xs text-slate-500"><%= statusLevel === 4 ? ticket.status : 'Pendiente' %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerta especial por estado -->
+            <% if (ticket.status === 'Pendiente de Documentación') { %>
+            <div class="mx-8 mt-8 mb-4 p-5 bg-orange-50 border border-orange-200 rounded-2xl flex gap-4 shadow-inner">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 mt-1">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-orange-900 text-lg mb-1">¡Falta Documentación!</h4>
+                    <p class="text-orange-800 text-sm leading-relaxed">El área de <strong><%= ticket.area %></strong> necesita más información para continuar tu trámite. Por favor, revisá tu casilla de correo electrónico o comunicate telefónicamente a la brevedad.</p>
+                </div>
+            </div>
+            <% } else if (ticket.status === 'Aprobado') { %>
+            <div class="mx-8 mt-8 mb-4 p-5 bg-green-50 border border-green-200 rounded-2xl flex gap-4 shadow-inner">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 text-green-600 mt-1">
+                    <i class="fa-solid fa-party-horn text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-green-900 text-lg mb-1">¡Trámite Finalizado con Éxito!</h4>
+                    <p class="text-green-800 text-sm leading-relaxed">Tu solicitud fue procesada y aprobada. Revisa tu email para ver la resolución final y los documentos adjuntos si corresponden.</p>
+                </div>
+            </div>
+            <% } else if (ticket.status === 'Rechazado') { %>
+            <div class="mx-8 mt-8 mb-4 p-5 bg-red-50 border border-red-200 rounded-2xl flex gap-4 shadow-inner">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 text-red-600 mt-1">
+                    <i class="fa-solid fa-circle-xmark text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-red-900 text-lg mb-1">Trámite Rechazado</h4>
+                    <p class="text-red-800 text-sm leading-relaxed">Lamentablemente tu solicitud no cumplió con los requisitos o fue denegada. Revisá tu email para conocer los motivos exactos.</p>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Datos del expediente -->
+            <div class="p-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><i class="fa-solid fa-user text-slate-300"></i> Solicitante</p>
+                    <p class="text-slate-900 font-bold text-base"><%= ticket.first_name %> <%= ticket.last_name %></p>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><i class="fa-solid fa-layer-group text-slate-300"></i> Tipo de Trámite</p>
+                    <p class="text-slate-900 font-bold text-base"><%= ticket.category %></p>
+                </div>
+            </div>
+
+            <!-- Vencimiento -->
+            <% if (ticket.expiration_date) { 
+                const exp = moment(ticket.expiration_date);
+                const now = moment();
+                const daysLeft = exp.diff(now, 'days');
+                const isExpiring = daysLeft >= 0 && daysLeft <= 7;
+                const isExpired = daysLeft < 0;
+            %>
+            <div class="mx-8 mb-8 p-4 rounded-xl border flex items-center gap-4 text-sm
+                <%= isExpired ? 'bg-red-50 border-red-200 text-red-800' : (isExpiring ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-slate-50 border-slate-200 text-slate-700') %>">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 <%= isExpired ? 'bg-red-100 text-red-600' : (isExpiring ? 'bg-orange-100 text-orange-600' : 'bg-white shadow text-slate-500') %>">
+                    <i class="fa-regular fa-calendar-xmark text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-bold block text-base mb-0.5">Fecha límite: <%= exp.format('DD/MM/YYYY') %></span>
+                    <% if (isExpired) { %><span class="font-bold text-red-600 text-xs uppercase bg-red-100/50 px-2 py-0.5 rounded border border-red-200 inline-block mt-1">Plazo Vencido</span>
+                    <% } else if (isExpiring) { %><span class="font-bold text-orange-600 text-xs uppercase bg-orange-100/50 px-2 py-0.5 rounded border border-orange-200 inline-block mt-1">Atención: Vence en <%= daysLeft %> día(s)</span>
+                    <% } else { %> <span class="text-xs text-slate-500">Tiempo restante válido.</span> <% } %>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Footer del card -->
+            <div class="px-8 py-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                <p class="text-xs text-slate-500 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left"></i> Actualizado: <%= moment.utc(ticket.updated_at).local().format('DD/MM/YYYY HH:mm') %></p>
+                <a href="/seguimiento" class="text-sm text-blue-600 hover:text-blue-800 font-bold transition flex items-center gap-1.5 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg">
+                    Nueva consulta <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
             </div>
         </div>
-    <% } %>
+        <% } %>
+
+        <!-- Info box -->
+        <% if (!ticket) { %>
+        <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-2xl p-6 flex gap-5">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-circle-info text-xl"></i>
+            </div>
+            <div>
+                <p class="font-bold text-blue-900 mb-2">¿Cómo leo el estado de mi trámite?</p>
+                <ul class="text-sm text-blue-800/80 space-y-2">
+                    <li><strong class="text-blue-900">Iniciado:</strong> Ingresó al sistema correctamente.</li>
+                    <li><strong class="text-blue-900">En Revisión:</strong> Un operador está analizando tu solicitud.</li>
+                    <li><strong class="text-blue-900">Pendiente:</strong> Falta algo. Te avisaremos por email.</li>
+                    <li><strong class="text-blue-900">Aprobado/Rechazado:</strong> Trámite finalizado.</li>
+                </ul>
+            </div>
+        </div>
+        <% } %>
+
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('trackingForm');
+    const codeInput = document.querySelector('input[name="tracking_code"]');
+    
+    // Formatear automáticamente el código
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/\s/g, '');
+        });
+    }
+
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            const btn = document.getElementById('trackingBtn');
+            if (btn.disabled) return e.preventDefault();
+            btn.disabled = true;
+            document.getElementById('trackingIcon').classList.add('hidden');
+            document.getElementById('trackingSpinner').classList.remove('hidden');
+            document.getElementById('trackingText').textContent = 'Buscando...';
+        });
+    }
+});
+</script>
 
 <%- include('partials/footer') %>

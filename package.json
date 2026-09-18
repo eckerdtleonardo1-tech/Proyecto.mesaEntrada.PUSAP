@@ -2,16 +2,20 @@
   "name": "proyecto.mesaentrada.pusap",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build:css": ".\\node_modules\\.bin\\tailwindcss.cmd -i tailwind.input.css -o public/css/tailwind.min.css --minify --content \"./views/**/*.ejs\"",
+    "watch:css": ".\\node_modules\\.bin\\tailwindcss.cmd -i tailwind.input.css -o public/css/tailwind.min.css --watch --content \"./views/**/*.ejs\"",
+    "download-assets": "node scripts/download-assets.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "body-parser": "^2.3.0",
     "connect-sqlite3": "^0.9.18",
     "ejs": "^6.0.1",
@@ -24,5 +28,8 @@
     "pdfkit": "^0.20.1",
     "session-file-store": "^1.5.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19"
   }
 }

@@ -1,50 +1,256 @@
 <%- include('partials/header') %>
 
-<div class="bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl mx-auto my-8 border-t-4 border-blue-800">
-    <div class="md:flex">
-        <div class="md:shrink-0 bg-blue-800 flex items-center justify-center p-8 md:w-1/3">
-            <i class="fa-solid fa-building-columns text-6xl text-white"></i>
-        </div>
-        <div class="p-8 md:w-2/3 text-center md:text-left">
-            <div class="uppercase tracking-wide text-sm text-blue-600 font-semibold mb-1">Centro Universitario PUSAP</div>
-            <h1 class="block mt-1 text-2xl md:text-3xl leading-tight font-bold text-gray-900 mb-4">Bienvenido a la Mesa de Entrada Virtual</h1>
-            <p class="mt-2 text-gray-500 mb-6">
-                Este portal está diseñado para agilizar y facilitar tus trámites universitarios. Si ya enviaste tus documentos, podés realizar el seguimiento de tu expediente y conocer su estado en tiempo real.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <a href="/nuevo-tramite" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
-                    <i class="fa-solid fa-file-signature mr-2"></i> Iniciar Trámite
-                </a>
-                <a href="/seguimiento" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Seguir mi Trámite
-                </a>
+<!-- Hero Section -->
+<div class="relative bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white overflow-hidden">
+    <!-- Background Decor -->
+    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-800/20 blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-20 lg:py-28">
+        <div class="flex flex-col lg:flex-row items-center gap-12">
+            <!-- Text Content -->
+            <div class="flex-1 text-center lg:text-left slide-up">
+                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-blue-100 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full mb-6">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    Portal Abierto 24/7
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                    Mesa de Entrada<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-100">Virtual PUSAP</span>
+                </h1>
+                <p class="text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0 font-light">
+                    Gestioná tus trámites universitarios sin moverte de tu casa. Iniciá solicitudes y conocé el estado en tiempo real, rápido y seguro.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="/nuevo-tramite" class="group bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-blue-900/50 hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 border border-blue-500">
+                        <i class="fa-solid fa-file-signature text-xl"></i>
+                        <span class="text-lg">Iniciar mi trámite</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-2 transition-transform"></i>
+                    </a>
+                    <a href="/seguimiento" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 hover:-translate-y-1">
+                        <i class="fa-solid fa-magnifying-glass text-xl text-blue-400"></i>
+                        <span class="text-lg">Ver estado de mi trámite</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Hero Visual -->
+            <div class="hidden lg:block flex-1 relative scale-in">
+                <div class="relative w-full max-w-md mx-auto">
+                    <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10">
+                        <!-- Mockup App Header -->
+                        <div class="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg"><i class="fa-solid fa-file-lines text-white text-xl"></i></div>
+                            <div>
+                                <div class="h-4 w-32 bg-slate-300/20 rounded mb-2"></div>
+                                <div class="h-3 w-20 bg-slate-300/10 rounded"></div>
+                            </div>
+                        </div>
+                        <!-- Mockup Steps -->
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                                <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center"><i class="fa-solid fa-check text-green-400 text-xs"></i></div>
+                                <div class="flex-1">
+                                    <div class="h-3 w-full bg-slate-300/20 rounded mb-2"></div>
+                                    <div class="h-2 w-2/3 bg-slate-300/10 rounded"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                                <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center"><i class="fa-solid fa-spinner text-blue-400 text-xs fa-spin"></i></div>
+                                <div class="flex-1">
+                                    <div class="h-3 w-4/5 bg-blue-400/30 rounded mb-2"></div>
+                                    <div class="h-2 w-1/2 bg-blue-400/20 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating badges -->
+                    <div class="absolute -top-6 -right-6 bg-white text-slate-900 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 z-20 animate-[bounce_3s_infinite]">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"><i class="fa-solid fa-check text-green-600"></i></div>
+                        <div>
+                            <p class="text-xs font-bold">Trámite Aprobado</p>
+                            <p class="text-[10px] text-slate-500">Hace 2 min</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-12">
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500 text-center">
-        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-4">
-            <i class="fa-solid fa-bolt text-xl"></i>
+<% if (typeof welcome_message !== 'undefined' && welcome_message && welcome_message.trim() !== '') { %>
+<div class="bg-blue-50 border-b border-blue-100 py-4">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center gap-3 text-blue-900">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-bullhorn text-blue-600"></i>
+            </div>
+            <p class="font-medium text-sm sm:text-base"><%= welcome_message %></p>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Centralizado</h3>
-        <p class="text-gray-500 text-sm">Todos los trámites se gestionan unificadamente por nuestro personal administrativo.</p>
-    </div>
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-green-500 text-center">
-        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-green-100 text-green-500 mb-4">
-            <i class="fa-solid fa-eye text-xl"></i>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Transparente</h3>
-        <p class="text-gray-500 text-sm">Hacé el seguimiento de tu trámite en tiempo real usando tu código y DNI.</p>
-    </div>
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-yellow-500 text-center">
-        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-500 mb-4">
-            <i class="fa-solid fa-bell text-xl"></i>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Notificaciones</h3>
-        <p class="text-gray-500 text-sm">Recibí alertas por email cada vez que tu trámite avance o cambie de estado.</p>
     </div>
 </div>
+<% } %>
+
+<!-- Trámites Disponibles Section -->
+<div class="bg-slate-50 py-20 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">Trámites Disponibles</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto text-lg">¿Qué necesitás gestionar? Seleccioná el tipo de trámite para conocer los requisitos básicos.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Card 1 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-xl hover:border-blue-300 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 rounded-xl flex items-center justify-center mb-5 transition-colors">
+                    <i class="fa-solid fa-user-graduate text-2xl text-blue-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Inscripción a Carrera</h3>
+                <p class="text-sm text-slate-500 mb-4 line-clamp-2">Comenzá tu vida universitaria enviando tu documentación inicial.</p>
+                <a href="/nuevo-tramite" class="text-blue-600 font-bold text-sm group-hover:text-blue-800 flex items-center gap-1">Iniciar <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i></a>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-xl hover:purple-300 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-purple-50 group-hover:bg-purple-600 rounded-xl flex items-center justify-center mb-5 transition-colors">
+                    <i class="fa-solid fa-file-contract text-2xl text-purple-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Equivalencias</h3>
+                <p class="text-sm text-slate-500 mb-4 line-clamp-2">Solicitá el reconocimiento de materias aprobadas en otras instituciones.</p>
+                <a href="/nuevo-tramite" class="text-purple-600 font-bold text-sm group-hover:text-purple-800 flex items-center gap-1">Iniciar <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i></a>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-xl hover:border-green-300 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-green-50 group-hover:bg-green-600 rounded-xl flex items-center justify-center mb-5 transition-colors">
+                    <i class="fa-solid fa-file-invoice-dollar text-2xl text-green-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Pagos / Aranceles</h3>
+                <p class="text-sm text-slate-500 mb-4 line-clamp-2">Enviá tus comprobantes de pago de matrícula o cuotas mensuales.</p>
+                <a href="/nuevo-tramite" class="text-green-600 font-bold text-sm group-hover:text-green-800 flex items-center gap-1">Iniciar <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i></a>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-xl hover:border-amber-300 transition-all duration-300 group">
+                <div class="w-14 h-14 bg-amber-50 group-hover:bg-amber-500 rounded-xl flex items-center justify-center mb-5 transition-colors">
+                    <i class="fa-solid fa-certificate text-2xl text-amber-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Certificados</h3>
+                <p class="text-sm text-slate-500 mb-4 line-clamp-2">Solicitá certificado de alumno regular, analítico incompleto u otros.</p>
+                <a href="/nuevo-tramite" class="text-amber-600 font-bold text-sm group-hover:text-amber-800 flex items-center gap-1">Iniciar <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Steps Section (Redesigned) -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+    <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="md:w-1/3">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">¿Cómo funciona?</h2>
+            <p class="text-slate-600 mb-6 text-lg">Un proceso guiado, simple y transparente. Te acompañamos en cada etapa de tu trámite.</p>
+            <a href="/nuevo-tramite" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:text-blue-800 transition">Comenzar ahora <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="md:w-2/3">
+            <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                
+                <!-- Step 1 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10 font-bold text-sm transition-transform group-hover:scale-110">1</div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-blue-500"></i> Completá el formulario</h3>
+                        <p class="text-slate-500 text-sm">Ingresá tus datos, elegí qué querés tramitar y adjuntá archivos (PDF o fotos) desde tu celu o PC.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10 font-bold text-sm transition-transform group-hover:scale-110">2</div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-key text-blue-500"></i> Guardá tu código</h3>
+                        <p class="text-slate-500 text-sm">Al enviar, el sistema te da un Código de Seguimiento (ej: PUSAP-123456). Guardalo bien, es tu llave.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10 font-bold text-sm transition-transform group-hover:scale-110">3</div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow">
+                        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-satellite-dish text-blue-500"></i> Seguí el estado</h3>
+                        <p class="text-slate-500 text-sm">Con tu código y DNI podés ver en qué área está tu trámite. Te avisaremos por email cuando haya novedades.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="bg-white py-20 border-t border-slate-100">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">Preguntas Frecuentes</h2>
+            <p class="text-slate-500">Todo lo que necesitás saber antes de iniciar.</p>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- FAQ 1 -->
+            <div class="border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden">
+                <button class="w-full px-6 py-5 text-left font-bold text-slate-900 flex justify-between items-center focus:outline-none" onclick="toggleFaq('faq1', 'icon1')">
+                    ¿Qué pasa si me olvido mi código de seguimiento?
+                    <i id="icon1" class="fa-solid fa-plus text-slate-400 transition-transform"></i>
+                </button>
+                <div id="faq1" class="hidden px-6 pb-5 text-slate-600 text-sm">
+                    Revisá la bandeja de entrada o la carpeta de SPAM del correo electrónico que indicaste al iniciar el trámite. El sistema te envía automáticamente un comprobante con el código. Si no lo encontrás, comunicate con la institución.
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden">
+                <button class="w-full px-6 py-5 text-left font-bold text-slate-900 flex justify-between items-center focus:outline-none" onclick="toggleFaq('faq2', 'icon2')">
+                    ¿En qué formato debo adjuntar la documentación?
+                    <i id="icon2" class="fa-solid fa-plus text-slate-400 transition-transform"></i>
+                </button>
+                <div id="faq2" class="hidden px-6 pb-5 text-slate-600 text-sm">
+                    Aceptamos archivos en formato PDF y fotos legibles (JPG, PNG). Asegurate de que la imagen no esté borrosa ni cortada. El tamaño máximo total de los archivos no debe superar los 5MB.
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="border border-slate-200 rounded-2xl bg-slate-50 overflow-hidden">
+                <button class="w-full px-6 py-5 text-left font-bold text-slate-900 flex justify-between items-center focus:outline-none" onclick="toggleFaq('faq3', 'icon3')">
+                    ¿Cuánto demora en resolverse un trámite?
+                    <i id="icon3" class="fa-solid fa-plus text-slate-400 transition-transform"></i>
+                </button>
+                <div id="faq3" class="hidden px-6 pb-5 text-slate-600 text-sm">
+                    Los tiempos varían según el tipo de gestión y el área interviniente. Podés consultar en cualquier momento el estado desde el portal público. Cuando el trámite sea "Aprobado" o requiera documentación, te avisaremos por email.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFaq(id, iconId) {
+        const content = document.getElementById(id);
+        const icon = document.getElementById(iconId);
+        if(content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            content.classList.add('slide-up');
+            icon.classList.remove('fa-plus');
+            icon.classList.add('fa-minus');
+            icon.classList.add('rotate-180');
+        } else {
+            content.classList.add('hidden');
+            content.classList.remove('slide-up');
+            icon.classList.remove('fa-minus');
+            icon.classList.add('fa-plus');
+            icon.classList.remove('rotate-180');
+        }
+    }
+</script>
 
 <%- include('partials/footer') %>

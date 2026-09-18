@@ -1,50 +1,84 @@
 <%- include('partials/header') %>
 
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md border-t-4 border-blue-800">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">
-        <i class="fa-solid fa-file-circle-plus text-blue-600 mr-2"></i> Alta de Nuevo Trámite
-    </h2>
+<div class="max-w-3xl mx-auto">
+    <!-- Back -->
+    <div class="mb-6">
+        <a href="/panel" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700 transition-colors">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Volver al Panel
+        </a>
+    </div>
+
+    <!-- Page header -->
+    <div class="mb-7">
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-file-circle-plus text-blue-700"></i>
+            Alta de Nuevo Trámite
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">Completá los datos del solicitante para ingresar el expediente al sistema.</p>
+    </div>
 
     <form action="/panel/nuevo" method="POST" enctype="multipart/form-data" class="space-y-6">
-        
-        <!-- Datos del Solicitante -->
-        <fieldset class="border p-4 rounded-md bg-gray-50">
-            <legend class="text-lg font-semibold text-gray-700 px-2">Datos del Solicitante</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+
+        <!-- SECCIÓN: Datos del Solicitante -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-user text-blue-700 text-sm"></i>
+                </div>
+                <h2 class="font-bold text-slate-800">Datos del Solicitante</h2>
+            </div>
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre</label>
-                    <input type="text" name="first_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre <span class="text-red-500">*</span></label>
+                    <input type="text" name="first_name" required placeholder="Ej: Juan"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Apellido</label>
-                    <input type="text" name="last_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Apellido <span class="text-red-500">*</span></label>
+                    <input type="text" name="last_name" required placeholder="Ej: García"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">DNI</label>
-                    <input type="text" name="dni" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">DNI <span class="text-red-500">*</span></label>
+                    <input type="text" name="dni" id="dniInput" required placeholder="Sin puntos" pattern="[0-9]+"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <div id="dniAlert" class="mt-2 hidden text-xs p-2 rounded bg-yellow-50 border border-yellow-200 text-yellow-800"></div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">CUIL</label>
-                    <input type="text" name="cuil" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">CUIL <span class="text-slate-400 font-normal text-xs">(opcional)</span></label>
+                    <input type="text" name="cuil" placeholder="XX-XXXXXXXX-X"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input type="text" name="phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Teléfono <span class="text-red-500">*</span></label>
+                    <input type="tel" name="phone" required placeholder="Ej: 2996123456"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Correo Electrónico (Notificaciones)</label>
-                    <input type="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Correo Electrónico <span class="text-red-500">*</span>
+                        <span class="text-xs text-blue-600 font-normal ml-1"><i class="fa-solid fa-bell text-xs"></i> Recibe notificaciones</span>
+                    </label>
+                    <input type="email" name="email" required placeholder="ejemplo@correo.com"
+                        class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
             </div>
-        </fieldset>
+        </div>
 
-        <!-- Datos del Trámite -->
-        <fieldset class="border p-4 rounded-md bg-gray-50">
-            <legend class="text-lg font-semibold text-gray-700 px-2">Datos del Trámite</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <!-- SECCIÓN: Datos del Trámite -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-folder-open text-purple-700 text-sm"></i>
+                </div>
+                <h2 class="font-bold text-slate-800">Datos del Trámite</h2>
+            </div>
+            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Tipo de Trámite</label>
-                    <select name="category" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tipo de Trámite <span class="text-red-500">*</span></label>
+                    <select name="category" required class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white cursor-pointer">
+                        <option value="" disabled selected>Seleccionar tipo...</option>
                         <option value="Inscripción">Inscripción a Carrera</option>
                         <option value="Solicitud de Equivalencias">Solicitud de Equivalencias</option>
                         <option value="Pago / Aranceles">Pago / Aranceles</option>
@@ -53,31 +87,102 @@
                         <option value="Otros">Otros</option>
                     </select>
                 </div>
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700">Fecha Límite / Vencimiento (Opcional)</label>
-                    <input type="date" name="expiration_date" value="<%= moment().add(7, 'days').format('YYYY-MM-DD') %>" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    <p class="text-xs text-gray-500 mt-1">Por defecto se asigna 1 semana. Puedes modificarla o borrarla.</p>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Prioridad</label>
+                    <select name="priority" class="block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white cursor-pointer">
+                        <option value="normal" selected>Normal</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Fecha Límite
+                        <span class="text-slate-400 font-normal text-xs">(por defecto: 7 días)</span>
+                    </label>
+                    <div class="flex gap-2 items-center">
+                        <input type="date" name="expiration_date" id="expDate"
+                            value="<%= moment().add(7, 'days').format('YYYY-MM-DD') %>"
+                            class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        <button type="button" onclick="document.getElementById('expDate').value=''" class="text-xs text-red-500 hover:text-red-700 border border-red-200 px-3 py-2.5 rounded-xl transition whitespace-nowrap">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </fieldset>
+        </div>
 
-        <!-- Documentación Adjunta -->
-        <fieldset class="border p-4 rounded-md bg-gray-50">
-            <legend class="text-lg font-semibold text-gray-700 px-2">Documentación</legend>
-            <div class="mt-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Subir Archivos (PDF, JPG, PNG)</label>
-                <input type="file" name="attachments" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md p-2 bg-white">
-                <p class="text-xs text-gray-500 mt-2">Puede seleccionar varios archivos a la vez manteniendo presionada la tecla Ctrl/Cmd.</p>
+        <!-- SECCIÓN: Documentación -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-paperclip text-green-700 text-sm"></i>
+                </div>
+                <h2 class="font-bold text-slate-800">Documentación Adjunta</h2>
+                <span class="text-xs text-slate-400 font-normal ml-1">(opcional)</span>
             </div>
-        </fieldset>
+            <div class="p-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-3">Subir archivos (PDF, JPG, PNG)</label>
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-colors cursor-pointer" onclick="document.getElementById('fileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-sm text-slate-600 font-medium">Seleccionar archivo o Tomar foto</p>
+                    <p class="text-xs text-slate-400 mt-1">PDF, JPG, PNG — Máx. 5 MB por archivo — Podés seleccionar varios</p>
+                    <p class="text-xs text-slate-400 mt-1 font-medium">(En tu celular podés usar la cámara directamente)</p>
+                    <input type="file" id="fileInput" name="attachments" multiple accept="image/jpeg,image/png,application/pdf" class="hidden" onchange="showFileList(this)">
+                </div>
+                <div id="fileList" class="mt-3 space-y-1.5 hidden">
+                    <p class="text-xs font-semibold text-slate-600 mb-2">Archivos seleccionados:</p>
+                </div>
+            </div>
+        </div>
 
-        <div class="flex justify-end pt-4">
-            <a href="/panel" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded mr-4 transition">Cancelar</a>
-            <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-6 rounded shadow-md transition">
-                <i class="fa-solid fa-save mr-2"></i> Guardar e Imprimir Talón
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pb-4">
+            <a href="/panel" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-6 rounded-xl transition text-sm">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Guardar e Imprimir Talón
             </button>
         </div>
     </form>
 </div>
+
+<script>
+function showFileList(input) {
+    const container = document.getElementById('fileList');
+    container.innerHTML = '<p class="text-xs font-semibold text-slate-600 mb-2">Archivos seleccionados:</p>';
+    if (input.files.length > 0) {
+        container.classList.remove('hidden');
+        Array.from(input.files).forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center gap-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg';
+            item.innerHTML = `<i class="fa-solid fa-file text-blue-500"></i><span class="truncate">${file.name}</span><span class="text-slate-400 flex-shrink-0">(${(file.size / 1024).toFixed(0)} KB)</span>`;
+            container.appendChild(item);
+        });
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
+document.getElementById('dniInput').addEventListener('blur', async (e) => {
+    const dni = e.target.value.trim();
+    if (dni.length > 5) {
+        try {
+            const res = await fetch('/panel/api/buscar-dni?dni=' + dni);
+            const data = await res.json();
+            const alertBox = document.getElementById('dniAlert');
+            if (data.existe) {
+                alertBox.classList.remove('hidden');
+                alertBox.innerHTML = `<strong>Aviso:</strong> Este DNI ya tiene trámites previos registrados. (${data.tramites.length})`;
+            } else {
+                alertBox.classList.add('hidden');
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    }
+});
+</script>
 
 <%- include('partials/footer') %>

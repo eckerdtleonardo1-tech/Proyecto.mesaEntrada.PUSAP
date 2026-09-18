@@ -1,0 +1,91 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-user-circle text-blue-700"></i>
+            Mi Perfil
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">Información de tu cuenta y seguridad.</p>
+    </div>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 flex gap-3 items-center mb-6">
+            <i class="fa-solid fa-circle-check text-green-600 text-xl"></i>
+            <div>
+                <p class="font-bold">¡Contraseña actualizada!</p>
+                <p class="text-sm">Tu contraseña se ha cambiado correctamente.</p>
+            </div>
+        </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 flex gap-3 items-center mb-6">
+            <i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>
+            <div>
+                <p class="font-bold">Error</p>
+                <p class="text-sm"><%= error === 'invalid' ? 'La contraseña actual es incorrecta.' : 'Las nuevas contraseñas no coinciden.' %></p>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Info del usuario -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-2xl font-bold">
+                    <%= user.name.charAt(0).toUpperCase() %>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xl"><%= user.name %></h3>
+                    <p class="text-slate-500 text-sm">@<%= user.username %></p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Área</p>
+                    <p class="font-medium text-slate-800"><i class="fa-solid fa-building text-slate-400 w-5"></i> <%= user.area %></p>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">Rol</p>
+                    <p class="font-medium text-slate-800">
+                        <i class="fa-solid fa-user-shield text-slate-400 w-5"></i> 
+                        <%= user.role === 'operador' ? 'Operador Principal' : 'Área Interna' %>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cambio de contraseña -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i class="fa-solid fa-lock text-blue-700 text-xl"></i>
+                <h3 class="font-bold text-slate-800">Cambiar Contraseña</h3>
+            </div>
+            
+            <form action="/panel/mi-perfil/cambiar-password" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Contraseña Actual</label>
+                    <input type="password" name="current_password" required class="block w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nueva Contraseña</label>
+                    <input type="password" name="new_password" required minlength="6" class="block w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Confirmar Nueva Contraseña</label>
+                    <input type="password" name="confirm_password" required minlength="6" class="block w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                
+                <div class="pt-4 text-right">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all">
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
