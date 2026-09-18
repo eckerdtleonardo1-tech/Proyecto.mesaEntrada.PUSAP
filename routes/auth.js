@@ -6,7 +6,7 @@ const db = require('../db');
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 100,
     message: 'Demasiados intentos de inicio de sesión. Por favor, intenta de nuevo en 15 minutos.'
 });
 
