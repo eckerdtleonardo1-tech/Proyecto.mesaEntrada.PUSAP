@@ -16,6 +16,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <link rel="stylesheet" href="/css/fontawesome.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.css" />
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.js.iife.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         
@@ -91,7 +93,7 @@
         </div>
 
         <!-- Nav Links -->
-        <nav class="flex-grow px-3 py-4 space-y-1">
+        <nav class="flex-grow px-3 py-4 space-y-1" id="tour-sidebar">
             <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Gestión</p>
             <a href="/panel" class="sidebar-link text-blue-100">
                 <i class="fa-solid fa-chart-pie w-4 text-center"></i>
@@ -102,7 +104,7 @@
                 <span>Mi Perfil</span>
             </a>
             <% if (user.role === 'operador') { %>
-            <a href="/panel/nuevo" class="sidebar-link text-blue-100">
+            <a href="/panel/nuevo" id="tour-nuevo-tramite" class="sidebar-link text-blue-100">
                 <i class="fa-solid fa-file-circle-plus w-4 text-center"></i>
                 <span>Alta de Trámite</span>
             </a>
@@ -137,8 +139,12 @@
             </div>
         </nav>
 
-        <!-- Bottom logout -->
-        <div class="px-3 py-4 border-t border-blue-800/60">
+        <!-- Bottom logout and help -->
+        <div class="px-3 py-4 border-t border-blue-800/60 flex flex-col gap-1">
+            <button onclick="startTour()" class="sidebar-link text-blue-300 hover:bg-blue-600/30 hover:text-blue-200 w-full text-left">
+                <i class="fa-solid fa-circle-question w-4 text-center"></i>
+                <span>Ayuda / Repetir Tour</span>
+            </button>
             <a href="/logout" class="sidebar-link text-red-300 hover:bg-red-600/30 hover:text-red-200 w-full">
                 <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
                 <span>Cerrar Sesión</span>
@@ -166,7 +172,7 @@
                     <span class="font-medium text-slate-700"><%= title %></span>
                 </div>
                 
-                <div class="flex items-center gap-4 flex-grow justify-center lg:justify-start lg:ml-6 lg:flex-grow-0">
+                <div id="tour-search-qr" class="flex items-center gap-4 flex-grow justify-center lg:justify-start lg:ml-6 lg:flex-grow-0">
                     <form action="/panel" method="GET" class="relative hidden sm:block w-full max-w-xs">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
@@ -181,7 +187,7 @@
                     <span class="text-xs text-slate-400 hidden sm:block dark:text-slate-300"><%= new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
                     
                     <!-- Dark mode toggle -->
-                    <button onclick="toggleDarkMode()" class="text-slate-500 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300">
+                    <button id="tour-theme" onclick="toggleDarkMode()" class="text-slate-500 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300">
                         <i class="fa-solid fa-moon" id="darkIcon"></i>
                     </button>
                     
@@ -356,6 +362,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchNotifs();
     setInterval(fetchNotifs, 30000);
+</script>
+
+<script>
+    function startTour() {
+        const driver = window.driver.js.driver;
+        const steps = [
+            {
+                element: '#tour-search-qr',
+                popover: {
+                    title: 'Buscador y QR',
+                    description: 'Desde acá podés buscar trámites por código, DNI o escanear el código QR del comprobante.',
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#tour-sidebar',
+                popover: {
+                    title: 'Menú de Navegación',
+                    description: 'Acá encontrarás todas las opciones del sistema: gestionar trámites, configuración y auditoría.',
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#tour-theme',
+                popover: {
+                    title: 'Cambio de Tema',
+                    description: 'Podés cambiar entre modo claro y oscuro desde este botón.',
+                    side: 'bottom',
+                    align: 'center'
+                }
+            },
+            {
+                element: '#notifBtn',
+                popover: {
+                    title: 'Notificaciones',
+                    description: 'Revisá la actividad reciente y los cambios de estado en tus trámites.',
+                    side: 'bottom',
+                    align: 'end'
+                }
+            }
+        ];
+
+        if (document.getElementById('tour-nuevo-tramite')) {
+            steps.splice(2, 0, {
+                element: '#tour-nuevo-tramite',
+                popover: {
+                    title: 'Nuevo Trámite',
+                    description: 'Acceso directo para dar de alta nuevos trámites rápidamente.',
+                    side: 'right',
+                    align: 'center'
+                }
+            });
+        }
+
+        const driverObj = driver({
+            showProgress: true,
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Atrás',
+            doneBtnText: 'Terminar',
+            steps: steps,
+            onDestroyStarted: () => {
+                if (!driverObj.hasNextStep() || confirm("¿Seguro que querés salir del tour?")) {
+                    driverObj.destroy();
+                    localStorage.setItem('pusap_tour', 'done');
+                }
+            }
+        });
+
+        driverObj.drive();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!localStorage.getItem('pusap_tour')) {
+            setTimeout(() => {
+                startTour();
+            }, 500);
+        }
+    });
 </script>
 
 <% } else { %>

@@ -39,9 +39,19 @@ const upload = multer({
 const generateTrackingCode = () => 'PUSAP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
 router.get('/', (req, res) => {
-    db.get("SELECT value FROM config WHERE key = 'welcome_message'", [], (err, row) => {
-        const welcome_message = row ? row.value : null;
-        res.render('index', { title: 'Inicio - PUSAP', welcome_message });
+    db.all("SELECT key, value FROM config WHERE key IN ('welcome_message', 'public_announcement', 'announcement_type')", [], (err, rows) => {
+        let welcome_message = null;
+        let announcement = null;
+        let announcement_type = 'amber';
+
+        if (rows) {
+            rows.forEach(row => {
+                if (row.key === 'welcome_message') welcome_message = row.value;
+                if (row.key === 'public_announcement') announcement = row.value;
+                if (row.key === 'announcement_type') announcement_type = row.value;
+            });
+        }
+        res.render('index', { title: 'Inicio - PUSAP', welcome_message, announcement, announcement_type });
     });
 });
 
@@ -52,7 +62,7 @@ router.get('/nuevo-tramite', (req, res) => {
 
 // POST: Procesar alta pública de trámite
 router.post('/nuevo-tramite', apiLimiter, upload.array('attachments', 10), (req, res) => {
-    const { first_name, last_name, dni, cuil, phone, email, category, student_notes } = req.body;
+    const { first_name, last_name, dni, cuil, phone, email, category, student_notes, signature } = req.body;
     const tracking_code = generateTrackingCode();
 
     // Fecha por defecto: 1 semana a partir de hoy
@@ -69,6 +79,19 @@ router.post('/nuevo-tramite', apiLimiter, upload.array('attachments', 10), (req,
         db.run(`INSERT INTO ticket_history (ticket_id, user_id, user_name, old_status, new_status, old_area, new_area, comments) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
                 [ticketId, 0, 'Sistema Web', 'N/A', 'Iniciado', 'N/A', 'Mesa de Entrada', 'Trámite ingresado por el alumno vía web.']);
+
+        // Procesar firma digital
+        if (signature && signature.startsWith('data:image/png;base64,')) {
+            const fs = require('fs');
+            const path = require('path');
+            const base64Data = signature.replace(/^data:image\/png;base64,/, "");
+            const filename = Date.now() + '-firma-' + ticketId + '.png';
+            const filepath = path.join('uploads', filename);
+            fs.writeFileSync(filepath, base64Data, 'base64');
+
+            db.run(`INSERT INTO attachments (ticket_id, filename, original_name, document_type) VALUES (?, ?, ?, ?)`, 
+                   [ticketId, filename, 'Firma Digital.png', 'Firma']);
+        }
 
         // Insertar adjuntos
         if (req.files && req.files.length > 0) {

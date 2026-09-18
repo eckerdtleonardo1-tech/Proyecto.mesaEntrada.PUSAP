@@ -1,5 +1,27 @@
 <%- include('partials/header') %>
 
+<% if (typeof announcement !== 'undefined' && announcement && announcement.trim() !== '') { %>
+    <% 
+        let bgColor = 'bg-amber-100';
+        let borderColor = 'border-amber-500';
+        let textColor = 'text-amber-800';
+        let iconColor = 'text-amber-600';
+        
+        if (announcement_type === 'red') {
+            bgColor = 'bg-red-100'; borderColor = 'border-red-500'; textColor = 'text-red-800'; iconColor = 'text-red-600';
+        } else if (announcement_type === 'blue') {
+            bgColor = 'bg-blue-100'; borderColor = 'border-blue-500'; textColor = 'text-blue-800'; iconColor = 'text-blue-600';
+        } else if (announcement_type === 'green') {
+            bgColor = 'bg-green-100'; borderColor = 'border-green-500'; textColor = 'text-green-800'; iconColor = 'text-green-600';
+        }
+    %>
+    <div class="<%= bgColor %> border-l-4 <%= borderColor %> <%= textColor %> p-4 shadow-md relative z-50">
+        <div class="max-w-6xl mx-auto flex items-center gap-3">
+            <i class="fa-solid fa-circle-exclamation <%= iconColor %> text-xl"></i>
+            <p class="font-bold text-sm md:text-base"><%= announcement %></p>
+        </div>
+    </div>
+<% } %>
 <!-- Hero Section -->
 <div class="relative bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white overflow-hidden">
     <!-- Background Decor -->

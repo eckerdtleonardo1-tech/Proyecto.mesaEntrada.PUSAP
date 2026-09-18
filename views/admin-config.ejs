@@ -124,6 +124,35 @@
             </div>
         </form>
     </div>
+
+    <!-- Anuncio Público -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <i class="fa-solid fa-triangle-exclamation text-blue-700 text-xl"></i>
+            <h3 class="font-bold text-slate-800">Tablero de Anuncio Público</h3>
+        </div>
+        <p class="text-xs text-slate-500 mb-4">Este anuncio se mostrará como un banner de alerta llamativo en la parte superior del portal público.</p>
+        <form action="/panel/config/anuncio" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Texto del Anuncio</label>
+                <textarea name="public_announcement" rows="3" placeholder="Ej: El sistema estará en mantenimiento el fin de semana..." class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none resize-none"><%= config.public_announcement || '' %></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Tipo de Alerta</label>
+                <select name="announcement_type" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                    <option value="amber" <%= config.announcement_type === 'amber' ? 'selected' : '' %>>Advertencia (Naranja)</option>
+                    <option value="red" <%= config.announcement_type === 'red' ? 'selected' : '' %>>Peligro (Rojo)</option>
+                    <option value="blue" <%= config.announcement_type === 'blue' ? 'selected' : '' %>>Informativo (Azul)</option>
+                    <option value="green" <%= config.announcement_type === 'green' ? 'selected' : '' %>>Éxito (Verde)</option>
+                </select>
+            </div>
+            <div class="pt-2 text-right">
+                <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm text-sm transition">
+                    Guardar Anuncio
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <%- include('partials/footer') %>

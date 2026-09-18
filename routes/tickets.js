@@ -507,6 +507,18 @@ router.post('/config/general', (req, res) => {
     });
 });
 
+router.post('/config/anuncio', (req, res) => {
+    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
+    const { public_announcement, announcement_type } = req.body;
+    
+    const stmt = db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)");
+    stmt.run("public_announcement", public_announcement);
+    stmt.run("announcement_type", announcement_type);
+    stmt.finalize(() => {
+        res.redirect('/panel/config');
+    });
+});
+
 router.post('/config/areas', (req, res) => {
     if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
     const { new_area } = req.body;
@@ -600,6 +612,70 @@ router.get('/comprobante/:id', (req, res) => {
         doc.fillColor('#64748b').fontSize(9).font('Helvetica-Oblique').text('Importante: Conserve este código. Puede consultar el estado de su trámite ingresando a nuestro portal web con su DNI y este código de seguimiento.', { align: 'justify' });
 
         doc.end();
+    });
+});
+
+// ====== REPORTE ESTADÍSTICO MENSUAL ======
+router.get('/reporte-mensual', (req, res) => {
+    const user = req.session.user;
+    
+    // Filtros: solo mes actual
+    let whereClause = `WHERE deleted_at IS NULL AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')`;
+    let params = [];
+
+    if (user.role !== 'operador') {
+        whereClause += ` AND area = ?`;
+        params.push(user.area);
+    }
+
+    db.get(`SELECT COUNT(*) as total FROM tickets ${whereClause}`, params, (err, rowTotal) => {
+        if (err) return res.status(500).send("Error de DB");
+
+        db.all(`SELECT area, COUNT(*) as count FROM tickets ${whereClause} GROUP BY area`, params, (err, rowsArea) => {
+            if (err) return res.status(500).send("Error de DB");
+
+            db.all(`SELECT status, COUNT(*) as count FROM tickets ${whereClause} GROUP BY status`, params, (err, rowsStatus) => {
+                if (err) return res.status(500).send("Error de DB");
+
+                const doc = new PDFDocument({ margin: 50 });
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf"');
+                doc.pipe(res);
+
+                doc.fontSize(20).font('Helvetica-Bold').text('Reporte de Gestión Mensual - PUSAP', { align: 'center' });
+                doc.moveDown();
+                doc.fontSize(12).font('Helvetica').text(`Fecha actual: ${moment().format('DD/MM/YYYY')}`, { align: 'center' });
+                doc.moveDown(2);
+
+                doc.fontSize(14).font('Helvetica-Bold').text('Métricas Resumidas');
+                doc.moveDown(0.5);
+                doc.fontSize(12).font('Helvetica').text(`Total de trámites creados este mes: ${rowTotal.total}`);
+                doc.moveDown(1.5);
+
+                doc.fontSize(14).font('Helvetica-Bold').text('Agrupado por Área');
+                doc.moveDown(0.5);
+                if (rowsArea && rowsArea.length > 0) {
+                    rowsArea.forEach(r => {
+                        doc.fontSize(12).font('Helvetica').text(`• ${r.area}: ${r.count}`);
+                    });
+                } else {
+                    doc.fontSize(12).font('Helvetica-Oblique').text('Sin datos');
+                }
+                doc.moveDown(1.5);
+
+                doc.fontSize(14).font('Helvetica-Bold').text('Agrupado por Estado');
+                doc.moveDown(0.5);
+                if (rowsStatus && rowsStatus.length > 0) {
+                    rowsStatus.forEach(r => {
+                        doc.fontSize(12).font('Helvetica').text(`• ${r.status}: ${r.count}`);
+                    });
+                } else {
+                    doc.fontSize(12).font('Helvetica-Oblique').text('Sin datos');
+                }
+
+                doc.end();
+            });
+        });
     });
 });
 
