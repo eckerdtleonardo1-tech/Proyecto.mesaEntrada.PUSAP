@@ -5,6 +5,7 @@ const PDFDocument = require('pdfkit');
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const QRCode = require('qrcode');
 const { sendStatusUpdateEmail, sendTicketCreatedEmail } = require('../mailer');
 
 // Middleware de Autenticación
@@ -33,10 +34,10 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024
 router.get('/', (req, res) => {
     const user = req.session.user;
     
-    let statsQuery = `SELECT status, expiration_date, created_at FROM tickets`;
+    let statsQuery = `SELECT status, expiration_date, created_at FROM tickets WHERE deleted_at IS NULL`;
     let statsParams = [];
     if (user.role !== 'operador') {
-        statsQuery += ` WHERE area = ?`;
+        statsQuery += ` AND area = ?`;
         statsParams.push(user.area);
     }
     
@@ -77,7 +78,7 @@ router.get('/', (req, res) => {
 
         const { search, status, area, priority } = req.query;
 
-        let whereClauses = [];
+        let whereClauses = ['deleted_at IS NULL'];
         let queryParams = [];
 
         if (user.role !== 'operador') {
@@ -117,20 +118,32 @@ router.get('/', (req, res) => {
             db.all(paginatedQuery, [...queryParams, limit, offset], (err, tickets) => {
                 if (err) return res.status(500).send("Error");
 
-                const success_ticket = req.query.success_ticket || null;
+                db.all(`SELECT tt.ticket_id, t.id as tag_id, t.name, t.color FROM ticket_tags tt JOIN tags t ON tt.tag_id = t.id`, [], (err, allTags) => {
+                    db.all(`SELECT id, name FROM users`, [], (err, allUsers) => {
+                        const userMap = {};
+                        if(allUsers) allUsers.forEach(u => userMap[u.id] = u.name);
+                        
+                        tickets.forEach(ticket => {
+                            ticket.tags = allTags ? allTags.filter(tg => tg.ticket_id === ticket.id) : [];
+                            ticket.assigned_to_name = userMap[ticket.assigned_to] || null;
+                        });
 
-                res.render('dashboard', { 
-                    title: 'Panel de Gestión', 
-                    tickets, 
-                    stats, 
-                    weeklyActivity, 
-                    areaDistribution,
-                    user, 
-                    success_ticket, 
-                    page, 
-                    totalPages, 
-                    total,
-                    query: req.query 
+                        const success_ticket = req.query.success_ticket || null;
+
+                        res.render('dashboard', { 
+                            title: 'Panel de Gestión', 
+                            tickets, 
+                            stats, 
+                            weeklyActivity, 
+                            areaDistribution,
+                            user, 
+                            success_ticket, 
+                            page, 
+                            totalPages, 
+                            total,
+                            query: req.query 
+                        });
+                    });
                 });
             });
         });
@@ -140,10 +153,10 @@ router.get('/', (req, res) => {
 // API: Stats para Auto-refresh
 router.get('/api/stats', (req, res) => {
     const user = req.session.user;
-    let query = `SELECT * FROM tickets`;
+    let query = `SELECT * FROM tickets WHERE deleted_at IS NULL`;
     let params = [];
     if (user.role !== 'operador') {
-        query += ` WHERE area = ?`;
+        query += ` AND area = ?`;
         params.push(user.area);
     }
     db.all(query, params, (err, tickets) => {
@@ -165,7 +178,7 @@ router.get('/api/stats', (req, res) => {
 router.get('/api/buscar-dni', (req, res) => {
     const dni = req.query.dni;
     if (!dni) return res.json({ existe: false });
-    db.all(`SELECT id, category, status, created_at FROM tickets WHERE dni = ? ORDER BY created_at DESC LIMIT 5`, [dni], (err, rows) => {
+    db.all(`SELECT id, category, status, created_at FROM tickets WHERE dni = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 5`, [dni], (err, rows) => {
         if (err) return res.status(500).json({ error: "Error de DB" });
         if (rows && rows.length > 0) {
             res.json({ existe: true, tramites: rows });
@@ -180,6 +193,7 @@ router.get('/api/actividad-reciente', (req, res) => {
     db.all(`SELECT t.tracking_code, t.first_name, t.last_name, h.new_status, h.created_at, t.id as ticket_id 
             FROM ticket_history h 
             JOIN tickets t ON h.ticket_id = t.id 
+            WHERE t.deleted_at IS NULL
             ORDER BY h.created_at DESC LIMIT 8`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Error" });
         res.json(rows);
@@ -278,11 +292,26 @@ router.get('/tramite/:id', (req, res) => {
             return res.status(403).send('Acceso denegado: El trámite no pertenece a tu área.');
         }
         
-        db.all(`SELECT * FROM areas ORDER BY name`, [], (errAreas, areas) => {
-            db.all(`SELECT * FROM ticket_history WHERE ticket_id = ? ORDER BY created_at DESC`, [id], (err2, history) => {
-                db.all(`SELECT * FROM attachments WHERE ticket_id = ?`, [id], (err3, attachments) => {
-                    db.all(`SELECT * FROM quick_replies ORDER BY id`, [], (err4, quick_replies) => {
-                        res.render('ticket-detail', { title: 'Detalle de Trámite', ticket, history, attachments, areas: areas || [], quick_replies: quick_replies || [], user: req.session.user });
+        db.all(`SELECT * FROM tickets WHERE dni = ? AND id != ? AND deleted_at IS NULL`, [ticket.dni, id], (errOtros, otrosTramites) => {
+            db.all(`SELECT * FROM areas ORDER BY name`, [], (errAreas, areas) => {
+                db.all(`SELECT * FROM ticket_history WHERE ticket_id = ? ORDER BY created_at DESC`, [id], (err2, history) => {
+                    db.all(`SELECT * FROM attachments WHERE ticket_id = ?`, [id], (err3, attachments) => {
+                        db.all(`SELECT * FROM quick_replies ORDER BY id`, [], (err4, quick_replies) => {
+                            db.all(`SELECT id, name FROM users WHERE area = ?`, [ticket.area], (err5, employees) => {
+                                db.all(`SELECT * FROM tags ORDER BY name`, [], (err6, allTags) => {
+                                    db.all(`SELECT tag_id FROM ticket_tags WHERE ticket_id = ?`, [id], (err7, ticketTags) => {
+                                        const assignedTagIds = ticketTags ? ticketTags.map(t => t.tag_id) : [];
+                                        res.render('ticket-detail', { 
+                                            title: 'Detalle de Trámite', ticket, history, attachments, 
+                                            areas: areas || [], quick_replies: quick_replies || [], 
+                                            employees: employees || [], allTags: allTags || [], assignedTagIds,
+                                            otrosTramites: otrosTramites || [],
+                                            user: req.session.user 
+                                        });
+                                    });
+                                });
+                            });
+                        });
                     });
                 });
             });
@@ -325,6 +354,34 @@ router.post('/tramite/:id', (req, res) => {
 
             res.redirect(`/panel/tramite/${id}`);
         });
+    });
+});
+
+// Asignar Empleado
+router.post('/tramite/:id/asignar', (req, res) => {
+    const { id } = req.params;
+    const { assigned_to } = req.body;
+    db.run(`UPDATE tickets SET assigned_to = ? WHERE id = ?`, [assigned_to || null, id], (err) => {
+        res.redirect(`/panel/tramite/${id}`);
+    });
+});
+
+// Agregar Tag
+router.post('/tramite/:id/tags', (req, res) => {
+    const { id } = req.params;
+    const { tag_id } = req.body;
+    if (!tag_id) return res.redirect(`/panel/tramite/${id}`);
+    db.run(`INSERT OR IGNORE INTO ticket_tags (ticket_id, tag_id) VALUES (?, ?)`, [id, tag_id], (err) => {
+        res.redirect(`/panel/tramite/${id}`);
+    });
+});
+
+// Quitar Tag
+router.post('/tramite/:id/tags/quitar', (req, res) => {
+    const { id } = req.params;
+    const { tag_id } = req.body;
+    db.run(`DELETE FROM ticket_tags WHERE ticket_id = ? AND tag_id = ?`, [id, tag_id], (err) => {
+        res.redirect(`/panel/tramite/${id}`);
     });
 });
 
@@ -465,11 +522,39 @@ router.post('/config/areas/eliminar/:id', (req, res) => {
     });
 });
 
+// ====== PAPELERA ======
+router.get('/papelera', (req, res) => {
+    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
+    db.all(`SELECT * FROM tickets WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC`, [], (err, tickets) => {
+        if (err) return res.status(500).send("Error");
+        res.render('admin-trash', { title: 'Papelera', user: req.session.user, tickets });
+    });
+});
+
+router.post('/papelera/restaurar/:id', (req, res) => {
+    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
+    db.run(`UPDATE tickets SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [req.params.id], (err) => {
+        res.redirect('/panel/papelera');
+    });
+});
+
+router.post('/tramite/eliminar/:id', (req, res) => {
+    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
+    db.run(`UPDATE tickets SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [req.params.id], (err) => {
+        res.redirect('/panel');
+    });
+});
+
 // Generar PDF Comprobante
 router.get('/comprobante/:id', (req, res) => {
     const { id } = req.params;
-    db.get(`SELECT * FROM tickets WHERE id = ?`, [id], (err, ticket) => {
+    db.get(`SELECT * FROM tickets WHERE id = ?`, [id], async (err, ticket) => {
         if (err || !ticket) return res.status(404).send('No encontrado');
+
+        let qrBuffer;
+        try {
+            qrBuffer = await QRCode.toBuffer(`https://tramites.pusap.edu.ar/seguimiento?codigo=${ticket.tracking_code}`);
+        } catch (e) {}
 
         const doc = new PDFDocument({ margin: 50 });
         res.setHeader('Content-disposition', `attachment; filename="Talón_Recepción_${ticket.tracking_code}.pdf"`);
@@ -485,6 +570,10 @@ router.get('/comprobante/:id', (req, res) => {
         doc.fillColor('#1e3a8a').rect(50, 150, 512, 50).stroke();
         doc.fillColor('#1e3a8a').fontSize(10).text('CÓDIGO DE SEGUIMIENTO', 60, 158);
         doc.fillColor('#1e3a8a').fontSize(22).font('Helvetica-Bold').text(ticket.tracking_code, { align: 'center', y: 165 });
+        
+        if (qrBuffer) {
+            doc.image(qrBuffer, 490, 140, { width: 65 });
+        }
 
         // Details
         doc.fillColor('black');

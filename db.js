@@ -114,6 +114,35 @@ db.serialize(() => {
     db.run("ALTER TABLE tickets ADD COLUMN student_notes TEXT", (err) => {
         // Ignorar error si la columna ya existe
     });
+    db.run("ALTER TABLE tickets ADD COLUMN assigned_to INTEGER", (err) => {
+        // Ignorar error si la columna ya existe
+    });
+
+    // Tags
+    db.run(`CREATE TABLE IF NOT EXISTS tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        color TEXT
+    )`);
+
+    db.get("SELECT COUNT(*) as count FROM tags", (err, row) => {
+        if (row && row.count === 0) {
+            const stmt = db.prepare("INSERT INTO tags (name, color) VALUES (?, ?)");
+            stmt.run("Urgente", "red");
+            stmt.run("Falta Firma", "yellow");
+            stmt.run("Revisar", "blue");
+            stmt.finalize();
+        }
+    });
+
+    db.run(`CREATE TABLE IF NOT EXISTS ticket_tags (
+        ticket_id INTEGER,
+        tag_id INTEGER,
+        PRIMARY KEY(ticket_id, tag_id)
+    )`);
+    db.run("ALTER TABLE tickets ADD COLUMN deleted_at DATETIME DEFAULT NULL", (err) => {
+        // Ignorar error si la columna ya existe
+    });
 
     // Quick Replies
     db.run(`CREATE TABLE IF NOT EXISTS quick_replies (

@@ -122,6 +122,10 @@
                     <i class="fa-solid fa-shield-halved w-4 text-center"></i>
                     <span>Auditoría</span>
                 </a>
+                <a href="/panel/papelera" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-trash-can w-4 text-center"></i>
+                    <span>Papelera</span>
+                </a>
             </div>
             <% } %>
             <div class="pt-3 mt-3 border-t border-blue-800/60">
@@ -169,6 +173,9 @@
                         </div>
                         <input type="text" name="search" placeholder="Buscar código, DNI..." class="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </form>
+                    <button onclick="openQrScanner()" class="text-slate-500 hover:text-blue-700 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 dark:hover:text-blue-400 p-2 rounded-lg transition" title="Escanear QR">
+                        <i class="fa-solid fa-qrcode text-lg"></i>
+                    </button>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-xs text-slate-400 hidden sm:block dark:text-slate-300"><%= new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
@@ -233,6 +240,61 @@
             <i class="fa-solid fa-plus text-2xl"></i>
         </a>
         <% } %>
+
+        <!-- Modal QR Scanner -->
+        <div id="qrModal" class="hidden fixed inset-0 z-50 flex items-center justify-center fade-in">
+            <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onclick="closeQrScanner()"></div>
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md relative z-10 scale-in mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-qrcode mr-2 text-blue-600"></i> Escanear Código QR</h3>
+                    <button onclick="closeQrScanner()" class="text-slate-400 hover:text-red-500 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div id="qr-reader" class="w-full overflow-hidden rounded-lg border-2 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"></div>
+                <p class="text-xs text-center text-slate-500 mt-4">Apunta la cámara al código QR del comprobante.</p>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/html5-qrcode"></script>
+        <script>
+            let html5QrcodeScanner = null;
+
+            function openQrScanner() {
+                document.getElementById('qrModal').classList.remove('hidden');
+                
+                if (!html5QrcodeScanner) {
+                    html5QrcodeScanner = new Html5QrcodeScanner(
+                        "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                }
+                
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+
+            function closeQrScanner() {
+                document.getElementById('qrModal').classList.add('hidden');
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.clear().catch(error => {
+                        console.error("Failed to clear scanner: ", error);
+                    });
+                }
+            }
+
+            function onScanSuccess(decodedText, decodedResult) {
+                let code = decodedText;
+                try {
+                    let url = new URL(decodedText);
+                    if (url.searchParams.has('codigo')) {
+                        code = url.searchParams.get('codigo');
+                    }
+                } catch(e) {}
+                
+                closeQrScanner();
+                window.location.href = "/panel?search=" + encodeURIComponent(code);
+            }
+
+            function onScanFailure(error) {}
+        </script>
 
 <script>
 function toggleDarkMode() {

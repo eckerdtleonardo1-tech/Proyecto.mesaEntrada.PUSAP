@@ -267,6 +267,18 @@ if (expiringToday.length > 0) {
                     <td class="px-5 py-4 hidden md:table-cell">
                         <div class="text-sm text-slate-700 font-medium"><%= ticket.category %></div>
                         <div class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-clock mr-1"></i><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
+                        <% if (ticket.tags && ticket.tags.length > 0) { %>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                <% ticket.tags.forEach(tag => { 
+                                    let c = 'bg-slate-100 text-slate-700';
+                                    if(tag.color === 'red') c = 'bg-red-50 text-red-700 border border-red-200';
+                                    if(tag.color === 'yellow') c = 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+                                    if(tag.color === 'blue') c = 'bg-blue-50 text-blue-700 border border-blue-200';
+                                %>
+                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold <%= c %>"><%= tag.name %></span>
+                                <% }) %>
+                            </div>
+                        <% } %>
                     </td>
                     <!-- Prioridad -->
                     <td class="px-5 py-4 whitespace-nowrap">
@@ -287,6 +299,12 @@ if (expiringToday.length > 0) {
                             <span class="w-1.5 h-1.5 rounded-full <%= dotColor %>"></span>
                             <%= ticket.status %>
                         </span>
+                        <% if (ticket.assigned_to_name) { %>
+                        <div class="mt-2 text-xs text-slate-600 flex items-center gap-1">
+                            <div class="w-4 h-4 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[8px] font-bold"><%= ticket.assigned_to_name.charAt(0).toUpperCase() %></div>
+                            <%= ticket.assigned_to_name %>
+                        </div>
+                        <% } %>
                     </td>
                     <!-- Acción -->
                     <td class="px-5 py-4 whitespace-nowrap text-right">
@@ -361,7 +379,26 @@ function renderKanban() {
             html += `<div class="text-xs font-mono font-bold text-blue-700 mb-1">${t.tracking_code}</div>`;
             html += `<div class="font-semibold text-sm text-slate-800">${t.first_name} ${t.last_name}</div>`;
             html += `<div class="text-xs text-slate-500 mt-1 truncate">${t.category}</div>`;
-            html += `<div class="flex justify-between items-center mt-3">`;
+            
+            // Add tags
+            if (t.tags && t.tags.length > 0) {
+                html += `<div class="flex flex-wrap gap-1 mt-2">`;
+                t.tags.forEach(tag => {
+                    let c = 'bg-slate-100 text-slate-700';
+                    if(tag.color === 'red') c = 'bg-red-50 text-red-700 border border-red-200';
+                    if(tag.color === 'yellow') c = 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+                    if(tag.color === 'blue') c = 'bg-blue-50 text-blue-700 border border-blue-200';
+                    html += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${c}">${tag.name}</span>`;
+                });
+                html += `</div>`;
+            }
+
+            // Add assignment
+            if (t.assigned_to_name) {
+                html += `<div class="text-[10px] text-slate-600 mt-2 flex items-center gap-1 font-medium"><i class="fa-solid fa-user text-slate-400"></i> ${t.assigned_to_name}</div>`;
+            }
+
+            html += `<div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-100">`;
             html += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase">${t.area}</span>`;
             html += `<a href="/panel/tramite/${t.id}" class="text-blue-600 hover:text-blue-800 text-xs font-bold">Ver &rarr;</a>`;
             html += `</div></div>`;

@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const PDFDocument = require('pdfkit');
 const moment = require('moment');
 const db = require('../db');
+const QRCode = require('qrcode');
 const { sendTicketCreatedEmail } = require('../mailer');
 
 // Prevención de SPAM: Máximo 3 trámites por IP cada 1 hora
@@ -102,8 +103,13 @@ router.post('/seguimiento', (req, res) => {
 // Generar PDF Comprobante Público (Solo con Tracking Code)
 router.get('/comprobante/:tracking_code', (req, res) => {
     const { tracking_code } = req.params;
-    db.get(`SELECT * FROM tickets WHERE tracking_code = ?`, [tracking_code], (err, ticket) => {
+    db.get(`SELECT * FROM tickets WHERE tracking_code = ?`, [tracking_code], async (err, ticket) => {
         if (err || !ticket) return res.status(404).send('Comprobante no encontrado');
+
+        let qrBuffer;
+        try {
+            qrBuffer = await QRCode.toBuffer(`https://tramites.pusap.edu.ar/seguimiento?codigo=${ticket.tracking_code}`);
+        } catch (e) {}
 
         const doc = new PDFDocument({ margin: 50 });
         res.setHeader('Content-disposition', `attachment; filename="Talon_Recepcion_${ticket.tracking_code}.pdf"`);
@@ -120,6 +126,10 @@ router.get('/comprobante/:tracking_code', (req, res) => {
         doc.fillColor('#1e3a8a').rect(50, 150, 512, 50).stroke();
         doc.fillColor('#1e3a8a').fontSize(10).text('CÓDIGO DE SEGUIMIENTO', 60, 158);
         doc.fillColor('#1e3a8a').fontSize(22).font('Helvetica-Bold').text(ticket.tracking_code, { align: 'center', y: 165 });
+        
+        if (qrBuffer) {
+            doc.image(qrBuffer, 490, 140, { width: 65 });
+        }
 
         // Details
         doc.fillColor('black');

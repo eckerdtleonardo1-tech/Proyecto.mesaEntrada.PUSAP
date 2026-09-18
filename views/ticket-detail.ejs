@@ -140,6 +140,25 @@
                         </div>
                         <% } %>
                     </div>
+
+                    <!-- Otros trámites del mismo DNI -->
+                    <div class="mt-6 pt-4 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-folder-open mr-1"></i>Otros trámites de este DNI</p>
+                        <% if (typeof otrosTramites !== 'undefined' && otrosTramites && otrosTramites.length > 0) { %>
+                            <ul class="space-y-2">
+                            <% otrosTramites.forEach(ot => { %>
+                                <li>
+                                    <a href="/panel/tramite/<%= ot.id %>" class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span><strong><%= ot.tracking_code %></strong> - <%= ot.category %></span>
+                                        <span class="text-xs text-slate-500"><%= moment(ot.created_at).format('DD/MM/YY') %> | <%= ot.status %></span>
+                                    </a>
+                                </li>
+                            <% }) %>
+                            </ul>
+                        <% } else { %>
+                            <p class="text-sm text-slate-500 italic">No hay otros trámites.</p>
+                        <% } %>
+                    </div>
                 </div>
             </div>
 
@@ -251,12 +270,85 @@
                             </a>
                         </div>
                     </form>
+                    <% if (user.role === 'operador') { %>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                        <form action="/panel/tramite/eliminar/<%= ticket.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de mover este trámite a la papelera?');">
+                            <button type="submit" class="text-sm text-red-600 hover:text-red-800 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 transition">
+                                <i class="fa-solid fa-trash-can"></i> Mover a Papelera
+                            </button>
+                        </form>
+                    </div>
+                    <% } %>
                 </div>
             </div>
         </div>
 
         <!-- ====== SIDEBAR DERECHA (1/3) ====== -->
         <div class="space-y-6">
+
+            <!-- Asignación y Etiquetas -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-users text-indigo-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-sm">Asignación y Etiquetas</h3>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- Asignar Empleado -->
+                    <form action="/panel/tramite/<%= ticket.id %>/asignar" method="POST">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Asignar a Empleado</label>
+                        <div class="flex gap-2">
+                            <select name="assigned_to" class="flex-1 border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="">-- Sin asignar --</option>
+                                <% employees.forEach(emp => { %>
+                                    <option value="<%= emp.id %>" <%= ticket.assigned_to === emp.id ? 'selected' : '' %>><%= emp.name %></option>
+                                <% }) %>
+                            </select>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">Guardar</button>
+                        </div>
+                    </form>
+
+                    <!-- Etiquetas -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Etiquetas del Trámite</label>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <% 
+                            const activeTags = allTags.filter(t => assignedTagIds.includes(t.id));
+                            if (activeTags.length === 0) { 
+                            %>
+                                <span class="text-xs text-slate-400">Sin etiquetas</span>
+                            <% } else {
+                                activeTags.forEach(tag => { 
+                                    let colorClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                                    if(tag.color === 'red') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                                    if(tag.color === 'yellow') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                                    if(tag.color === 'blue') colorClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                            %>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold border <%= colorClass %>">
+                                    <%= tag.name %>
+                                    <form action="/panel/tramite/<%= ticket.id %>/tags/quitar" method="POST" class="inline ml-1">
+                                        <input type="hidden" name="tag_id" value="<%= tag.id %>">
+                                        <button type="submit" class="text-slate-400 hover:text-slate-600 focus:outline-none">&times;</button>
+                                    </form>
+                                </span>
+                            <%  });
+                            } %>
+                        </div>
+                        <form action="/panel/tramite/<%= ticket.id %>/tags" method="POST" class="flex gap-2">
+                            <select name="tag_id" class="flex-1 border border-slate-300 rounded-lg py-1.5 px-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="">Agregar etiqueta...</option>
+                                <% allTags.forEach(tag => { 
+                                    if(!assignedTagIds.includes(tag.id)) {
+                                %>
+                                    <option value="<%= tag.id %>"><%= tag.name %></option>
+                                <% } }) %>
+                            </select>
+                            <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1.5 rounded-lg text-xs font-medium transition"><i class="fa-solid fa-plus"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <!-- Documentación Adjunta -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
