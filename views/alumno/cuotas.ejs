@@ -1,0 +1,125 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar text-green-600"></i> Mis Cuotas
+        </h1>
+    </div>
+
+    <!-- Deuda total -->
+    <% if (deudaTotal > 0) { %>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
+            <div>
+                <p class="font-bold text-red-800">Deuda total</p>
+                <p class="text-red-600 text-sm">Cuotas pendientes + recargos</p>
+            </div>
+        </div>
+        <span class="text-2xl font-extrabold text-red-700">
+            $ <%= deudaTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
+        </span>
+    </div>
+    <% } else { %>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-green-600 text-xl"></i>
+        <p class="font-semibold text-green-800">¡Estás al día con tus pagos! ✓</p>
+    </div>
+    <% } %>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-2 mb-6">
+        <% const filtros = [
+            { key: 'todas', label: 'Todas' },
+            { key: 'activas', label: 'Activas' },
+            { key: 'pendientes', label: 'Pendientes' },
+            { key: 'vencidas', label: 'Vencidas' },
+            { key: 'pagadas', label: 'Pagadas' }
+        ]; %>
+        <% filtros.forEach(f => { %>
+        <a href="/alumno/cuotas?filtro=<%= f.key %>"
+            class="px-4 py-2 rounded-xl text-sm font-semibold transition border
+            <%= filtro === f.key
+                ? 'bg-blue-700 text-white border-blue-700'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-700' %>">
+            <%= f.label %>
+        </a>
+        <% }) %>
+    </div>
+
+    <!-- Tabla de cuotas -->
+    <% if (cuotas.length === 0) { %>
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+        <i class="fa-solid fa-check-circle text-slate-300 text-4xl mb-3"></i>
+        <p class="text-slate-500">No hay cuotas en esta categoría.</p>
+    </div>
+    <% } else { %>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="text-left px-5 py-3 font-semibold text-slate-600">Concepto</th>
+                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Vencimiento</th>
+                        <th class="text-right px-4 py-3 font-semibold text-slate-600">Monto</th>
+                        <th class="text-center px-4 py-3 font-semibold text-slate-600">Estado</th>
+                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Pago</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% cuotas.forEach(cuota => {
+                        const vencida = cuota.estado === 'pendiente' && cuota.vencimiento < hoy;
+                        const estadoMostrado = vencida ? 'vencida' : cuota.estado;
+                    %>
+                    <tr class="hover:bg-slate-50 transition <%= vencida ? 'bg-red-50/30' : '' %>">
+                        <td class="px-5 py-3.5">
+                            <p class="font-semibold text-slate-800"><%= cuota.concepto %></p>
+                            <% if (cuota.periodo) { %><p class="text-xs text-slate-400"><%= cuota.periodo %></p><% } %>
+                        </td>
+                        <td class="px-4 py-3.5 <%= vencida ? 'text-red-600 font-semibold' : 'text-slate-600' %>">
+                            <%= moment(cuota.vencimiento).format('DD/MM/YYYY') %>
+                        </td>
+                        <td class="px-4 py-3.5 text-right font-semibold text-slate-800">
+                            $ <%= cuota.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
+                            <% if (cuota.recargo > 0) { %>
+                            <span class="block text-xs text-red-500">+ $ <%= cuota.recargo.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %> recargo</span>
+                            <% } %>
+                        </td>
+                        <td class="px-4 py-3.5 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                <%= estadoMostrado === 'pagada' ? 'bg-green-100 text-green-700' :
+                                    estadoMostrado === 'vencida' ? 'bg-red-100 text-red-700' :
+                                    estadoMostrado === 'pendiente' ? 'bg-amber-100 text-amber-700' :
+                                    estadoMostrado === 'pago_parcial' ? 'bg-orange-100 text-orange-700' :
+                                    estadoMostrado === 'becada_exenta' ? 'bg-purple-100 text-purple-700' :
+                                    'bg-slate-100 text-slate-600' %>">
+                                <%= estadoMostrado.replace('_', ' ').charAt(0).toUpperCase() + estadoMostrado.replace('_', ' ').slice(1) %>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3.5 text-slate-500 text-xs">
+                            <% if (cuota.fecha_pago) { %>
+                            <p><i class="fa-regular fa-calendar-check mr-1 text-green-600"></i><%= moment(cuota.fecha_pago).format('DD/MM/YYYY') %></p>
+                            <% } %>
+                            <% if (cuota.comprobante_filename) { %>
+                            <a href="/descargas/privado/<%= cuota.comprobante_filename %>" class="inline-flex items-center gap-1 text-blue-600 hover:underline mt-0.5">
+                                <i class="fa-solid fa-paperclip"></i> Comprobante
+                            </a>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Nota sobre medios de pago -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+        <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1.5"></i>¿Cómo informar un pago?</p>
+        <p>Una vez realizado el pago, presentá el comprobante en <a href="/contacto" class="underline font-semibold">Mesa de Entrada</a> o iniciá un trámite desde <a href="/alumno/tramites" class="underline font-semibold">Mis Trámites</a>.</p>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

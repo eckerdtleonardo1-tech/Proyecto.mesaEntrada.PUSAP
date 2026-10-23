@@ -1,0 +1,83 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+    <div class="mb-6">
+        <a href="/alumno/solicitudes" class="text-sm text-blue-700 hover:underline flex items-center gap-1.5 mb-3">
+            <i class="fa-solid fa-arrow-left text-xs"></i> Volver a mis solicitudes
+        </a>
+        <h1 class="text-xl font-extrabold text-slate-800">Nueva solicitud de documentación</h1>
+        <p class="text-slate-500 text-sm mt-1">Seleccioná el tipo de solicitud y adjuntá la documentación requerida.</p>
+    </div>
+
+    <% if (error) { %>
+    <div class="mb-5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 flex items-center gap-3 text-sm">
+        <i class="fa-solid fa-circle-exclamation text-red-500"></i><%= error %>
+    </div>
+    <% } %>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <form action="/alumno/solicitudes" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-file-circle-check text-blue-600 mr-1.5"></i>Tipo de solicitud
+                </label>
+                <select name="tipo_solicitud_id" required class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 focus:bg-white">
+                    <option value="">-- Seleccioná un tipo --</option>
+                    <% const tiposAgrupados = {}; %>
+                    <% tipos.forEach(t => {
+                        const grupo = t.modalidad === 'emision' ? 'Documentos a emitir por la institución' : 'Documentos a presentar por el alumno';
+                        if (!tiposAgrupados[grupo]) tiposAgrupados[grupo] = [];
+                        tiposAgrupados[grupo].push(t);
+                    }); %>
+                    <% Object.entries(tiposAgrupados).forEach(([grupo, items]) => { %>
+                    <optgroup label="<%= grupo %>">
+                        <% items.forEach(t => { %>
+                        <option value="<%= t.id %>"><%= t.nombre %></option>
+                        <% }) %>
+                    </optgroup>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-paperclip text-blue-600 mr-1.5"></i>Adjuntar documentación (opcional)
+                </label>
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 transition cursor-pointer" onclick="document.getElementById('adjuntosInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up text-slate-400 text-3xl mb-2"></i>
+                    <p class="text-sm text-slate-500">Hacé clic para adjuntar archivos</p>
+                    <p class="text-xs text-slate-400 mt-1">PDF, JPG o PNG · Máx. 5 MB por archivo · Hasta 5 archivos</p>
+                    <input type="file" id="adjuntosInput" name="adjuntos" multiple accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="mostrarArchivos(this)">
+                </div>
+                <div id="archivosSeleccionados" class="mt-2 space-y-1 text-xs text-slate-600"></div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" name="accion" value="enviar"
+                    class="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar solicitud
+                </button>
+                <button type="submit" name="accion" value="borrador"
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 px-6 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-floppy-disk"></i> Guardar borrador
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function mostrarArchivos(input) {
+    const container = document.getElementById('archivosSeleccionados');
+    container.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2';
+        div.innerHTML = `<i class="fa-solid fa-file text-blue-500"></i><span>${f.name}</span><span class="text-slate-400">(${(f.size/1024).toFixed(0)} KB)</span>`;
+        container.appendChild(div);
+    });
+}
+</script>
+
+<%- include('../partials/footer') %>

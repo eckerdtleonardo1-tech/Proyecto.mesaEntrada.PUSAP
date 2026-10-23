@@ -1,0 +1,75 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-purple-600"></i> Mis Solicitudes
+        </h1>
+        <a href="/alumno/solicitudes/nueva" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
+            <i class="fa-solid fa-plus"></i> Nueva solicitud
+        </a>
+    </div>
+
+    <% if (solicitudes.length === 0) { %>
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-folder-open text-purple-500 text-2xl"></i>
+        </div>
+        <p class="text-slate-500 mb-4">No tenés solicitudes de documentación todavía.</p>
+        <a href="/alumno/solicitudes/nueva" class="inline-flex items-center gap-2 bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-600 transition">
+            <i class="fa-solid fa-plus"></i> Iniciar una solicitud
+        </a>
+    </div>
+    <% } else { %>
+    <div class="space-y-3">
+        <% solicitudes.forEach(s => {
+            const estadoColors = {
+                borrador: 'bg-slate-100 text-slate-600',
+                enviada: 'bg-blue-100 text-blue-700',
+                en_revision: 'bg-purple-100 text-purple-700',
+                observada: 'bg-amber-100 text-amber-700',
+                aprobada: 'bg-green-100 text-green-700',
+                emitida: 'bg-teal-100 text-teal-700',
+                rechazada: 'bg-red-100 text-red-700'
+            };
+            const color = estadoColors[s.estado] || 'bg-slate-100 text-slate-600';
+            const estadoLabel = {
+                borrador: 'Borrador',
+                enviada: 'Enviada',
+                en_revision: 'En revisión',
+                observada: '⚠ Observada',
+                aprobada: 'Aprobada',
+                emitida: '✓ Emitida',
+                rechazada: 'Rechazada'
+            }[s.estado] || s.estado;
+        %>
+        <a href="/alumno/solicitudes/<%= s.id %>" class="block bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="font-semibold text-slate-800"><%= s.tipo_nombre %></p>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        <i class="fa-regular fa-calendar mr-1"></i><%= moment(s.created_at).format('DD/MM/YYYY HH:mm') %>
+                        <% if (s.tipo_modalidad === 'emision') { %>
+                        · <span class="text-purple-600">Documento a emitir</span>
+                        <% } else { %>
+                        · <span class="text-blue-600">Presentación de doc.</span>
+                        <% } %>
+                    </p>
+                    <% if (s.estado === 'observada' && s.motivo_observacion) { %>
+                    <p class="text-xs text-amber-700 mt-1.5 bg-amber-50 px-2 py-1 rounded-lg inline-block">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i><%= s.motivo_observacion %>
+                    </p>
+                    <% } %>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs px-3 py-1 rounded-full font-semibold <%= color %>"><%= estadoLabel %></span>
+                    <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                </div>
+            </div>
+        </a>
+        <% }) %>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

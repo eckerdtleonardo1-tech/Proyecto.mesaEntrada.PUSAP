@@ -1,0 +1,157 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <a href="/backoffice/solicitudes" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Volver a la bandeja
+        </a>
+        <span class="text-xs font-mono text-slate-400">Solicitud #<%= solicitud.id %></span>
+    </div>
+
+    <!-- Encabezado con Estado -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-xl font-black text-slate-800 dark:text-white"><%= solicitud.tipo_nombre %></h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Solicitante: <span class="font-bold text-slate-700 dark:text-slate-200"><%= solicitud.alumno_apellido %>, <%= solicitud.alumno_nombre %></span> 
+                (DNI: <%= solicitud.dni %> | Legajo: <%= solicitud.legajo %> | Email: <%= solicitud.alumno_email %>)
+            </p>
+        </div>
+        <%
+            const badges = {
+                'borrador': 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-300',
+                'enviada': 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+                'en_revision': 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300',
+                'observada': 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300',
+                'aprobada': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300',
+                'emitida': 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-300',
+                'rechazada': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300'
+            };
+        %>
+        <span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold border <%= badges[solicitud.estado] || 'bg-slate-100' %> self-start md:self-auto">
+            Estado: <%= solicitud.estado.toUpperCase() %>
+        </span>
+    </div>
+
+    <!-- Panel de Decisiones / Acciones del Personal -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Columna de Gestión y Acciones (2 cols) -->
+        <div class="md:col-span-2 space-y-6">
+            <!-- Acciones de Estado -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-stamp text-blue-600"></i> Acciones del Personal
+                </h3>
+                <form action="/backoffice/solicitudes/<%= solicitud.id %>/accion" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Cambiar Estado</label>
+                            <select name="accion" required class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                                <option value="en_revision" <%= solicitud.estado === 'en_revision' ? 'selected' : '' %>>Poner En Revisión</option>
+                                <option value="observada" <%= solicitud.estado === 'observada' ? 'selected' : '' %>>Observar (Solicitar Corrección al Alumno)</option>
+                                <option value="aprobada" <%= solicitud.estado === 'aprobada' ? 'selected' : '' %>>Aprobar Solicitud</option>
+                                <option value="rechazada" <%= solicitud.estado === 'rechazada' ? 'selected' : '' %>>Rechazar Solicitud</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Asignar Responsable</label>
+                            <select name="asignado_a" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                                <option value="">Sin asignar</option>
+                                <% personal.forEach(p => { %>
+                                <option value="<%= p.id %>" <%= solicitud.asignado_a == p.id ? 'selected' : '' %>><%= p.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Motivo / Comentarios (notifica al alumno si se observa o rechaza)</label>
+                        <textarea name="motivo" rows="3" placeholder="Ingresá detalles de la observación o resolución..." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white"><%= solicitud.motivo_observacion || '' %></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Actualizar Solicitud
+                    </button>
+                </form>
+            </div>
+
+            <!-- Subir Documento Emitido (si es modalidad emisión o está aprobada) -->
+            <% if (solicitud.tipo_modalidad === 'emision' || solicitud.estado === 'aprobada' || solicitud.estado === 'emitida') { %>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up text-emerald-600"></i> Emisión de Documento Oficial
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Adjuntá el archivo final (constancia, certificado, programa) para que el alumno pueda descargarlo en su portal.</p>
+                
+                <% if (solicitud.documento_emitido_filename) { %>
+                <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl flex items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-file-circle-check text-emerald-600 text-xl"></i>
+                        <div>
+                            <p class="text-xs font-bold text-emerald-900 dark:text-emerald-200">Documento emitido actual</p>
+                            <p class="text-[11px] text-emerald-700 dark:text-emerald-400"><%= solicitud.documento_emitido_original_name %></p>
+                        </div>
+                    </div>
+                    <a href="/descargas/privado/<%= solicitud.documento_emitido_filename %>" class="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline">
+                        Descargar
+                    </a>
+                </div>
+                <% } %>
+
+                <form action="/backoffice/solicitudes/<%= solicitud.id %>/emitir" method="POST" enctype="multipart/form-data" class="space-y-3">
+                    <input type="file" name="documento" required accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
+                    <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2">
+                        <i class="fa-solid fa-upload"></i> Subir y Notificar Emisión al Alumno
+                    </button>
+                </form>
+            </div>
+            <% } %>
+
+            <!-- Documentos presentados por el alumno -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-paperclip text-blue-600"></i> Documentos Presentados por el Alumno (<%= adjuntos.length %>)
+                </h3>
+                <% if (adjuntos.length === 0) { %>
+                <p class="text-xs text-slate-400 italic">El alumno no adjuntó documentación.</p>
+                <% } else { %>
+                <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+                    <% adjuntos.forEach(a => { %>
+                    <li class="py-3 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <i class="fa-solid fa-file-lines text-slate-400 text-lg"></i>
+                            <div>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block"><%= a.original_name %></span>
+                                <span class="text-[10px] text-slate-400"><%= moment(a.created_at).format('DD/MM/YYYY HH:mm') %></span>
+                            </div>
+                        </div>
+                        <a href="/descargas/privado/<%= a.filename %>" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg transition shrink-0">
+                            <i class="fa-solid fa-download mr-1"></i> Ver/Bajar
+                        </a>
+                    </li>
+                    <% }) %>
+                </ul>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Columna de Historial / Auditoría (1 col) -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-timeline text-blue-600"></i> Línea de Tiempo
+            </h3>
+            <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700 text-xs">
+                <% historia.forEach(h => { %>
+                <div class="relative">
+                    <div class="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-white dark:ring-slate-800"></div>
+                    <p class="font-bold text-slate-800 dark:text-slate-200"><%= h.estado_nuevo %></p>
+                    <p class="text-[10px] text-slate-400"><%= moment(h.created_at).format('DD/MM/YYYY HH:mm') %> hs · <%= h.user_name %></p>
+                    <% if (h.comentario) { %>
+                    <p class="text-slate-600 dark:text-slate-300 mt-1 bg-slate-50 dark:bg-slate-700/50 p-2 rounded border border-slate-100 dark:border-slate-700"><%= h.comentario %></p>
+                    <% } %>
+                </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-bell text-blue-600"></i> Centro de Notificaciones
+        </h1>
+    </div>
+
+    <% if (notifs.length === 0) { %>
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-500 text-2xl">
+            <i class="fa-regular fa-bell-slash"></i>
+        </div>
+        <p class="text-sm font-bold text-slate-700">No tenés notificaciones</p>
+        <p class="text-xs text-slate-400 mt-1">Los avisos de tus cuotas, cursos o trámites aparecerán acá.</p>
+    </div>
+    <% } else { %>
+    <div class="space-y-3">
+        <% notifs.forEach(n => { 
+            const typeIcons = {
+                'info': 'fa-solid fa-info-circle text-blue-600 bg-blue-50',
+                'success': 'fa-solid fa-circle-check text-emerald-600 bg-emerald-50',
+                'warning': 'fa-solid fa-triangle-exclamation text-amber-600 bg-amber-50',
+                'error': 'fa-solid fa-circle-exclamation text-red-600 bg-red-50'
+            };
+            const iconClass = typeIcons[n.tipo] || 'fa-solid fa-bell text-blue-600 bg-blue-50';
+        %>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-start gap-3 transition hover:border-slate-300">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm shrink-0 <%= iconClass.split(' ').slice(2).join(' ') %>">
+                <i class="<%= iconClass.split(' ').slice(0, 2).join(' ') %>"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs text-slate-800 font-medium leading-relaxed"><%= n.mensaje %></p>
+                <div class="flex items-center gap-3 mt-2">
+                    <span class="text-[10px] text-slate-400 font-mono"><%= moment(n.created_at).fromNow() %></span>
+                    <% if (n.url) { %>
+                    <a href="<%= n.url %>" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition">
+                        Ver detalle <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                    </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

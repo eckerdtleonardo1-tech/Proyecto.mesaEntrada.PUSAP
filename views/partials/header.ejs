@@ -58,7 +58,7 @@
 <body class="bg-slate-50 flex flex-col min-h-screen font-sans text-slate-800">
 
 
-<% if (user) { %>
+<% if (typeof currentLayout !== 'undefined' ? (currentLayout === 'personal' && user) : (user && user.role !== 'alumno')) { %>
 <!-- ========== LAYOUT INTERNO (con sidebar) ========== -->
 <div class="flex min-h-screen">
 
@@ -100,7 +100,11 @@
             <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Gestión</p>
             <a href="/panel" class="sidebar-link text-blue-100">
                 <i class="fa-solid fa-chart-pie w-4 text-center"></i>
-                <span>Panel de Control</span>
+                <span>Panel de Trámites</span>
+            </a>
+            <a href="/backoffice/solicitudes" class="sidebar-link text-blue-100">
+                <i class="fa-solid fa-folder-tree w-4 text-center"></i>
+                <span>Bandeja Solicitudes</span>
             </a>
             <a href="/panel/mi-perfil" class="sidebar-link text-blue-100">
                 <i class="fa-solid fa-user-circle w-4 text-center"></i>
@@ -115,9 +119,25 @@
             <% if (user.role === 'operador') { %>
             <div class="pt-3 mt-3 border-t border-blue-800/60">
                 <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Administración</p>
+                <a href="/backoffice/alumnos" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-user-graduate w-4 text-center"></i>
+                    <span>Padrón de Alumnos</span>
+                </a>
+                <a href="/backoffice/tipos-solicitud" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-list-check w-4 text-center"></i>
+                    <span>Tipos de Solicitud</span>
+                </a>
+                <a href="/backoffice/faqs" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-circle-question w-4 text-center"></i>
+                    <span>Gestión de FAQs</span>
+                </a>
+                <a href="/backoffice/novedades" class="sidebar-link text-blue-100">
+                    <i class="fa-solid fa-bullhorn w-4 text-center"></i>
+                    <span>Novedades</span>
+                </a>
                 <a href="/panel/usuarios" class="sidebar-link text-blue-100">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
-                    <span>Gestión de Usuarios</span>
+                    <span>Usuarios y Personal</span>
                 </a>
                 <a href="/panel/config" class="sidebar-link text-blue-100">
                     <i class="fa-solid fa-gears w-4 text-center"></i>
@@ -227,10 +247,15 @@
                     </button>
                 </div>
                 <nav class="flex-grow px-3 py-4 space-y-1 overflow-y-auto">
-                    <a href="/panel" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-chart-pie w-4"></i> Panel de Control</a>
+                    <a href="/panel" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-chart-pie w-4"></i> Panel de Trámites</a>
+                    <a href="/backoffice/solicitudes" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-folder-tree w-4"></i> Bandeja Solicitudes</a>
                     <a href="/panel/mi-perfil" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-user-circle w-4"></i> Mi Perfil</a>
                     <% if (user.role === 'operador') { %>
                     <a href="/panel/nuevo" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-file-circle-plus w-4"></i> Alta de Trámite</a>
+                    <a href="/backoffice/alumnos" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-user-graduate w-4"></i> Alumnos</a>
+                    <a href="/backoffice/tipos-solicitud" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-list-check w-4"></i> Tipos de Solicitud</a>
+                    <a href="/backoffice/faqs" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-circle-question w-4"></i> FAQs</a>
+                    <a href="/backoffice/novedades" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-bullhorn w-4"></i> Novedades</a>
                     <% } %>
                     <a href="/" target="_blank" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-arrow-up-right-from-square w-4"></i> Portal Público</a>
                 </nav>
@@ -447,6 +472,98 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 </script>
 
+<% } else if (typeof currentLayout !== 'undefined' ? (currentLayout === 'alumno' && user) : (user && user.role === 'alumno')) { %>
+<!-- ========== LAYOUT ALUMNO (navbar alumno) ========== -->
+<header class="bg-gradient-to-r from-blue-950 to-blue-900 text-white shadow-lg sticky top-0 z-40 border-b border-blue-800/50">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <a href="/alumno" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-white/10 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition">
+                    <i class="fa-solid fa-building-columns text-white"></i>
+                </div>
+                <div class="hidden sm:block">
+                    <span class="font-extrabold text-lg tracking-tight block leading-tight">PUSAP</span>
+                    <span class="text-blue-300 text-[10px] uppercase font-bold tracking-widest">Portal del Alumno</span>
+                </div>
+            </a>
+
+            <!-- Desktop nav alumno -->
+            <nav class="hidden md:flex items-center gap-1">
+                <a href="/alumno" class="nav-link text-blue-100"><i class="fa-solid fa-house mr-1.5 opacity-70"></i>Inicio</a>
+                <a href="/alumno/cursos" class="nav-link text-blue-100"><i class="fa-solid fa-chalkboard-user mr-1.5 opacity-70"></i>Cursos</a>
+                <a href="/alumno/cuotas" class="nav-link text-blue-100"><i class="fa-solid fa-file-invoice-dollar mr-1.5 opacity-70"></i>Cuotas</a>
+                <a href="/alumno/solicitudes" class="nav-link text-blue-100"><i class="fa-solid fa-folder-open mr-1.5 opacity-70"></i>Solicitudes</a>
+                <a href="/alumno/tramites" class="nav-link text-blue-100"><i class="fa-solid fa-receipt mr-1.5 opacity-70"></i>Trámites</a>
+            </nav>
+
+            <!-- Derecha: perfil + notif + logout -->
+            <div class="flex items-center gap-3">
+                <!-- Notificaciones -->
+                <a href="/alumno/notificaciones" class="relative text-blue-200 hover:text-white transition" title="Notificaciones">
+                    <i class="fa-solid fa-bell text-lg"></i>
+                    <span id="alumnoNotifBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">0</span>
+                </a>
+                <!-- Perfil -->
+                <a href="/alumno/perfil" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition text-sm font-medium">
+                    <div class="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-xs font-bold">
+                        <%= user.name ? user.name.charAt(0).toUpperCase() : 'A' %>
+                    </div>
+                    <span class="hidden sm:inline"><%= user.name ? user.name.split(' ')[0] : 'Alumno' %></span>
+                </a>
+                <!-- Mobile menú -->
+                <button id="alumnoMenuBtn" class="md:hidden text-white w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition" onclick="toggleAlumnoMenu()">
+                    <i class="fa-solid fa-bars text-lg" id="alumnoMenuIcon"></i>
+                </button>
+                <!-- Logout -->
+                <a href="/logout" class="hidden md:flex items-center gap-1.5 text-red-300 hover:text-red-200 text-sm font-medium transition" title="Cerrar sesión">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="hidden lg:inline">Salir</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Mobile menu alumno -->
+        <div id="alumnoMenu" class="md:hidden" style="max-height:0;overflow:hidden;transition:max-height .3s ease,opacity .3s ease;opacity:0;">
+            <div class="py-3 border-t border-blue-800 space-y-1 pb-4">
+                <a href="/alumno" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-house w-5"></i>Inicio</a>
+                <a href="/alumno/cursos" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-chalkboard-user w-5"></i>Mis Cursos</a>
+                <a href="/alumno/cuotas" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-file-invoice-dollar w-5"></i>Mis Cuotas</a>
+                <a href="/alumno/solicitudes" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-folder-open w-5"></i>Mis Solicitudes</a>
+                <a href="/alumno/tramites" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-receipt w-5"></i>Mis Trámites</a>
+                <a href="/alumno/perfil" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-user-circle w-5"></i>Mi Perfil</a>
+                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-300 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-right-from-bracket w-5"></i>Cerrar sesión</a>
+            </div>
+        </div>
+    </div>
+</header>
+<script>
+function toggleAlumnoMenu() {
+    const menu = document.getElementById('alumnoMenu');
+    const icon = document.getElementById('alumnoMenuIcon');
+    const isOpen = menu.style.maxHeight !== '0px' && menu.style.maxHeight !== '';
+    if (isOpen) {
+        menu.style.maxHeight = '0'; menu.style.opacity = '0';
+        icon.className = 'fa-solid fa-bars text-lg';
+    } else {
+        menu.style.maxHeight = '600px'; menu.style.opacity = '1';
+        icon.className = 'fa-solid fa-xmark text-lg';
+    }
+}
+// Badge de notificaciones alumno
+async function fetchAlumnoNotifCount() {
+    try {
+        const r = await fetch('/alumno/api/notificaciones/count');
+        const d = await r.json();
+        const badge = document.getElementById('alumnoNotifBadge');
+        if (d.count > 0) { badge.textContent = d.count; badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+    } catch(e) {}
+}
+fetchAlumnoNotifCount();
+setInterval(fetchAlumnoNotifCount, 60000);
+</script>
+<main class="flex-grow bg-slate-50">
 <% } else { %>
 <!-- ========== LAYOUT PÚBLICO (navbar top) ========== -->
     <header class="bg-gradient-to-r from-blue-950 to-blue-900 text-white shadow-lg sticky top-0 z-40 border-b border-blue-800/50">
@@ -473,10 +590,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- Right: Login & Mobile toggle -->
                 <div class="flex items-center gap-3">
-                    <a href="/login" class="hidden sm:flex items-center gap-2 bg-blue-800/50 hover:bg-blue-700 border border-blue-700/50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200">
-                        <i class="fa-solid fa-lock text-xs opacity-70"></i>
-                        <span>Acceso Institucional</span>
+                    <% if (user) { %>
+                    <a href="<%= user.role === 'alumno' ? '/alumno' : '/backoffice' %>" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Ir a mi panel</span>
                     </a>
+                    <% } else { %>
+                    <a href="/ingresar" class="hidden sm:flex items-center gap-2 bg-blue-800/50 hover:bg-blue-700 border border-blue-700/50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200">
+                        <i class="fa-solid fa-lock text-xs opacity-70"></i>
+                        <span>Ingresar</span>
+                    </a>
+                    <% } %>
                     <!-- Mobile hamburger -->
                     <button id="mobileMenuBtn" class="md:hidden text-white w-12 h-12 p-3 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition" onclick="toggleMobileMenu()">
                         <i class="fa-solid fa-bars text-lg" id="mobileMenuIcon"></i>
@@ -490,7 +614,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-house"></i></div>Inicio</a>
                     <a href="/nuevo-tramite" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-file-signature"></i></div>Iniciar Trámite</a>
                     <a href="/seguimiento" class="flex items-center gap-3 px-4 py-3.5 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass"></i></div>Ver mi Trámite</a>
-                    <a href="/login" class="flex items-center gap-3 px-4 py-3.5 text-blue-300 rounded-xl hover:bg-white/10 border border-white/5 transition text-base font-medium mt-2"><div class="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center border border-blue-700"><i class="fa-solid fa-lock"></i></div>Acceso Institucional</a>
+                    <% if (user) { %>
+                    <a href="<%= user.role === 'alumno' ? '/alumno' : '/backoffice' %>" class="flex items-center gap-3 px-4 py-3.5 text-emerald-300 rounded-xl hover:bg-white/10 border border-emerald-500/30 transition text-base font-medium mt-2"><div class="w-8 h-8 rounded-lg bg-emerald-900 flex items-center justify-center border border-emerald-700"><i class="fa-solid fa-gauge-high"></i></div>Ir a mi panel</a>
+                    <% } else { %>
+                    <a href="/ingresar" class="flex items-center gap-3 px-4 py-3.5 text-blue-300 rounded-xl hover:bg-white/10 border border-white/5 transition text-base font-medium mt-2"><div class="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center border border-blue-700"><i class="fa-solid fa-lock"></i></div>Ingresar</a>
+                    <% } %>
                 </div>
             </div>
         </div>

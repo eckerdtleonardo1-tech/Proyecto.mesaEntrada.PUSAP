@@ -1,0 +1,79 @@
+<%- include('../partials/header') %>
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-blue-600"></i> Novedades y Avisos Institucionales
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Comunicaciones y noticias visibles en el home público.</p>
+        </div>
+        <button onclick="document.getElementById('modalNuevaNovedad').classList.remove('hidden')" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2 self-start sm:self-auto shadow-sm">
+            <i class="fa-solid fa-plus"></i> Publicar Novedad
+        </button>
+    </div>
+
+    <!-- Lista de Novedades -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% if (novedades.length === 0) { %>
+        <div class="col-span-2 bg-white dark:bg-slate-800 p-8 text-center rounded-2xl border border-slate-200 dark:border-slate-700">
+            <p class="text-xs text-slate-400">No hay novedades publicadas.</p>
+        </div>
+        <% } %>
+        <% novedades.forEach(n => { %>
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="text-[10px] text-slate-400 font-mono"><%= moment(n.fecha_publicacion).format('DD/MM/YYYY') %></span>
+                    <% if (n.destacada) { %>
+                    <span class="text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <i class="fa-solid fa-star text-[9px]"></i> Destacada
+                    </span>
+                    <% } %>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-2"><%= n.titulo %></h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4"><%= n.cuerpo %></p>
+            </div>
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                <form action="/backoffice/novedades/eliminar/<%= n.id %>" method="POST" onsubmit="return confirm('¿Eliminar esta novedad?')">
+                    <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</div>
+
+<!-- Modal Nueva Novedad -->
+<div id="modalNuevaNovedad" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-700 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Publicar Nueva Novedad</h3>
+            <button onclick="document.getElementById('modalNuevaNovedad').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/backoffice/novedades/nuevo" method="POST" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Título</label>
+                <input type="text" name="titulo" required placeholder="Título del aviso..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contenido / Cuerpo</label>
+                <textarea name="cuerpo" rows="4" required placeholder="Texto del comunicado..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white"></textarea>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="destacada" name="destacada" value="1" class="rounded text-blue-600 focus:ring-blue-500">
+                <label for="destacada" class="font-bold text-slate-700 dark:text-slate-300">Marcar como destacada en portada</label>
+            </div>
+            <div class="pt-3 flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('modalNuevaNovedad').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-sm">Publicar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

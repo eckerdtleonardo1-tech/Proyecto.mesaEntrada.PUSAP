@@ -1,0 +1,155 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <div class="mb-6">
+        <a href="/alumno/solicitudes" class="text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-arrow-left text-xs"></i> Volver a mis solicitudes
+        </a>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-800"><%= solicitud.tipo_nombre %></h1>
+                <p class="text-xs text-slate-500 mt-1">
+                    Iniciada el <%= moment(solicitud.created_at).format('DD/MM/YYYY [a las] HH:mm') %> hs
+                </p>
+            </div>
+            <%
+                const estadoBadges = {
+                    borrador: 'bg-slate-100 text-slate-700 border-slate-300',
+                    enviada: 'bg-blue-100 text-blue-800 border-blue-200',
+                    en_revision: 'bg-purple-100 text-purple-800 border-purple-200',
+                    observada: 'bg-amber-100 text-amber-800 border-amber-200',
+                    aprobada: 'bg-green-100 text-green-800 border-green-200',
+                    emitida: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                    rechazada: 'bg-red-100 text-red-800 border-red-200'
+                };
+                const estadoNames = {
+                    borrador: 'Borrador',
+                    enviada: 'Enviada',
+                    en_revision: 'En revisión',
+                    observada: 'Observada',
+                    aprobada: 'Aprobada',
+                    emitida: 'Emitida',
+                    rechazada: 'Rechazada'
+                };
+            %>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border <%= estadoBadges[solicitud.estado] || 'bg-slate-100 text-slate-700' %> self-start sm:self-auto">
+                <span class="w-2 h-2 rounded-full bg-current"></span>
+                <%= estadoNames[solicitud.estado] || solicitud.estado %>
+            </span>
+        </div>
+    </div>
+
+    <!-- Si está observada: caja destacada -->
+    <% if (solicitud.estado === 'observada') { %>
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-xl shadow-sm mb-6">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl mt-0.5"></i>
+            <div class="flex-1">
+                <h2 class="text-sm font-bold text-amber-900">Esta solicitud requiere correcciones</h2>
+                <p class="text-sm text-amber-800 mt-1"><%= solicitud.motivo_observacion || 'Por favor verifica la documentación solicitada.' %></p>
+                <div class="mt-4 pt-4 border-t border-amber-200">
+                    <form action="/alumno/solicitudes/<%= solicitud.id %>/adjuntar" method="POST" enctype="multipart/form-data" class="space-y-3">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-amber-900">Adjuntar documentación corregida</label>
+                        <input type="file" name="adjuntos" multiple required accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer">
+                        <button type="submit" class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-upload"></i> Enviar corrección
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Si fue emitida: descarga de documento oficial -->
+    <% if (solicitud.estado === 'emitida' && solicitud.documento_emitido_filename) { %>
+    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 text-xl">
+                <i class="fa-solid fa-file-circle-check"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-emerald-900">Documento Oficial Emitido</p>
+                <p class="text-xs text-emerald-700"><%= solicitud.documento_emitido_original_name || 'Documento listo para su descarga' %></p>
+            </div>
+        </div>
+        <a href="/descargas/privado/<%= solicitud.documento_emitido_filename %>" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-download"></i> Descargar Documento
+        </a>
+    </div>
+    <% } %>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Información y Adjuntos (2 columnas) -->
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-600"></i> Información del Trámite
+                </h3>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <dt class="text-xs text-slate-400">Modalidad</dt>
+                        <dd class="font-semibold text-slate-800">
+                            <%= solicitud.tipo_modalidad === 'emision' ? 'Emisión institucional' : 'Presentación de requisitos' %>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400">Última actualización</dt>
+                        <dd class="font-semibold text-slate-800"><%= moment(solicitud.updated_at).format('DD/MM/YYYY HH:mm') %> hs</dd>
+                    </div>
+                    <% if (solicitud.tipo_descripcion) { %>
+                    <div class="sm:col-span-2">
+                        <dt class="text-xs text-slate-400">Descripción del requerimiento</dt>
+                        <dd class="text-slate-600 text-xs mt-1 leading-relaxed"><%= solicitud.tipo_descripcion %></dd>
+                    </div>
+                    <% } %>
+                </dl>
+            </div>
+
+            <!-- Adjuntos del alumno -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-paperclip text-blue-600"></i> Documentos Adjuntos (<%= adjuntos.length %>)
+                </h3>
+                <% if (adjuntos.length === 0) { %>
+                    <p class="text-xs text-slate-400 italic">No se adjuntaron archivos.</p>
+                <% } else { %>
+                    <ul class="divide-y divide-slate-100">
+                        <% adjuntos.forEach(a => { %>
+                        <li class="py-3 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                                <span class="text-xs font-medium text-slate-700 truncate"><%= a.original_name %></span>
+                            </div>
+                            <a href="/descargas/privado/<%= a.filename %>" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition shrink-0">
+                                <i class="fa-solid fa-download mr-1"></i> Bajar
+                            </a>
+                        </li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Línea de tiempo / Historial (1 columna) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Historial
+            </h3>
+            <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                <% historia.forEach(h => { %>
+                <div class="relative">
+                    <div class="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-white"></div>
+                    <p class="text-xs font-bold text-slate-800"><%= estadoNames[h.estado_nuevo] || h.estado_nuevo %></p>
+                    <p class="text-[11px] text-slate-400"><%= moment(h.created_at).format('DD/MM/YYYY HH:mm') %></p>
+                    <% if (h.comentario) { %>
+                    <p class="text-xs text-slate-600 mt-1 bg-slate-50 p-2 rounded border border-slate-100"><%= h.comentario %></p>
+                    <% } %>
+                </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

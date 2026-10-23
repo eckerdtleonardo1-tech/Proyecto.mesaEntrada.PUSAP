@@ -1,0 +1,91 @@
+<%- include('../partials/header') %>
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-blue-600"></i> Catálogo de Tipos de Solicitud
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Configuración de trámites documentales disponibles para los alumnos.</p>
+        </div>
+        <button onclick="document.getElementById('modalNuevoTipo').classList.remove('hidden')" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2 self-start sm:self-auto shadow-sm">
+            <i class="fa-solid fa-plus"></i> Nuevo Tipo
+        </button>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5">Orden</th>
+                        <th class="px-5 py-3.5">Nombre</th>
+                        <th class="px-5 py-3.5">Modalidad</th>
+                        <th class="px-5 py-3.5">Descripción</th>
+                        <th class="px-5 py-3.5 text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    <% tipos.forEach(t => { %>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                        <td class="px-5 py-3.5 font-mono font-bold text-slate-400">#<%= t.orden %></td>
+                        <td class="px-5 py-3.5 font-bold text-slate-800 dark:text-slate-100"><%= t.nombre %></td>
+                        <td class="px-5 py-3.5">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold <%= t.modalidad === 'emision' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' %>">
+                                <%= t.modalidad === 'emision' ? 'Emisión institucional' : 'Presentación alumno' %>
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400 max-w-xs truncate"><%= t.descripcion || '-' %></td>
+                        <td class="px-5 py-3.5 text-center">
+                            <% if (t.activo) { %>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Activo</span>
+                            <% } else { %>
+                            <span class="text-slate-400 font-bold">Inactivo</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Tipo -->
+<div id="modalNuevoTipo" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Nuevo Tipo de Solicitud</h3>
+            <button onclick="document.getElementById('modalNuevoTipo').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form action="/backoffice/tipos-solicitud/nuevo" method="POST" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
+                <input type="text" name="nombre" required placeholder="Ej: Certificado de Examen..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Modalidad del Trámite</label>
+                <select name="modalidad" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
+                    <option value="emision">Emisión (la institución genera y entrega un documento)</option>
+                    <option value="presentacion">Presentación (el alumno entrega documentación para validar)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción / Instrucciones</label>
+                <textarea name="descripcion" rows="3" placeholder="Requisitos, plazos..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white"></textarea>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Orden</label>
+                <input type="number" name="orden" value="10" class="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
+            </div>
+            <div class="pt-3 flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('modalNuevoTipo').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-sm">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
