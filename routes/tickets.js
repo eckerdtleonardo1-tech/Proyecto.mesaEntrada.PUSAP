@@ -679,4 +679,48 @@ router.get('/reporte-mensual', (req, res) => {
     });
 });
 
+// ====== EXPORTACIÓN CSV PARA EXCEL ======
+router.get('/exportar-csv', (req, res) => {
+    const user = req.session.user;
+    let whereClause = `WHERE deleted_at IS NULL`;
+    let params = [];
+
+    if (user.role !== 'operador') {
+        whereClause += ` AND area = ?`;
+        params.push(user.area);
+    }
+
+    db.all(`SELECT tracking_code, first_name, last_name, dni, email, phone, category, status, area, priority, expiration_date, created_at
+            FROM tickets ${whereClause} ORDER BY created_at DESC`, params, (err, rows) => {
+        if (err) return res.status(500).send("Error generando exportación.");
+
+        let csv = '\uFEFF'; // BOM UTF-8 para Excel
+        csv += 'Código;Nombre;Apellido;DNI;Email;Teléfono;Trámite;Estado;Área;Prioridad;Fecha Vencimiento;Fecha Creación\r\n';
+
+        if (rows && rows.length > 0) {
+            rows.forEach(r => {
+                const fila = [
+                    r.tracking_code || '',
+                    r.first_name || '',
+                    r.last_name || '',
+                    r.dni || '',
+                    r.email || '',
+                    r.phone || '',
+                    r.category || '',
+                    r.status || '',
+                    r.area || '',
+                    r.priority || '',
+                    r.expiration_date ? moment(r.expiration_date).format('DD/MM/YYYY') : '',
+                    moment.utc(r.created_at).local().format('DD/MM/YYYY HH:mm')
+                ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';');
+                csv += fila + '\r\n';
+            });
+        }
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="expedientes_pusap_${moment().format('YYYYMMDD_HHmm')}.csv"`);
+        res.send(csv);
+    });
+});
+
 module.exports = router;

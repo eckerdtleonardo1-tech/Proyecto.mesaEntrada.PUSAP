@@ -1,28 +1,84 @@
 <%- include('../partials/header') %>
 
 <div class="space-y-6">
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-user-graduate text-blue-600"></i> Gestión de Alumnos
+                <i class="fa-solid fa-user-graduate text-blue-600"></i> Padrón de Alumnos
             </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Padrón de estudiantes, carreras activas y estado de acceso al portal.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gestión de estudiantes, inscripción a carreras y acceso al portal del alumno.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openNuevoAlumnoModal()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Alumno
+            </button>
         </div>
     </div>
 
-    <!-- Buscador -->
-    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <form method="GET" action="/backoffice/alumnos" class="flex gap-2">
-            <input type="text" name="search" value="<%= query.search || '' %>" placeholder="Buscar por Nombre, Apellido, DNI o Legajo..." class="flex-1 text-xs px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+    <!-- Alertas de éxito o error -->
+    <% if (typeof success !== 'undefined' && success && token) { %>
+    <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-2xl p-5 shadow-sm animate-[fadeIn_0.3s_ease]">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-lg shrink-0 mt-0.5">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-emerald-900 dark:text-emerald-200 text-sm">
+                        <%= success === 'creado' ? '¡Alumno registrado y enlace de activación generado!' : '¡Nuevo enlace de activación generado con éxito!' %>
+                    </h4>
+                    <p class="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
+                        Alumno: <strong class="text-emerald-900 dark:text-white"><%= alumnoNombre || 'Estudiante' %></strong>. Compartile el siguiente enlace para que cree su contraseña de acceso al portal (válido por 7 días):
+                    </p>
+                    <div class="mt-3 flex items-center gap-2 flex-wrap">
+                        <input type="text" id="activationLinkInput" readonly value="<%= req.protocol %>://<%= req.get('host') %>/activar/<%= token %>" class="px-3 py-2 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 w-full sm:w-96 select-all">
+                        <button type="button" onclick="copyActivationLink()" id="copyLinkBtn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-regular fa-copy"></i> Copiar Enlace
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <a href="/backoffice/alumnos" class="text-emerald-500 hover:text-emerald-700 p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i>
+            <p class="text-xs font-bold"><%= decodeURIComponent(error) %></p>
+        </div>
+        <a href="/backoffice/alumnos" class="text-red-400 hover:text-red-600 p-1">
+            <i class="fa-solid fa-xmark"></i>
+        </a>
+    </div>
+    <% } %>
+
+    <!-- Buscador y métricas rápidas -->
+    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <form method="GET" action="/backoffice/alumnos" class="flex gap-2 w-full sm:w-auto flex-1">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </div>
+                <input type="text" name="search" value="<%= query.search || '' %>" placeholder="Buscar por Nombre, Apellido, DNI o Legajo..." class="w-full text-xs pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+            </div>
             <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                Buscar
             </button>
             <% if (query.search) { %>
-            <a href="/backoffice/alumnos" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center">
-                Limpiar
+            <a href="/backoffice/alumnos" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold px-3 py-2.5 rounded-xl text-xs transition flex items-center" title="Limpiar filtro">
+                <i class="fa-solid fa-rotate-left"></i>
             </a>
             <% } %>
         </form>
+        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-xl whitespace-nowrap">
+            <%= alumnos.length %> alumno<%= alumnos.length !== 1 ? 's' : '' %> registrado<%= alumnos.length !== 1 ? 's' : '' %>
+        </span>
     </div>
 
     <!-- Lista de Alumnos -->
@@ -36,12 +92,16 @@
                         <th class="px-5 py-3.5">Carrera(s)</th>
                         <th class="px-5 py-3.5">Contacto</th>
                         <th class="px-5 py-3.5 text-center">Acceso Portal</th>
+                        <th class="px-5 py-3.5 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
                     <% if (alumnos.length === 0) { %>
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-slate-400">No se encontraron alumnos registrados.</td>
+                        <td colspan="6" class="px-5 py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-user-graduate text-3xl mb-2 block opacity-40"></i>
+                            No se encontraron alumnos registrados con ese criterio.
+                        </td>
                     </tr>
                     <% } %>
                     <% alumnos.forEach(a => { %>
@@ -54,10 +114,10 @@
                             <%= a.apellido %>, <%= a.nombre %>
                         </td>
                         <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300">
-                            <%= a.carreras || '<span class="text-slate-400 italic">Sin carreras</span>' %>
+                            <%= a.carreras || '<span class="text-slate-400 italic">Sin carreras asignadas</span>' %>
                         </td>
                         <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400">
-                            <p><%= a.email || '-' %></p>
+                            <p class="font-medium text-slate-700 dark:text-slate-300"><%= a.email || '-' %></p>
                             <p class="text-[10px]"><%= a.telefono || '' %></p>
                         </td>
                         <td class="px-5 py-3.5 text-center">
@@ -75,12 +135,111 @@
                             </span>
                             <% } %>
                         </td>
+                        <td class="px-5 py-3.5 text-right">
+                            <form method="POST" action="/backoffice/alumnos/<%= a.id %>/activar" class="inline">
+                                <button type="submit" class="bg-slate-100 hover:bg-blue-50 dark:bg-slate-700 dark:hover:bg-slate-600 text-blue-700 dark:text-blue-300 font-bold px-3 py-1.5 rounded-lg text-[11px] transition inline-flex items-center gap-1 border border-slate-200 dark:border-slate-600" title="Generar un nuevo enlace de activación">
+                                    <i class="fa-solid fa-key text-[10px]"></i> Generar Enlace
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     <% }) %>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Modal Registrar Nuevo Alumno -->
+    <div id="nuevoAlumnoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-lg w-full p-6 scale-in relative">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 dark:text-white text-base">Registrar Nuevo Alumno</h3>
+                </div>
+                <button onclick="closeNuevoAlumnoModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form action="/backoffice/alumnos/nuevo" method="POST" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Legajo <span class="text-red-500">*</span></label>
+                        <input type="text" name="legajo" required placeholder="Ej: 2025-042" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">DNI <span class="text-red-500">*</span></label>
+                        <input type="text" name="dni" required placeholder="Sin puntos" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre <span class="text-red-500">*</span></label>
+                        <input type="text" name="nombre" required placeholder="Nombre/s" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Apellido <span class="text-red-500">*</span></label>
+                        <input type="text" name="apellido" required placeholder="Apellido/s" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Email Oficial <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" required placeholder="alumno@email.com" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
+                        <input type="text" name="telefono" placeholder="Ej: 11-5555-1234" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Carrera Inicial</label>
+                    <select name="carrera_id" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                        <option value="">-- Sin carrera asignada --</option>
+                        <% if (typeof carreras !== 'undefined') { %>
+                            <% carreras.forEach(car => { %>
+                            <option value="<%= car.id %>"><%= car.nombre %></option>
+                            <% }) %>
+                        <% } %>
+                    </select>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2">
+                    <button type="button" onclick="closeNuevoAlumnoModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-save"></i> Guardar y Generar Activación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+function openNuevoAlumnoModal() {
+    document.getElementById('nuevoAlumnoModal').classList.remove('hidden');
+}
+function closeNuevoAlumnoModal() {
+    document.getElementById('nuevoAlumnoModal').classList.add('hidden');
+}
+function copyActivationLink() {
+    const input = document.getElementById('activationLinkInput');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+    const btn = document.getElementById('copyLinkBtn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Copiado!';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar Enlace';
+    }, 2500);
+}
+</script>
 
 <%- include('../partials/footer') %>

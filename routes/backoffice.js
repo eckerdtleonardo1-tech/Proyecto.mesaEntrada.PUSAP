@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const moment = require('moment');
+const crypto = require('crypto');
 const db = require('../db');
 const { requirePersonal, requireOperador } = require('../middleware/auth');
 
@@ -212,7 +213,7 @@ router.get('/alumnos', requireOperador, (req, res) => {
         const like = `%${search}%`;
         params = [like, like, like, like];
     }
-    db.all(`SELECT a.*, u.username as user_email, u.activo as cuenta_activa,
+    db.all(`SELECT a.*, u.id as user_id, u.username as user_email, u.activo as cuenta_activa, u.activation_token,
         GROUP_CONCAT(c.nombre, ' / ') as carreras
         FROM alumnos a
         LEFT JOIN users u ON u.alumno_id = a.id
@@ -221,11 +222,92 @@ router.get('/alumnos', requireOperador, (req, res) => {
         WHERE ${where}
         GROUP BY a.id
         ORDER BY a.apellido, a.nombre`, params, (err, alumnos) => {
-        res.render('backoffice/alumnos', {
-            title: 'Gestión de Alumnos',
-            user: req.session.user,
-            alumnos: alumnos || [],
-            query: req.query
+        db.all(`SELECT id, nombre FROM carreras WHERE activo = 1 ORDER BY nombre`, [], (errCarreras, carreras) => {
+            res.render('backoffice/alumnos', {
+                title: 'Gestión de Alumnos',
+                user: req.session.user,
+                alumnos: alumnos || [],
+                carreras: carreras || [],
+                query: req.query,
+                success: req.query.success || null,
+                token: req.query.token || null,
+                alumnoNombre: req.query.alumno || null,
+                error: req.query.error || null
+            });
+        });
+    });
+});
+
+// Alta de nuevo alumno con generación de token de activación
+router.post('/alumnos/nuevo', requireOperador, (req, res) => {
+    const { legajo, dni, nombre, apellido, email, telefono, carrera_id } = req.body;
+
+    if (!legajo || !dni || !nombre || !apellido) {
+        return res.redirect('/backoffice/alumnos?error=campos_requeridos');
+    }
+
+    db.run(`INSERT INTO alumnos (legajo, dni, nombre, apellido, email, telefono) VALUES (?, ?, ?, ?, ?, ?)`,
+        [legajo.trim(), dni.trim(), nombre.trim(), apellido.trim(), (email || '').trim(), (telefono || '').trim()],
+        function(err) {
+            if (err) {
+                console.error('Error insertando alumno:', err.message);
+                return res.redirect('/backoffice/alumnos?error=' + encodeURIComponent(err.message.includes('UNIQUE') ? 'El legajo o DNI ya se encuentra registrado.' : 'Error al registrar alumno.'));
+            }
+
+            const alumnoId = this.lastID;
+
+            // Inscribir a carrera si fue seleccionada
+            if (carrera_id) {
+                db.run(`INSERT OR IGNORE INTO alumno_carreras (alumno_id, carrera_id, estado, fecha_inicio) VALUES (?, ?, 'activo', date('now'))`,
+                    [alumnoId, carrera_id]);
+            }
+
+            // Crear usuario de portal con token de activación
+            const token = crypto.randomBytes(24).toString('hex');
+            const expires = moment().add(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+            const username = (email && email.trim()) ? email.trim() : legajo.trim();
+
+            db.run(`INSERT INTO users (username, name, role, email, dni, legajo, alumno_id, activation_token, activation_expires, activo)
+                VALUES (?, ?, 'alumno', ?, ?, ?, ?, ?, ?, 0)`,
+                [username, `${nombre.trim()} ${apellido.trim()}`, (email || '').trim(), dni.trim(), legajo.trim(), alumnoId, token, expires],
+                (errUser) => {
+                    res.redirect(`/backoffice/alumnos?success=creado&token=${token}&alumno=${encodeURIComponent(nombre + ' ' + apellido)}`);
+                }
+            );
+        }
+    );
+});
+
+// Generar / regenerar enlace de activación para alumno existente
+router.post('/alumnos/:id/activar', requireOperador, (req, res) => {
+    const alumnoId = req.params.id;
+
+    db.get(`SELECT * FROM alumnos WHERE id = ?`, [alumnoId], (err, alumno) => {
+        if (err || !alumno) return res.redirect('/backoffice/alumnos?error=alumno_no_encontrado');
+
+        const token = crypto.randomBytes(24).toString('hex');
+        const expires = moment().add(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+
+        db.get(`SELECT id FROM users WHERE alumno_id = ?`, [alumnoId], (errUser, userRow) => {
+            if (userRow) {
+                // Actualizar token existente
+                db.run(`UPDATE users SET activation_token = ?, activation_expires = ? WHERE id = ?`,
+                    [token, expires, userRow.id],
+                    () => {
+                        res.redirect(`/backoffice/alumnos?success=token_generado&token=${token}&alumno=${encodeURIComponent(alumno.nombre + ' ' + alumno.apellido)}`);
+                    }
+                );
+            } else {
+                // Crear usuario si no existía
+                const username = alumno.email || alumno.legajo;
+                db.run(`INSERT INTO users (username, name, role, email, dni, legajo, alumno_id, activation_token, activation_expires, activo)
+                    VALUES (?, ?, 'alumno', ?, ?, ?, ?, ?, ?, 0)`,
+                    [username, `${alumno.nombre} ${alumno.apellido}`, alumno.email, alumno.dni, alumno.legajo, alumnoId, token, expires],
+                    () => {
+                        res.redirect(`/backoffice/alumnos?success=token_generado&token=${token}&alumno=${encodeURIComponent(alumno.nombre + ' ' + alumno.apellido)}`);
+                    }
+                );
+            }
         });
     });
 });

@@ -1,0 +1,270 @@
+<%- include('partials/header') %>
+
+<!-- Hero Header -->
+<div class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white py-14 px-4 sm:px-6 relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto relative z-10 text-center">
+        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4">
+            <i class="fa-solid fa-headset text-blue-300"></i> Centro de Atención
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3">Contacto y Canales de Atención</h1>
+        <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto font-light">
+            Estamos a tu disposición para ayudarte con tus trámites, consultas académicas y administrativas.
+        </p>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+
+    <!-- Grid de Departamentos -->
+    <div class="mb-14">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-900">Nuestros Canales de Atención</h2>
+            <p class="text-slate-500 text-sm mt-1">Elegí el área correspondiente a tu consulta para una respuesta más rápida.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Mesa de Entrada -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-blue-400 transition group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Mesa de Entrada Virtual</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Recepción, derivación y seguimiento de trámites, expedientes oficiales y documentación administrativa.
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-blue-600 w-4"></i> <a href="mailto:mesaentrada@pusap.edu.ar" class="hover:text-blue-700 font-medium">mesaentrada@pusap.edu.ar</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-blue-600 w-4"></i> <span>0800-PUSAP-123 (Opción 1)</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-blue-600 w-4"></i> <span>Lun a Vie 8:00 a 19:00 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-slate-100 flex gap-2">
+                    <a href="/nuevo-tramite" class="flex-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition">
+                        Iniciar Trámite
+                    </a>
+                    <a href="/seguimiento" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition" title="Consultar estado">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Secretaría Académica -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-purple-400 transition group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Secretaría Académica</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Planes de estudio, equivalencias de materias, certificados de alumno regular y analíticos parciales.
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-purple-600 w-4"></i> <a href="mailto:academica@pusap.edu.ar" class="hover:text-purple-700 font-medium">academica@pusap.edu.ar</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-purple-600 w-4"></i> <span>0800-PUSAP-123 (Opción 2)</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-purple-600 w-4"></i> <span>Lun a Vie 9:00 a 18:00 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <a href="/nuevo-tramite?categoria=Certificado%20de%20Alumno%20Regular" class="block w-full bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition">
+                        Pedir Certificado
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tesorería y Cobranzas -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-green-400 transition group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-green-100 text-green-700 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Tesorería & Aranceles</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Informes de pago de cuotas, aranceles de matrícula, planes de pago y medios de pago electrónicos.
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-green-600 w-4"></i> <a href="mailto:tesoreria@pusap.edu.ar" class="hover:text-green-700 font-medium">tesoreria@pusap.edu.ar</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-green-600 w-4"></i> <span>0800-PUSAP-123 (Opción 3)</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-green-600 w-4"></i> <span>Lun a Vie 8:00 a 16:00 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <a href="/nuevo-tramite?categoria=Pago%20/%20Aranceles" class="block w-full bg-green-50 hover:bg-green-600 hover:text-white text-green-700 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition">
+                        Informar Comprobante de Pago
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ingresos y Admisión -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-amber-400 transition group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Admisión e Ingresos</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Información para nuevos ingresantes, fechas de inscripción, requisitos y programas de estudio.
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-amber-600 w-4"></i> <a href="mailto:ingresos@pusap.edu.ar" class="hover:text-amber-700 font-medium">ingresos@pusap.edu.ar</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-amber-600 w-4"></i> <span>0800-PUSAP-123 (Opción 4)</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-amber-600 w-4"></i> <span>Lun a Vie 8:30 a 19:30 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <a href="/carreras" class="block w-full bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-800 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition">
+                        Ver Oferta Académica
+                    </a>
+                </div>
+            </div>
+
+            <!-- Soporte Técnico y Portal -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-cyan-400 transition group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-cyan-100 text-cyan-700 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Soporte del Portal Web</h3>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Problemas para acceder con tu usuario, activación de cuenta de alumno o inconvenientes técnicos.
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-cyan-600 w-4"></i> <a href="mailto:soporte@pusap.edu.ar" class="hover:text-cyan-700 font-medium">soporte@pusap.edu.ar</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-circle-question text-cyan-600 w-4"></i> <a href="/#faqs" class="hover:text-cyan-700 font-medium">Preguntas Frecuentes</a></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-cyan-600 w-4"></i> <span>Lun a Vie 8:00 a 20:00 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <a href="/ingresar" class="block w-full bg-cyan-50 hover:bg-cyan-600 hover:text-white text-cyan-800 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition">
+                        Ingresar al Portal
+                    </a>
+                </div>
+            </div>
+
+            <!-- WhatsApp Oficial -->
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-6 shadow-sm text-white flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1">WhatsApp Institucional</h3>
+                    <p class="text-xs text-emerald-100 mb-4 leading-relaxed">
+                        Atención directa y respuestas rápidas a través de nuestro canal verificado de mensajería.
+                    </p>
+                    <div class="space-y-2 text-xs text-emerald-100">
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-mobile-screen w-4"></i> <span class="font-bold text-white">+54 9 11 5555-PUSAP</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-regular fa-clock w-4"></i> <span>Lunes a Viernes 8:00 a 17:00 hs</span></p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-emerald-400/40">
+                    <a href="https://wa.me/5491155557872" target="_blank" rel="noopener noreferrer" class="block w-full bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-xs py-2.5 px-3 rounded-xl text-center transition shadow">
+                        <i class="fa-brands fa-whatsapp mr-1 text-emerald-600"></i> Iniciar Chat de WhatsApp
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Sede Central y Horarios -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                    <i class="fa-solid fa-location-dot"></i> Sede Central
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-900 mb-3">Centro Universitario PUSAP</h3>
+                <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                    Nuestras oficinas de Mesa de Entrada y atención al estudiante se encuentran ubicadas en el campus central. Si necesitás acercar documentación física original legalizada, podés concurrir dentro del horario de atención.
+                </p>
+
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">Dirección</p>
+                            <p class="text-slate-500 text-xs">Av. Universitaria 1250, Edificio Central, Planta Baja</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">Horario de Mesa de Entrada Presencial</p>
+                            <p class="text-slate-500 text-xs">Lunes a Viernes de 8:00 a 14:00 hs y de 16:00 a 20:00 hs</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800">Validez Legal</p>
+                            <p class="text-slate-500 text-xs">Todos los trámites iniciados en la Mesa de Entrada Virtual tienen la misma validez que la presentación física.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Card / Resumen rápido -->
+            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                <h4 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-amber-500"></i> Accesos Rápidos
+                </h4>
+                <div class="space-y-3">
+                    <a href="/nuevo-tramite" class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-sm transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-file-signature"></i></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 group-hover:text-blue-700">Presentar Nuevo Trámite</p>
+                                <p class="text-[11px] text-slate-400">100% digital, sin moverte de tu casa</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+
+                    <a href="/seguimiento" class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-sm transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-satellite-dish"></i></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 group-hover:text-purple-700">Seguimiento de Trámite</p>
+                                <p class="text-[11px] text-slate-400">Consultá con tu código oficial y DNI</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+
+                    <a href="/carreras" class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-sm transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-user-graduate"></i></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 group-hover:text-amber-700">Carreras y Cursos</p>
+                                <p class="text-[11px] text-slate-400">Planes de estudio y requisitos de admisión</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+
+                    <a href="/ingresar" class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-sm transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-green-100 text-green-700 flex items-center justify-center"><i class="fa-solid fa-lock"></i></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 group-hover:text-green-700">Portal del Alumno / Personal</p>
+                                <p class="text-[11px] text-slate-400">Iniciá sesión para gestionar tus actividades</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<%- include('partials/footer') %>

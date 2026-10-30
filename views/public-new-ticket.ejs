@@ -200,14 +200,15 @@
                 <div class="mb-8">
                     <label class="block text-sm font-bold text-slate-700 mb-3 text-lg">Seleccioná el tipo de gestión <span class="text-red-500">*</span></label>
                     <div class="relative">
+                        <% const selCat = typeof initialCategoria !== 'undefined' ? initialCategoria : ''; %>
                         <select name="category" required class="block w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-medium text-slate-700 focus:bg-white focus:ring-0 focus:border-purple-500 outline-none transition cursor-pointer appearance-none">
-                            <option value="" disabled selected>Desplegá la lista de opciones aquí...</option>
-                            <option value="Inscripción">📋 Inscripción a Carrera</option>
-                            <option value="Solicitud de Equivalencias">🔄 Solicitud de Equivalencias</option>
-                            <option value="Pago / Aranceles">💳 Envío de Comprobante de Pago</option>
-                            <option value="Certificado de Alumno Regular">📜 Certificado Alumno Regular</option>
-                            <option value="Presentación de Título">🎓 Presentación de Título Analítico</option>
-                            <option value="Otros">📌 Otro trámite distinto</option>
+                            <option value="" disabled <%= !selCat ? 'selected' : '' %>>Desplegá la lista de opciones aquí...</option>
+                            <option value="Inscripción" <%= selCat === 'Inscripción' ? 'selected' : '' %>>📋 Inscripción a Carrera</option>
+                            <option value="Solicitud de Equivalencias" <%= selCat === 'Solicitud de Equivalencias' ? 'selected' : '' %>>🔄 Solicitud de Equivalencias</option>
+                            <option value="Pago / Aranceles" <%= selCat === 'Pago / Aranceles' ? 'selected' : '' %>>💳 Envío de Comprobante de Pago</option>
+                            <option value="Certificado de Alumno Regular" <%= selCat === 'Certificado de Alumno Regular' ? 'selected' : '' %>>📜 Certificado Alumno Regular</option>
+                            <option value="Presentación de Título" <%= selCat === 'Presentación de Título' ? 'selected' : '' %>>🎓 Presentación de Título Analítico</option>
+                            <option value="Otros" <%= selCat === 'Otros' ? 'selected' : '' %>>📌 Otro trámite distinto</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
                             <i class="fa-solid fa-chevron-down"></i>
@@ -217,7 +218,7 @@
 
                 <div class="mb-8">
                     <label class="block text-sm font-bold text-slate-700 mb-3 text-lg">Observaciones del estudiante <span class="font-normal text-slate-400">(Opcional)</span></label>
-                    <textarea name="student_notes" maxlength="500" rows="3" placeholder="Aclaraciones adicionales que consideres importantes para tu trámite..." class="block w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-0 focus:border-purple-500 outline-none transition resize-none"></textarea>
+                    <textarea name="student_notes" maxlength="500" rows="3" placeholder="Aclaraciones adicionales que consideres importantes para tu trámite..." class="block w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-0 focus:border-purple-500 outline-none transition resize-none"><%= typeof initialCarrera !== 'undefined' && initialCarrera ? 'Inscripción a: ' + initialCarrera + '\n' : '' %></textarea>
                     <p class="text-xs text-slate-400 mt-1 text-right">Máximo 500 caracteres.</p>
                 </div>
 
@@ -325,6 +326,7 @@
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('ticketForm');
@@ -532,6 +534,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
 <%- include('partials/footer') %>

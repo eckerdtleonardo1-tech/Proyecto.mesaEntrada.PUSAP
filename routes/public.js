@@ -51,13 +51,56 @@ router.get('/', (req, res) => {
                 if (row.key === 'announcement_type') announcement_type = row.value;
             });
         }
-        res.render('index', { title: 'Inicio - PUSAP', welcome_message, announcement, announcement_type });
+
+        // Consultar novedades activas
+        db.all("SELECT * FROM novedades WHERE activo = 1 ORDER BY destacada DESC, fecha_publicacion DESC LIMIT 6", [], (errNov, novedades) => {
+            // Consultar FAQs activas
+            db.all("SELECT * FROM faqs WHERE activo = 1 ORDER BY orden, categoria", [], (errFaq, faqs) => {
+                // Consultar carreras destacadas
+                db.all("SELECT * FROM carreras WHERE activo = 1 ORDER BY orden, nombre LIMIT 4", [], (errCar, carreras) => {
+                    res.render('index', {
+                        title: 'Inicio - PUSAP',
+                        welcome_message,
+                        announcement,
+                        announcement_type,
+                        novedades: novedades || [],
+                        faqs: faqs || [],
+                        carreras: carreras || [],
+                        moment
+                    });
+                });
+            });
+        });
+    });
+});
+
+// GET: Oferta Académica (Carreras y Cursos)
+router.get('/carreras', (req, res) => {
+    db.all("SELECT * FROM carreras WHERE activo = 1 ORDER BY orden, nombre", [], (err, carreras) => {
+        if (err) return res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+        res.render('carreras', {
+            title: 'Oferta Académica - PUSAP',
+            carreras: carreras || [],
+            tipoFiltro: req.query.tipo || 'todas'
+        });
+    });
+});
+
+// GET: Contacto e información institucional
+router.get('/contacto', (req, res) => {
+    res.render('contacto', {
+        title: 'Contacto y Atención - PUSAP'
     });
 });
 
 // GET: Formulario público de nuevo trámite
 router.get('/nuevo-tramite', (req, res) => {
-    res.render('public-new-ticket', { title: 'Iniciar Trámite', success: false });
+    res.render('public-new-ticket', {
+        title: 'Iniciar Trámite',
+        success: false,
+        initialCategoria: req.query.categoria || '',
+        initialCarrera: req.query.carrera || ''
+    });
 });
 
 // POST: Procesar alta pública de trámite
@@ -110,16 +153,55 @@ router.post('/nuevo-tramite', apiLimiter, upload.array('attachments', 10), (req,
 });
 
 router.get('/seguimiento', (req, res) => {
-    res.render('tracking', { title: 'Seguimiento de Trámite', ticket: null, error: null });
+    const codigo = (req.query.codigo || req.query.search || '').trim();
+    const dni = (req.query.dni || '').trim();
+
+    if (codigo && dni) {
+        db.get(`SELECT * FROM tickets WHERE tracking_code = ? AND dni = ? AND deleted_at IS NULL`, [codigo, dni], (err, row) => {
+            res.render('tracking', {
+                title: 'Seguimiento de Trámite',
+                ticket: row || null,
+                error: (!row) ? 'No se encontró ningún expediente activo con ese código y DNI.' : null,
+                initialCodigo: codigo,
+                initialDni: dni,
+                moment
+            });
+        });
+    } else {
+        res.render('tracking', {
+            title: 'Seguimiento de Trámite',
+            ticket: null,
+            error: null,
+            initialCodigo: codigo,
+            initialDni: dni,
+            moment
+        });
+    }
 });
 
 router.post('/seguimiento', (req, res) => {
-    const { tracking_code, dni } = req.body;
-    db.get(`SELECT * FROM tickets WHERE tracking_code = ? AND dni = ?`, [tracking_code.trim(), dni.trim()], (err, row) => {
+    const tracking_code = (req.body.tracking_code || '').trim();
+    const dni = (req.body.dni || '').trim();
+
+    db.get(`SELECT * FROM tickets WHERE tracking_code = ? AND dni = ? AND deleted_at IS NULL`, [tracking_code, dni], (err, row) => {
         if (err || !row) {
-            return res.render('tracking', { title: 'Seguimiento de Trámite', ticket: null, error: 'No se encontró ningún trámite con ese código y DNI.' });
+            return res.render('tracking', {
+                title: 'Seguimiento de Trámite',
+                ticket: null,
+                error: 'No se encontró ningún expediente activo con ese código y DNI. Verificá los datos ingresados.',
+                initialCodigo: tracking_code,
+                initialDni: dni,
+                moment
+            });
         }
-        res.render('tracking', { title: 'Seguimiento de Trámite', ticket: row, error: null });
+        res.render('tracking', {
+            title: 'Seguimiento de Trámite',
+            ticket: row,
+            error: null,
+            initialCodigo: tracking_code,
+            initialDni: dni,
+            moment
+        });
     });
 });
 

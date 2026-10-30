@@ -135,9 +135,46 @@ router.get('/cuotas', (req, res) => {
                 filtro,
                 deudaTotal: row ? row.deuda_total : 0,
                 hoy,
+                success: req.query.success || null,
+                error: req.query.error || null,
                 moment
             });
         });
+    });
+});
+
+// Subir comprobante de pago de una cuota
+router.post('/cuotas/:id/comprobante', upload.single('comprobante'), (req, res) => {
+    const alumnoId = getAlumnoId(req);
+    const { id } = req.params;
+
+    if (!req.file) {
+        return res.redirect('/alumno/cuotas?error=archivo_requerido');
+    }
+
+    db.get(`SELECT * FROM cuotas WHERE id = ? AND alumno_id = ?`, [id, alumnoId], (err, cuota) => {
+        if (err || !cuota) {
+            return res.status(404).render('errors/404', { title: 'Cuota no encontrada', user: req.session.user });
+        }
+
+        db.run(`UPDATE cuotas SET 
+            comprobante_filename = ?, 
+            comprobante_original_name = ?, 
+            estado = 'pago_informado', 
+            fecha_pago = COALESCE(fecha_pago, date('now')),
+            updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ? AND alumno_id = ?`,
+            [req.file.filename, req.file.originalname, id, alumnoId],
+            (errUpdate) => {
+                if (errUpdate) return res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+
+                // Notificar al alumno
+                db.run(`INSERT INTO notificaciones (alumno_id, tipo, mensaje, url) VALUES (?, 'info', ?, ?)`,
+                    [alumnoId, `Informaste el comprobante de pago para: ${cuota.concepto}. Queda pendiente de verificación contable.`, '/alumno/cuotas']);
+
+                res.redirect('/alumno/cuotas?success=comprobante_enviado');
+            }
+        );
     });
 });
 

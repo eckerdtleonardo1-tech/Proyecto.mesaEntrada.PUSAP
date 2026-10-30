@@ -36,9 +36,9 @@ if (expiringToday.length > 0) {
         <a href="/panel/reporte-mensual" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm">
             <i class="fa-solid fa-file-pdf text-red-600"></i> Descargar Reporte Mensual (PDF)
         </a>
-        <button class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm" onclick="alert('Próximamente...')">
-            <i class="fa-solid fa-file-export"></i> Exportar
-        </button>
+        <a href="/panel/exportar-csv" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm" title="Descargar todos los trámites en archivo CSV compatible con Excel">
+            <i class="fa-solid fa-file-csv text-emerald-600"></i> Exportar CSV
+        </a>
         <% if (user.role === 'operador') { %>
         <a href="/panel/nuevo" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm">
             <i class="fa-solid fa-file-circle-plus"></i>

@@ -63,6 +63,28 @@ test('Smoke Test de Rutas Públicas vs. Protegidas', async (t) => {
         assert.match(res.headers.get('location'), /login/);
     });
 
+    await t.test('GET /carreras es público y responde HTTP 200', async () => {
+        const res = await fetch(`${baseUrl}/carreras`, { redirect: 'manual' });
+        assert.strictEqual(res.status, 200);
+        const text = await res.text();
+        assert.match(text, /Oferta Académica/);
+    });
+
+    await t.test('GET /contacto es público y responde HTTP 200', async () => {
+        const res = await fetch(`${baseUrl}/contacto`, { redirect: 'manual' });
+        assert.strictEqual(res.status, 200);
+        const text = await res.text();
+        assert.match(text, /Contacto/);
+    });
+
+    await t.test('GET /seguimiento es público y responde HTTP 200', async () => {
+        const res = await fetch(`${baseUrl}/seguimiento?codigo=PUSAP-TEST`, { redirect: 'manual' });
+        assert.strictEqual(res.status, 200);
+        const text = await res.text();
+        assert.match(text, /Seguimiento de Expediente/);
+        assert.match(text, /PUSAP-TEST/);
+    });
+
     await t.test('GET /ruta-inexistente responde HTTP 404', async () => {
         const res = await fetch(`${baseUrl}/esta-ruta-no-existe-xyz`, { redirect: 'manual' });
         assert.strictEqual(res.status, 404);

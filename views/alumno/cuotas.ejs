@@ -1,30 +1,76 @@
 <%- include('../partials/header') %>
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+
+    <% if (typeof success !== 'undefined' && success === 'comprobante_enviado') { %>
+    <div class="mb-6 bg-green-50 border border-green-200 text-green-800 rounded-2xl p-4 flex items-center justify-between shadow-sm animate-[fadeIn_0.3s_ease]">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-green-600 font-bold">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <p class="font-bold text-sm">¡Comprobante enviado con éxito!</p>
+                <p class="text-xs text-green-700">El equipo de Tesorería lo revisará a la brevedad para imputar el pago.</p>
+            </div>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-green-500 hover:text-green-700 p-1">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="mb-6 bg-red-50 border border-red-200 text-red-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-circle-exclamation text-red-500 text-lg"></i>
+            <p class="text-xs font-bold"><%= error === 'archivo_requerido' ? 'Debes adjuntar un archivo de comprobante (PDF o imagen).' : 'Ocurrió un error al procesar la solicitud.' %></p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 p-1">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <% } %>
+
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-file-invoice-dollar text-green-600"></i> Mis Cuotas
-        </h1>
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar text-green-600"></i> Mis Cuotas y Aranceles
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">Estado de tus pagos académicos, vencimientos y comprobantes.</p>
+        </div>
+        <a href="/contacto" class="text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-headset"></i> Consulta Tesorería
+        </a>
     </div>
 
     <!-- Deuda total -->
     <% if (deudaTotal > 0) { %>
-    <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-600 text-2xl shrink-0">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
             <div>
-                <p class="font-bold text-red-800">Deuda total</p>
-                <p class="text-red-600 text-sm">Cuotas pendientes + recargos</p>
+                <p class="font-extrabold text-red-900 text-base">Deuda Total Pendiente</p>
+                <p class="text-red-700 text-xs mt-0.5">Suma de cuotas no saldadas e intereses por mora.</p>
             </div>
         </div>
-        <span class="text-2xl font-extrabold text-red-700">
-            $ <%= deudaTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
-        </span>
+        <div class="text-right sm:border-l sm:border-red-200 sm:pl-6">
+            <span class="text-2xl sm:text-3xl font-black text-red-700 block">
+                $ <%= deudaTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
+            </span>
+            <span class="text-[10px] text-red-500 font-bold uppercase tracking-wider">A regularizar</span>
+        </div>
     </div>
     <% } else { %>
-    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3">
-        <i class="fa-solid fa-circle-check text-green-600 text-xl"></i>
-        <p class="font-semibold text-green-800">¡Estás al día con tus pagos! ✓</p>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6 flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 text-2xl shrink-0">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+            <p class="font-extrabold text-emerald-900 text-base">¡Estás al día con tus cuotas! ✓</p>
+            <p class="text-emerald-700 text-xs mt-0.5">No registrás pagos pendientes ni deudas en tu legajo.</p>
+        </div>
     </div>
     <% } %>
 
@@ -39,9 +85,9 @@
         ]; %>
         <% filtros.forEach(f => { %>
         <a href="/alumno/cuotas?filtro=<%= f.key %>"
-            class="px-4 py-2 rounded-xl text-sm font-semibold transition border
+            class="px-4 py-2 rounded-xl text-xs font-bold transition border
             <%= filtro === f.key
-                ? 'bg-blue-700 text-white border-blue-700'
+                ? 'bg-blue-700 text-white border-blue-700 shadow-sm'
                 : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-700' %>">
             <%= f.label %>
         </a>
@@ -50,21 +96,23 @@
 
     <!-- Tabla de cuotas -->
     <% if (cuotas.length === 0) { %>
-    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-        <i class="fa-solid fa-check-circle text-slate-300 text-4xl mb-3"></i>
-        <p class="text-slate-500">No hay cuotas en esta categoría.</p>
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <i class="fa-solid fa-receipt text-slate-300 text-4xl mb-3"></i>
+        <p class="text-sm font-bold text-slate-700">No hay cuotas en esta categoría</p>
+        <p class="text-xs text-slate-400 mt-1">Seleccioná otro filtro o consultá tus trámites activos.</p>
     </div>
     <% } else { %>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 border-b border-slate-200">
+            <table class="w-full text-xs">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold tracking-wider">
                     <tr>
-                        <th class="text-left px-5 py-3 font-semibold text-slate-600">Concepto</th>
-                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Vencimiento</th>
-                        <th class="text-right px-4 py-3 font-semibold text-slate-600">Monto</th>
-                        <th class="text-center px-4 py-3 font-semibold text-slate-600">Estado</th>
-                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Pago</th>
+                        <th class="text-left px-5 py-3.5">Concepto</th>
+                        <th class="text-left px-4 py-3.5">Vencimiento</th>
+                        <th class="text-right px-4 py-3.5">Monto</th>
+                        <th class="text-center px-4 py-3.5">Estado</th>
+                        <th class="text-center px-4 py-3.5">Comprobante</th>
+                        <th class="text-right px-5 py-3.5">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -72,39 +120,58 @@
                         const vencida = cuota.estado === 'pendiente' && cuota.vencimiento < hoy;
                         const estadoMostrado = vencida ? 'vencida' : cuota.estado;
                     %>
-                    <tr class="hover:bg-slate-50 transition <%= vencida ? 'bg-red-50/30' : '' %>">
-                        <td class="px-5 py-3.5">
-                            <p class="font-semibold text-slate-800"><%= cuota.concepto %></p>
-                            <% if (cuota.periodo) { %><p class="text-xs text-slate-400"><%= cuota.periodo %></p><% } %>
+                    <tr class="hover:bg-slate-50 transition <%= vencida ? 'bg-red-50/20' : '' %>">
+                        <td class="px-5 py-4">
+                            <p class="font-bold text-slate-900 text-sm"><%= cuota.concepto %></p>
+                            <% if (cuota.periodo) { %><p class="text-[11px] text-slate-400 font-mono mt-0.5">Período: <%= cuota.periodo %></p><% } %>
                         </td>
-                        <td class="px-4 py-3.5 <%= vencida ? 'text-red-600 font-semibold' : 'text-slate-600' %>">
-                            <%= moment(cuota.vencimiento).format('DD/MM/YYYY') %>
+                        <td class="px-4 py-4 <%= vencida ? 'text-red-600 font-bold' : 'text-slate-600' %>">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-regular fa-calendar text-[11px] opacity-70"></i>
+                                <%= moment(cuota.vencimiento).format('DD/MM/YYYY') %>
+                            </div>
+                            <% if (vencida) { %>
+                            <span class="text-[10px] text-red-500 font-bold block mt-0.5">Vencida</span>
+                            <% } %>
                         </td>
-                        <td class="px-4 py-3.5 text-right font-semibold text-slate-800">
+                        <td class="px-4 py-4 text-right font-bold text-slate-900 text-sm">
                             $ <%= cuota.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %>
                             <% if (cuota.recargo > 0) { %>
-                            <span class="block text-xs text-red-500">+ $ <%= cuota.recargo.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %> recargo</span>
+                            <span class="block text-[11px] text-red-500 font-normal mt-0.5">+ $ <%= cuota.recargo.toLocaleString('es-AR', { minimumFractionDigits: 2 }) %> recargo</span>
                             <% } %>
                         </td>
-                        <td class="px-4 py-3.5 text-center">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
-                                <%= estadoMostrado === 'pagada' ? 'bg-green-100 text-green-700' :
-                                    estadoMostrado === 'vencida' ? 'bg-red-100 text-red-700' :
-                                    estadoMostrado === 'pendiente' ? 'bg-amber-100 text-amber-700' :
-                                    estadoMostrado === 'pago_parcial' ? 'bg-orange-100 text-orange-700' :
-                                    estadoMostrado === 'becada_exenta' ? 'bg-purple-100 text-purple-700' :
+                        <td class="px-4 py-4 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold
+                                <%= estadoMostrado === 'pagada' ? 'bg-green-100 text-green-800 border border-green-200' :
+                                    estadoMostrado === 'pago_informado' ? 'bg-cyan-100 text-cyan-800 border border-cyan-200' :
+                                    estadoMostrado === 'vencida' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                    estadoMostrado === 'pendiente' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                    estadoMostrado === 'pago_parcial' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
+                                    estadoMostrado === 'becada_exenta' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
                                     'bg-slate-100 text-slate-600' %>">
-                                <%= estadoMostrado.replace('_', ' ').charAt(0).toUpperCase() + estadoMostrado.replace('_', ' ').slice(1) %>
+                                <%= estadoMostrado === 'pago_informado' ? 'En Verificación' : (estadoMostrado.replace('_', ' ').charAt(0).toUpperCase() + estadoMostrado.replace('_', ' ').slice(1)) %>
                             </span>
                         </td>
-                        <td class="px-4 py-3.5 text-slate-500 text-xs">
-                            <% if (cuota.fecha_pago) { %>
-                            <p><i class="fa-regular fa-calendar-check mr-1 text-green-600"></i><%= moment(cuota.fecha_pago).format('DD/MM/YYYY') %></p>
-                            <% } %>
+                        <td class="px-4 py-4 text-center text-xs">
                             <% if (cuota.comprobante_filename) { %>
-                            <a href="/descargas/privado/<%= cuota.comprobante_filename %>" class="inline-flex items-center gap-1 text-blue-600 hover:underline mt-0.5">
-                                <i class="fa-solid fa-paperclip"></i> Comprobante
+                            <a href="/descargas/privado/<%= cuota.comprobante_filename %>" class="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg font-bold transition">
+                                <i class="fa-solid fa-paperclip"></i> Ver adjunto
                             </a>
+                            <% } else { %>
+                            <span class="text-slate-400 italic text-[11px]">Sin archivo</span>
+                            <% } %>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <% if (cuota.estado !== 'pagada') { %>
+                            <button type="button" 
+                                    onclick="openUploadModal(<%= cuota.id %>, '<%= cuota.concepto %>', <%= cuota.monto %>)" 
+                                    class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition inline-flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-upload text-[10px]"></i> Informar Pago
+                            </button>
+                            <% } else { %>
+                            <span class="text-xs text-green-700 font-bold inline-flex items-center gap-1">
+                                <i class="fa-solid fa-check"></i> Saldado
+                            </span>
                             <% } %>
                         </td>
                     </tr>
@@ -115,11 +182,75 @@
     </div>
     <% } %>
 
+    <!-- Modal Informar Pago -->
+    <div id="uploadModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 scale-in relative">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-green-100 text-green-700 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3 class="font-extrabold text-slate-800 text-base">Informar Pago de Cuota</h3>
+                </div>
+                <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="uploadForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold">Concepto</p>
+                    <p class="text-sm font-bold text-slate-800" id="modalConcepto">-</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-bold">Importe</p>
+                    <p class="text-base font-extrabold text-blue-700" id="modalMonto">-</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Comprobante de Transferencia / Depósito <span class="text-red-500">*</span></label>
+                    <input type="file" name="comprobante" required accept="image/jpeg,image/png,application/pdf" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-xl bg-slate-50 cursor-pointer">
+                    <p class="text-[11px] text-slate-400 mt-1">Formatos permitidos: PDF, JPG o PNG (máx. 5 MB).</p>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Enviar Comprobante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Nota sobre medios de pago -->
-    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-        <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1.5"></i>¿Cómo informar un pago?</p>
-        <p>Una vez realizado el pago, presentá el comprobante en <a href="/contacto" class="underline font-semibold">Mesa de Entrada</a> o iniciá un trámite desde <a href="/alumno/tramites" class="underline font-semibold">Mis Trámites</a>.</p>
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-2xl p-5 text-xs text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <p class="font-bold mb-1 text-sm"><i class="fa-solid fa-circle-info mr-1 text-blue-600"></i> ¿Cómo realizar tus pagos bancarios?</p>
+            <p class="text-blue-800 leading-relaxed">
+                Podés transferir a la cuenta oficial de PUSAP (CBU: <strong>0110599520000012345678</strong> | Alias: <strong>CENTRO.PUSAP</strong>) y adjuntar el ticket o captura de pantalla desde el botón "Informar Pago".
+            </p>
+        </div>
+        <a href="/contacto" class="shrink-0 bg-white hover:bg-blue-100 text-blue-800 border border-blue-300 font-bold px-4 py-2 rounded-xl transition text-center shadow-sm">
+            Ver Medios de Pago
+        </a>
     </div>
 </div>
+
+<script>
+function openUploadModal(cuotaId, concepto, monto) {
+    const modal = document.getElementById('uploadModal');
+    const form = document.getElementById('uploadForm');
+    document.getElementById('modalConcepto').textContent = concepto;
+    document.getElementById('modalMonto').textContent = '$ ' + Number(monto).toLocaleString('es-AR', { minimumFractionDigits: 2 });
+    form.action = '/alumno/cuotas/' + cuotaId + '/comprobante';
+    modal.classList.remove('hidden');
+}
+function closeUploadModal() {
+    document.getElementById('uploadModal').classList.add('hidden');
+}
+</script>
 
 <%- include('../partials/footer') %>

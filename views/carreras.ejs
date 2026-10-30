@@ -1,0 +1,217 @@
+<%- include('partials/header') %>
+
+<!-- Hero Header -->
+<div class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white py-14 px-4 sm:px-6 relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-blue-600/20 blur-3xl pointer-events-none"></div>
+    <div class="max-w-6xl mx-auto relative z-10 text-center">
+        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4">
+            <i class="fa-solid fa-graduation-cap text-blue-300"></i> Ciclo Lectivo Vigente
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3">Oferta Académica</h1>
+        <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto font-light">
+            Conocé nuestras carreras superiores, tecnicaturas y cursos de formación profesional con títulos de validez oficial.
+        </p>
+    </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+
+    <!-- Buscador y Filtros -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-10">
+        <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <!-- Search -->
+            <div class="relative w-full md:w-80">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchCarreras" 
+                    placeholder="Buscar por carrera, palabra clave..." 
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none transition"
+                    oninput="filterCards()"
+                >
+            </div>
+
+            <!-- Filtros de categoría -->
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <button type="button" onclick="setFilter('todos', this)" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-blue-700 text-white border-blue-700 shadow-sm">
+                    Todos (<%= carreras.length %>)
+                </button>
+                <button type="button" onclick="setFilter('carrera', this)" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-400">
+                    <i class="fa-solid fa-user-graduate mr-1 text-blue-600"></i> Carreras
+                </button>
+                <button type="button" onclick="setFilter('curso', this)" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-400">
+                    <i class="fa-solid fa-certificate mr-1 text-purple-600"></i> Cursos
+                </button>
+                <button type="button" onclick="setFilter('presencial', this)" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-400">
+                    <i class="fa-solid fa-chalkboard-user mr-1 text-emerald-600"></i> Presencial
+                </button>
+                <button type="button" onclick="setFilter('virtual', this)" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-400">
+                    <i class="fa-solid fa-laptop mr-1 text-cyan-600"></i> Virtual
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Carreras -->
+    <div id="carrerasGrid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <% carreras.forEach(c => { 
+            const isCarrera = c.tipo === 'carrera';
+        %>
+        <div class="carrera-card bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+             data-nombre="<%= c.nombre.toLowerCase() %>"
+             data-tipo="<%= c.tipo %>"
+             data-modalidad="<%= c.modalidad %>">
+            
+            <div class="p-7">
+                <!-- Badges header -->
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full <%= isCarrera ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-purple-100 text-purple-800 border border-purple-200' %>">
+                        <i class="fa-solid <%= isCarrera ? 'fa-user-graduate' : 'fa-certificate' %> text-[10px]"></i>
+                        <%= isCarrera ? 'Carrera Superior' : 'Curso de Formación' %>
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 capitalize">
+                        <i class="fa-solid <%= c.modalidad === 'virtual' ? 'fa-laptop' : 'fa-chalkboard-user' %> text-[10px]"></i>
+                        <%= c.modalidad || 'Presencial' %>
+                    </span>
+                    <% if (c.duracion) { %>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                        <i class="fa-regular fa-clock text-[10px]"></i> <%= c.duracion %>
+                    </span>
+                    <% } %>
+                </div>
+
+                <!-- Título -->
+                <h3 class="text-xl font-extrabold text-slate-900 mb-2 leading-snug"><%= c.nombre %></h3>
+                
+                <% if (c.titulo) { %>
+                <p class="text-xs font-semibold text-blue-700 mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-award"></i> Título: <%= c.titulo %>
+                </p>
+                <% } %>
+
+                <p class="text-slate-600 text-sm leading-relaxed mb-5">
+                    <%= c.descripcion || 'Formación académica integral con enfoque práctico y salida laboral.' %>
+                </p>
+
+                <!-- Info Highlights -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2 text-xs text-slate-700">
+                    <% if (c.turno) { %>
+                    <div class="flex items-start gap-2">
+                        <i class="fa-regular fa-sun text-amber-500 mt-0.5 w-4"></i>
+                        <span><strong>Turno:</strong> <%= c.turno %></span>
+                    </div>
+                    <% } %>
+                    <% if (c.requisitos_ingreso) { %>
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-clipboard-check text-blue-500 mt-0.5 w-4"></i>
+                        <span><strong>Requisitos:</strong> <%= c.requisitos_ingreso %></span>
+                    </div>
+                    <% } %>
+                    <% if (c.aranceles) { %>
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-receipt text-green-600 mt-0.5 w-4"></i>
+                        <span><strong>Aranceles:</strong> <%= c.aranceles %></span>
+                    </div>
+                    <% } %>
+                    <% if (c.fechas_inscripcion) { %>
+                    <div class="flex items-start gap-2">
+                        <i class="fa-regular fa-calendar-days text-purple-500 mt-0.5 w-4"></i>
+                        <span><strong>Inscripción:</strong> <%= c.fechas_inscripcion %></span>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Footer Card -->
+            <div class="p-6 bg-slate-50/70 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-3">
+                <a href="/nuevo-tramite?categoria=Inscripci%C3%B3n&carrera=<%= encodeURIComponent(c.nombre) %>"
+                   class="w-full sm:flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-5 rounded-xl text-center text-sm transition shadow-sm hover:shadow flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-signature"></i>
+                    Inscribirme
+                </a>
+                <a href="/contacto" class="w-full sm:w-auto text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 font-bold py-3 px-4 rounded-xl text-center text-sm transition border border-slate-200">
+                    Consultar
+                </a>
+            </div>
+
+        </div>
+        <% }) %>
+    </div>
+
+    <!-- Estado vacío si el filtro no devuelve nada -->
+    <div id="noResults" class="hidden bg-white rounded-3xl border border-slate-200 p-12 text-center my-8 shadow-sm">
+        <i class="fa-solid fa-search text-slate-300 text-5xl mb-4"></i>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">No se encontraron carreras ni cursos</h3>
+        <p class="text-sm text-slate-500 mb-6">Probá con otro término de búsqueda o seleccioná "Todos".</p>
+        <button type="button" onclick="setFilter('todos', document.querySelector('.filter-btn'))" class="bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-blue-800 transition">
+            Ver todas las carreras
+        </button>
+    </div>
+
+    <!-- Banner informativo de inscripción -->
+    <div class="mt-16 bg-gradient-to-r from-blue-900 to-blue-950 rounded-3xl p-8 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+            <h3 class="text-2xl font-extrabold mb-2">¿Querés presentar equivalencias o consultar tu plan?</h3>
+            <p class="text-blue-200 text-sm max-w-xl">
+                Si cursaste materias en otra universidad o instituto terciario, podés tramitar el reconocimiento 100% online a través de nuestra Mesa de Entrada Virtual.
+            </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+            <a href="/nuevo-tramite?categoria=Solicitud%20de%20Equivalencias" class="bg-white text-blue-900 hover:bg-blue-50 font-extrabold py-3.5 px-6 rounded-xl transition text-center text-sm shadow">
+                Tramitar Equivalencias
+            </a>
+            <a href="/contacto" class="border border-white/30 hover:bg-white/10 font-bold py-3.5 px-6 rounded-xl transition text-center text-sm">
+                Hablar con un Asesor
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let currentCategoryFilter = 'todos';
+
+function setFilter(filterType, btn) {
+    currentCategoryFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = 'filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-slate-50 text-slate-700 border-slate-200 hover:border-blue-400';
+    });
+    btn.className = 'filter-btn px-4 py-2 rounded-xl text-xs font-bold transition border bg-blue-700 text-white border-blue-700 shadow-sm';
+    filterCards();
+}
+
+function filterCards() {
+    const q = (document.getElementById('searchCarreras').value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.carrera-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const nombre = card.getAttribute('data-nombre') || '';
+        const tipo = card.getAttribute('data-tipo') || '';
+        const mod = card.getAttribute('data-modalidad') || '';
+
+        let matchesFilter = true;
+        if (currentCategoryFilter === 'carrera') matchesFilter = tipo === 'carrera';
+        else if (currentCategoryFilter === 'curso') matchesFilter = tipo === 'curso';
+        else if (currentCategoryFilter === 'presencial') matchesFilter = mod.toLowerCase().includes('presencial');
+        else if (currentCategoryFilter === 'virtual') matchesFilter = mod.toLowerCase().includes('virtual');
+
+        const matchesQuery = !q || nombre.includes(q);
+
+        if (matchesFilter && matchesQuery) {
+            card.classList.remove('hidden');
+            visibleCount++;
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    const noRes = document.getElementById('noResults');
+    if (visibleCount === 0) noRes.classList.remove('hidden');
+    else noRes.classList.add('hidden');
+}
+</script>
+
+<%- include('partials/footer') %>

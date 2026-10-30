@@ -59,7 +59,10 @@
                                 <%= t.status %>
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-right space-x-1.5">
+                            <a href="/seguimiento?codigo=<%= t.tracking_code %>&dni=<%= user.dni %>" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition" title="Ver seguimiento en tiempo real">
+                                <i class="fa-solid fa-satellite-dish"></i> Rastrear
+                            </a>
                             <a href="/comprobante/<%= t.tracking_code %>" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-blue-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition" title="Descargar comprobante en PDF">
                                 <i class="fa-solid fa-file-pdf text-red-500"></i> PDF
                             </a>
