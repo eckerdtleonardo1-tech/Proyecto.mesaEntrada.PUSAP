@@ -1,0 +1,87 @@
+<%- include('../partials/header') %>
+
+<%
+    const avisos = {
+        creada:    ['emerald', 'Carrera creada y publicada en el sitio.'],
+        guardada:  ['emerald', 'Cambios guardados.'],
+        estado:    ['emerald', 'Visibilidad actualizada.'],
+        eliminada: ['emerald', 'Carrera eliminada.']
+    };
+    const errores = {
+        en_uso: 'No se puede eliminar: tiene alumnos o cursos asociados. Ocultala del sitio con “Ocultar” y se conserva todo el historial.'
+    };
+%>
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-blue-600 dark:text-blue-400"></i> Carreras y Cursos
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Es la oferta que ve el público en <a href="/carreras" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">Oferta Académica</a> y en el inicio. Sólo las <strong>visibles</strong> se publican.</p>
+        </div>
+        <a href="/backoffice/carreras/nueva" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2 self-start sm:self-auto shadow-sm">
+            <i class="fa-solid fa-plus"></i> Nueva carrera o curso
+        </a>
+    </div>
+
+    <% if (ok && avisos[ok]) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-circle-check"></i> <%= avisos[ok][1] %></div>
+    <% } %>
+    <% if (error && errores[error]) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"><i class="fa-solid fa-circle-exclamation"></i> <%= errores[error] %></div>
+    <% } %>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:text-slate-100">
+        <% if (carreras.length === 0) { %>
+        <p class="px-6 py-12 text-center text-xs text-slate-400">Todavía no cargaste carreras ni cursos.</p>
+        <% } else { %>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-900/40 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-slate-700 dark:text-slate-400">
+                    <tr>
+                        <th class="px-5 py-3">Nombre</th>
+                        <th class="px-5 py-3">Tipo</th>
+                        <th class="px-5 py-3">Modalidad</th>
+                        <th class="px-5 py-3">Duración</th>
+                        <th class="px-5 py-3">Alumnos</th>
+                        <th class="px-5 py-3">En el sitio</th>
+                        <th class="px-5 py-3 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    <% carreras.forEach(c => { %>
+                    <tr class="<%= c.activo ? '' : 'opacity-60' %> hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <td class="px-5 py-3 font-bold text-slate-800 dark:text-slate-100"><%= c.nombre %></td>
+                        <td class="px-5 py-3 capitalize text-slate-600 dark:text-slate-300"><%= c.tipo %></td>
+                        <td class="px-5 py-3 capitalize text-slate-600 dark:text-slate-300"><%= c.modalidad %></td>
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400"><%= c.duracion || '—' %></td>
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400"><%= c.inscriptos %></td>
+                        <td class="px-5 py-3">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold <%= c.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600' %>"><%= c.activo ? 'Visible' : 'Oculta' %></span>
+                        </td>
+                        <td class="px-5 py-3">
+                            <div class="flex items-center justify-end gap-3">
+                                <a href="/backoffice/carreras/<%= c.id %>/editar" class="font-bold text-blue-600 hover:underline dark:text-blue-400">Editar</a>
+                                <form action="/backoffice/carreras/<%= c.id %>/estado" method="POST">
+                                    <button class="font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white dark:text-slate-400"><%= c.activo ? 'Ocultar' : 'Publicar' %></button>
+                                </form>
+                                <% if (c.inscriptos > 0 || c.cursos > 0) { %>
+                                <span class="font-bold text-slate-400 cursor-not-allowed" title="No se puede eliminar: tiene <%= c.inscriptos %> alumno(s) y <%= c.cursos %> curso(s) asociados. Ocultala del sitio con “<%= c.activo ? 'Ocultar' : 'Publicar' %>”.">Eliminar</span>
+                                <% } else { %>
+                                <form action="/backoffice/carreras/<%= c.id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar definitivamente esta carrera?')">
+                                    <button class="font-bold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Eliminar</button>
+                                </form>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

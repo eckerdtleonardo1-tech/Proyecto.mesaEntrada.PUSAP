@@ -1,20 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
-
-const TRANSICIONES_VALIDAS = {
-    'borrador': ['enviada'],
-    'enviada': ['en_revision'],
-    'en_revision': ['observada', 'aprobada', 'rechazada'],
-    'observada': ['enviada'],
-    'aprobada': ['emitida'],
-    'rechazada': [],
-    'emitida': []
-};
-
-function validarTransicion(estadoActual, estadoNuevo) {
-    const permitidos = TRANSICIONES_VALIDAS[estadoActual] || [];
-    return permitidos.includes(estadoNuevo);
-}
+// Se prueba la máquina de estados real que usan las rutas (antes el test tenía una copia propia).
+const { validarTransicion, TRANSICIONES_VALIDAS } = require('../lib/solicitud-estados');
 
 test('Transiciones de Estado de Solicitudes de Documentación', async (t) => {
     await t.test('Alumno puede enviar una solicitud en borrador', () => {
@@ -56,5 +43,29 @@ test('Transiciones de Estado de Solicitudes de Documentación', async (t) => {
 
     await t.test('NO se permite reabrir una solicitud ya emitida', () => {
         assert.strictEqual(validarTransicion('emitida', 'en_revision'), false);
+    });
+});
+
+test('Cierre presencial del trámite', async (t) => {
+    await t.test('Una solicitud aprobada puede finalizarse directamente en persona', () => {
+        assert.strictEqual(validarTransicion('aprobada', 'finalizada'), true);
+    });
+
+    await t.test('Una solicitud con documento emitido también se finaliza en persona', () => {
+        assert.strictEqual(validarTransicion('emitida', 'finalizada'), true);
+    });
+
+    await t.test('NO se puede finalizar algo que todavía no fue aprobado', () => {
+        ['borrador', 'enviada', 'en_revision', 'observada', 'rechazada'].forEach(estado => {
+            assert.strictEqual(validarTransicion(estado, 'finalizada'), false, `${estado} → finalizada`);
+        });
+    });
+
+    await t.test('Una solicitud finalizada es definitiva', () => {
+        assert.deepStrictEqual(TRANSICIONES_VALIDAS.finalizada, []);
+    });
+
+    await t.test('Un estado desconocido no permite ninguna transición', () => {
+        assert.strictEqual(validarTransicion('inexistente', 'aprobada'), false);
     });
 });

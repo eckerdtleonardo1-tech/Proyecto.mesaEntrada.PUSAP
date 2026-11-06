@@ -2,45 +2,45 @@
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-shield-halved text-blue-700"></i>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2 dark:text-slate-100">
+            <i class="fa-solid fa-shield-halved text-blue-700 dark:text-blue-400"></i>
             Log de Auditoría
         </h1>
-        <p class="text-slate-500 text-sm mt-1">
+        <p class="text-slate-500 text-sm mt-1 dark:text-slate-400">
             Registro de accesos al sistema
         </p>
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
     <div class="overflow-x-auto">
         <table class="min-w-full">
             <thead>
-                <tr class="border-b border-slate-200 bg-slate-50">
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha / Hora</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">IP</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Acción</th>
+                <tr class="border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Fecha / Hora</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Usuario</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">IP</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Acción</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 <% if (logs.length === 0) { %>
-                    <tr><td colspan="4" class="px-5 py-4 text-center text-sm text-slate-500">No hay registros de auditoría.</td></tr>
+                    <tr><td colspan="4" class="px-5 py-4 text-center text-sm text-slate-500 dark:text-slate-400">No hay registros de auditoría.</td></tr>
                 <% } else { %>
                     <% logs.forEach(log => { 
                         let badge = 'bg-slate-100 text-slate-700 border-slate-200';
                         if (log.action === 'login_ok') badge = 'bg-green-50 text-green-700 border-green-200';
                         if (log.action === 'login_fail') badge = 'bg-red-50 text-red-700 border-red-200';
                     %>
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-700">
+                    <tr class="hover:bg-slate-50 transition-colors dark:hover:bg-slate-700">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200">
                             <%= new Date(log.created_at).toLocaleString('es-AR') %>
                         </td>
                         <td class="px-5 py-4 whitespace-nowrap">
-                            <div class="font-semibold text-slate-900 text-sm"><%= log.user_name %></div>
-                            <div class="text-xs text-slate-500">ID: <%= log.user_id %></div>
+                            <div class="font-semibold text-slate-900 text-sm dark:text-slate-100"><%= log.user_name %></div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">ID: <%= log.user_id %></div>
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500 font-mono dark:text-slate-400">
                             <%= log.ip || '-' %>
                         </td>
                         <td class="px-5 py-4 whitespace-nowrap">

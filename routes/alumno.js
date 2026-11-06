@@ -9,6 +9,7 @@ const multer = require('multer');
 const path = require('path');
 const moment = require('moment');
 const db = require('../db');
+const dbp = require('../lib/dbp');
 const { requireAlumno } = require('../middleware/auth');
 
 // Aplicar guard a todas las rutas de este router
@@ -35,59 +36,65 @@ const getAlumnoId = (req) => req.session.user.alumno_id;
 // ----------------------------------------------------------------
 // Dashboard del alumno
 // ----------------------------------------------------------------
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const alumnoId = getAlumnoId(req);
     if (!alumnoId) {
         return res.status(400).render('errors/403', { title: 'Sin perfil', user: req.session.user });
     }
 
-    db.get(`SELECT a.*, 
-        GROUP_CONCAT(c.nombre, ' / ') as carreras_nombres
-        FROM alumnos a
-        LEFT JOIN alumno_carreras ac ON ac.alumno_id = a.id AND ac.estado = 'activo'
-        LEFT JOIN carreras c ON c.id = ac.carrera_id
-        WHERE a.id = ?
-        GROUP BY a.id`, [alumnoId], (err, alumno) => {
-        if (err || !alumno) return res.status(404).render('errors/404', { title: 'No encontrado', user: req.session.user });
-
-        // Cuotas vencidas (estado pendiente y fecha pasada)
+    try {
         const hoy = moment().format('YYYY-MM-DD');
-        db.all(`SELECT * FROM cuotas WHERE alumno_id = ? AND estado = 'pendiente' AND vencimiento < ?`,
-            [alumnoId, hoy], (err, cuotasVencidas) => {
+        const alumno = await dbp.get(`SELECT a.*,
+            GROUP_CONCAT(c.nombre, ' / ') as carreras_nombres
+            FROM alumnos a
+            LEFT JOIN alumno_carreras ac ON ac.alumno_id = a.id AND ac.estado = 'activo'
+            LEFT JOIN carreras c ON c.id = ac.carrera_id
+            WHERE a.id = ?
+            GROUP BY a.id`, [alumnoId]);
+        if (!alumno) return res.status(404).render('errors/404', { title: 'No encontrado', user: req.session.user });
 
-            // Solicitudes que requieren acción del alumno
-            db.all(`SELECT sd.*, ts.nombre as tipo_nombre FROM solicitudes_doc sd
+        const [cuotasVencidas, solicitudesObservadas, pendientesPresencial, notifs, cursos, novedades, consultasRespondidas, faqs] = await Promise.all([
+            dbp.all(`SELECT * FROM cuotas WHERE alumno_id = ? AND estado = 'pendiente' AND vencimiento < ?`, [alumnoId, hoy]),
+            dbp.all(`SELECT sd.*, ts.nombre as tipo_nombre FROM solicitudes_doc sd
                 JOIN tipos_solicitud ts ON ts.id = sd.tipo_solicitud_id
-                WHERE sd.alumno_id = ? AND sd.estado = 'observada'`,
-                [alumnoId], (err, solicitudesObs) => {
+                WHERE sd.alumno_id = ? AND sd.estado = 'observada'`, [alumnoId]),
+            // Trámites aprobados que el alumno debe cerrar yendo a la institución
+            dbp.all(`SELECT sd.*, ts.nombre as tipo_nombre FROM solicitudes_doc sd
+                JOIN tipos_solicitud ts ON ts.id = sd.tipo_solicitud_id
+                WHERE sd.alumno_id = ? AND sd.estado IN ('aprobada', 'emitida')
+                ORDER BY sd.updated_at DESC`, [alumnoId]),
+            dbp.all(`SELECT * FROM notificaciones WHERE alumno_id = ? AND leida = 0 ORDER BY created_at DESC LIMIT 5`, [alumnoId]),
+            dbp.all(`SELECT cu.*, c.nombre as carrera_nombre
+                FROM alumno_cursos ac
+                JOIN cursos cu ON cu.id = ac.curso_id
+                LEFT JOIN carreras c ON c.id = cu.carrera_id
+                WHERE ac.alumno_id = ? AND ac.estado_cursada = 'cursando'
+                ORDER BY cu.nombre`, [alumnoId]),
+            // Novedades dirigidas a alumnos (las administra el personal)
+            dbp.all(`SELECT * FROM novedades WHERE activo = 1 AND audiencia IN ('alumnos', 'ambos')
+                ORDER BY destacada DESC, fecha_publicacion DESC LIMIT 4`),
+            dbp.get(`SELECT COUNT(*) AS n FROM consultas WHERE alumno_id = ? AND estado = 'respondida'`, [alumnoId]),
+            dbp.all(`SELECT * FROM faqs WHERE activo = 1 AND audiencia IN ('alumnos', 'ambos') ORDER BY orden, categoria`)
+        ]);
 
-                // Notificaciones no leídas
-                db.all(`SELECT * FROM notificaciones WHERE alumno_id = ? AND leida = 0 ORDER BY created_at DESC LIMIT 5`,
-                    [alumnoId], (err, notifs) => {
-
-                    // Cursos activos
-                    db.all(`SELECT cu.*, c.nombre as carrera_nombre
-                        FROM alumno_cursos ac
-                        JOIN cursos cu ON cu.id = ac.curso_id
-                        LEFT JOIN carreras c ON c.id = cu.carrera_id
-                        WHERE ac.alumno_id = ? AND ac.estado_cursada = 'cursando'
-                        ORDER BY cu.nombre`, [alumnoId], (err, cursos) => {
-
-                        res.render('alumno/index', {
-                            title: 'Mi Panel',
-                            user: req.session.user,
-                            alumno,
-                            cuotasVencidas: cuotasVencidas || [],
-                            solicitudesObservadas: solicitudesObs || [],
-                            notifs: notifs || [],
-                            cursos: cursos || [],
-                            moment
-                        });
-                    });
-                });
-            });
+        res.render('alumno/index', {
+            title: 'Mi Panel',
+            user: req.session.user,
+            alumno,
+            cuotasVencidas,
+            solicitudesObservadas,
+            pendientesPresencial,
+            notifs,
+            cursos,
+            novedades,
+            faqs,
+            consultasRespondidas: consultasRespondidas ? consultasRespondidas.n : 0,
+            moment
         });
-    });
+    } catch (err) {
+        console.error('Error en dashboard de alumno:', err.message);
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
 });
 
 // ----------------------------------------------------------------
@@ -210,11 +217,16 @@ router.get('/solicitudes/nueva', (req, res) => {
     });
 });
 
-router.post('/solicitudes', upload.array('adjuntos', 5), (req, res) => {
+router.post('/solicitudes', upload.array('adjuntos', 5), async (req, res) => {
     const alumnoId = getAlumnoId(req);
     const { tipo_solicitud_id, accion } = req.body;
 
-    if (!tipo_solicitud_id) {
+    // El tipo debe existir y estar activo (el catálogo lo administra el personal)
+    const tipo = tipo_solicitud_id
+        ? await dbp.get(`SELECT id FROM tipos_solicitud WHERE id = ? AND activo = 1`, [tipo_solicitud_id]).catch(() => null)
+        : null;
+
+    if (!tipo) {
         return db.all(`SELECT * FROM tipos_solicitud WHERE activo = 1 ORDER BY orden`, [], (err, tipos) => {
             res.render('alumno/solicitud-nueva', {
                 title: 'Nueva Solicitud',
@@ -282,6 +294,26 @@ router.get('/solicitudes/:id', (req, res) => {
     });
 });
 
+// Enviar al personal una solicitud que quedó guardada como borrador
+router.post('/solicitudes/:id/enviar', (req, res) => {
+    const alumnoId = getAlumnoId(req);
+    const { id } = req.params;
+
+    db.get(`SELECT * FROM solicitudes_doc WHERE id = ? AND alumno_id = ? AND estado = 'borrador'`,
+        [id, alumnoId], (err, solicitud) => {
+        if (err || !solicitud) return res.status(404).render('errors/404', { title: 'No encontrado', user: req.session.user });
+
+        db.run(`UPDATE solicitudes_doc SET estado = 'enviada', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [id], () => {
+            db.run(`INSERT INTO solicitud_historia (solicitud_id, user_id, user_name, estado_anterior, estado_nuevo, comentario)
+                VALUES (?, ?, ?, 'borrador', 'enviada', 'Solicitud enviada por el alumno.')`,
+                [id, req.session.user.id, req.session.user.name]);
+            db.run(`INSERT INTO notificaciones (alumno_id, tipo, mensaje, url) VALUES (?, 'info', ?, ?)`,
+                [alumnoId, 'Tu solicitud fue enviada y está en revisión.', `/alumno/solicitudes/${id}`]);
+            res.redirect(`/alumno/solicitudes/${id}`);
+        });
+    });
+});
+
 // Reenviar solicitud observada con nuevos adjuntos
 router.post('/solicitudes/:id/adjuntar', upload.array('adjuntos', 5), (req, res) => {
     const alumnoId = getAlumnoId(req);
@@ -306,6 +338,105 @@ router.post('/solicitudes/:id/adjuntar', upload.array('adjuntos', 5), (req, res)
             res.redirect(`/alumno/solicitudes/${id}`);
         });
     });
+});
+
+// ----------------------------------------------------------------
+// Consultas al personal (hilo de mensajes)
+// ----------------------------------------------------------------
+const CATEGORIAS_CONSULTA = ['Académica', 'Administrativa', 'Pagos y cuotas', 'Trámites', 'Otra'];
+const MAX_ASUNTO = 150;
+const MAX_MENSAJE = 3000;
+
+router.get('/consultas', async (req, res) => {
+    try {
+        const consultas = await dbp.all(`SELECT c.*,
+                (SELECT COUNT(*) FROM consulta_mensajes m WHERE m.consulta_id = c.id) AS cant_mensajes
+            FROM consultas c WHERE c.alumno_id = ?
+            ORDER BY c.updated_at DESC`, [getAlumnoId(req)]);
+        res.render('alumno/consultas', { title: 'Mis Consultas', user: req.session.user, consultas, moment });
+    } catch (err) {
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
+});
+
+router.get('/consultas/nueva', (req, res) => {
+    res.render('alumno/consulta-nueva', {
+        title: 'Nueva Consulta',
+        user: req.session.user,
+        categorias: CATEGORIAS_CONSULTA,
+        error: null,
+        valores: {}
+    });
+});
+
+router.post('/consultas', async (req, res) => {
+    const alumnoId = getAlumnoId(req);
+    const asunto = String(req.body.asunto || '').trim().slice(0, MAX_ASUNTO);
+    const mensaje = String(req.body.mensaje || '').trim().slice(0, MAX_MENSAJE);
+    const categoria = CATEGORIAS_CONSULTA.includes(req.body.categoria) ? req.body.categoria : 'Otra';
+
+    if (!asunto || !mensaje) {
+        return res.status(400).render('alumno/consulta-nueva', {
+            title: 'Nueva Consulta',
+            user: req.session.user,
+            categorias: CATEGORIAS_CONSULTA,
+            error: 'Completá el asunto y el mensaje.',
+            valores: { asunto, mensaje, categoria }
+        });
+    }
+
+    try {
+        const { lastID } = await dbp.run(`INSERT INTO consultas (alumno_id, categoria, asunto) VALUES (?, ?, ?)`,
+            [alumnoId, categoria, asunto]);
+        await dbp.run(`INSERT INTO consulta_mensajes (consulta_id, autor_tipo, user_id, user_name, mensaje)
+            VALUES (?, 'alumno', ?, ?, ?)`, [lastID, req.session.user.id, req.session.user.name, mensaje]);
+        res.redirect(`/alumno/consultas/${lastID}`);
+    } catch (err) {
+        console.error('Error creando consulta:', err.message);
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
+});
+
+// Autorización a nivel objeto: la consulta tiene que ser del alumno en sesión
+const cargarConsultaPropia = (req, res, next) => {
+    db.get(`SELECT * FROM consultas WHERE id = ? AND alumno_id = ?`, [req.params.id, getAlumnoId(req)], (err, consulta) => {
+        if (err || !consulta) return res.status(404).render('errors/404', { title: 'No encontrado', user: req.session.user });
+        req.consulta = consulta;
+        next();
+    });
+};
+
+router.get('/consultas/:id', cargarConsultaPropia, async (req, res) => {
+    try {
+        const mensajes = await dbp.all(`SELECT * FROM consulta_mensajes WHERE consulta_id = ? ORDER BY created_at ASC, id ASC`, [req.consulta.id]);
+        res.render('alumno/consulta-detalle', { title: 'Consulta', user: req.session.user, consulta: req.consulta, mensajes, moment });
+    } catch (err) {
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
+});
+
+router.post('/consultas/:id/responder', cargarConsultaPropia, async (req, res) => {
+    const mensaje = String(req.body.mensaje || '').trim().slice(0, MAX_MENSAJE);
+    if (!mensaje || req.consulta.estado === 'cerrada') return res.redirect(`/alumno/consultas/${req.consulta.id}`);
+
+    try {
+        await dbp.run(`INSERT INTO consulta_mensajes (consulta_id, autor_tipo, user_id, user_name, mensaje)
+            VALUES (?, 'alumno', ?, ?, ?)`, [req.consulta.id, req.session.user.id, req.session.user.name, mensaje]);
+        // Vuelve a la bandeja del personal
+        await dbp.run(`UPDATE consultas SET estado = 'abierta', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [req.consulta.id]);
+        res.redirect(`/alumno/consultas/${req.consulta.id}`);
+    } catch (err) {
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
+});
+
+router.post('/consultas/:id/cerrar', cargarConsultaPropia, async (req, res) => {
+    try {
+        await dbp.run(`UPDATE consultas SET estado = 'cerrada', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [req.consulta.id]);
+        res.redirect(`/alumno/consultas/${req.consulta.id}`);
+    } catch (err) {
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user });
+    }
 });
 
 // ----------------------------------------------------------------

@@ -1,19 +1,36 @@
 <%- include('../partials/header') %>
 
+<%
+    const campo = 'w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800';
+    const label = 'block font-bold text-slate-700 dark:text-slate-300 mb-1';
+    const avisos = { creado: 'Tipo de trámite creado.', guardado: 'Cambios guardados.', eliminado: 'Tipo de trámite eliminado.' };
+    const errores = {
+        nombre: 'El nombre es obligatorio.',
+        en_uso: 'No se puede eliminar: ya hay solicitudes de alumnos con este tipo. Desactivalo para que deje de ofrecerse (el historial se conserva).'
+    };
+%>
+
 <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-blue-600"></i> Catálogo de Tipos de Solicitud
+                <i class="fa-solid fa-list-check text-blue-600 dark:text-blue-400"></i> Catálogo de Tipos de Trámite
             </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Configuración de trámites documentales disponibles para los alumnos.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Los trámites que los alumnos pueden solicitar desde su portal. Solo los <strong>activos</strong> se ofrecen.</p>
         </div>
         <button onclick="document.getElementById('modalNuevoTipo').classList.remove('hidden')" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2 self-start sm:self-auto shadow-sm">
             <i class="fa-solid fa-plus"></i> Nuevo Tipo
         </button>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <% if (ok && avisos[ok]) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-circle-check"></i> <%= avisos[ok] %></div>
+    <% } %>
+    <% if (error && errores[error]) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"><i class="fa-solid fa-circle-exclamation"></i> <%= errores[error] %></div>
+    <% } %>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:text-slate-100">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
@@ -22,13 +39,18 @@
                         <th class="px-5 py-3.5">Nombre</th>
                         <th class="px-5 py-3.5">Modalidad</th>
                         <th class="px-5 py-3.5">Descripción</th>
+                        <th class="px-5 py-3.5 text-center">Solicitudes</th>
                         <th class="px-5 py-3.5 text-center">Estado</th>
+                        <th class="px-5 py-3.5 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    <% if (tipos.length === 0) { %>
+                    <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400">Todavía no hay tipos de trámite. Creá el primero con “Nuevo Tipo”.</td></tr>
+                    <% } %>
                     <% tipos.forEach(t => { %>
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
-                        <td class="px-5 py-3.5 font-mono font-bold text-slate-400">#<%= t.orden %></td>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition <%= t.activo ? '' : 'opacity-60' %>">
+                        <td class="px-5 py-3.5 font-mono font-bold text-slate-500 dark:text-slate-400">#<%= t.orden %></td>
                         <td class="px-5 py-3.5 font-bold text-slate-800 dark:text-slate-100"><%= t.nombre %></td>
                         <td class="px-5 py-3.5">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold <%= t.modalidad === 'emision' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' %>">
@@ -36,11 +58,22 @@
                             </span>
                         </td>
                         <td class="px-5 py-3.5 text-slate-500 dark:text-slate-400 max-w-xs truncate"><%= t.descripcion || '-' %></td>
+                        <td class="px-5 py-3.5 text-center text-slate-600 dark:text-slate-300"><%= t.usos %></td>
                         <td class="px-5 py-3.5 text-center">
                             <% if (t.activo) { %>
                             <span class="text-emerald-600 dark:text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Activo</span>
                             <% } else { %>
-                            <span class="text-slate-400 font-bold">Inactivo</span>
+                            <span class="text-slate-500 dark:text-slate-400 font-bold">Inactivo</span>
+                            <% } %>
+                        </td>
+                        <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                            <button type="button" data-tipo="<%= JSON.stringify(t) %>" onclick="abrirEditarTipo(this)" class="font-bold text-blue-600 dark:text-blue-400 hover:underline mr-3">Editar</button>
+                            <% if (t.usos > 0) { %>
+                            <span class="text-slate-400 cursor-not-allowed" title="Ya tiene <%= t.usos %> solicitud(es): desactivalo en lugar de borrarlo"><i class="fa-solid fa-trash-can"></i></span>
+                            <% } else { %>
+                            <form action="/backoffice/tipos-solicitud/eliminar/<%= t.id %>" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este tipo de trámite?')">
+                                <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+                            </form>
                             <% } %>
                         </td>
                     </tr>
@@ -53,33 +86,22 @@
 
 <!-- Modal Nuevo Tipo -->
 <div id="modalNuevoTipo" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl dark:text-slate-100">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Nuevo Tipo de Solicitud</h3>
-            <button onclick="document.getElementById('modalNuevoTipo').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Nuevo Tipo de Trámite</h3>
+            <button onclick="document.getElementById('modalNuevoTipo').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form action="/backoffice/tipos-solicitud/nuevo" method="POST" class="space-y-3 text-xs">
+            <div><label class="<%= label %>">Nombre</label><input type="text" name="nombre" required placeholder="Ej: Certificado de Examen..." class="<%= campo %>"></div>
             <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
-                <input type="text" name="nombre" required placeholder="Ej: Certificado de Examen..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
-            </div>
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Modalidad del Trámite</label>
-                <select name="modalidad" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
+                <label class="<%= label %>">Modalidad del Trámite</label>
+                <select name="modalidad" required class="<%= campo %>">
                     <option value="emision">Emisión (la institución genera y entrega un documento)</option>
                     <option value="presentacion">Presentación (el alumno entrega documentación para validar)</option>
                 </select>
             </div>
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción / Instrucciones</label>
-                <textarea name="descripcion" rows="3" placeholder="Requisitos, plazos..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white"></textarea>
-            </div>
-            <div>
-                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Orden</label>
-                <input type="number" name="orden" value="10" class="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white dark:text-white">
-            </div>
+            <div><label class="<%= label %>">Descripción / Instrucciones</label><textarea name="descripcion" rows="3" placeholder="Requisitos, plazos..." class="<%= campo %>"></textarea></div>
+            <div><label class="<%= label %>">Orden</label><input type="number" name="orden" value="10" class="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white dark:placeholder-slate-400"></div>
             <div class="pt-3 flex justify-end gap-2">
                 <button type="button" onclick="document.getElementById('modalNuevoTipo').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl">Cancelar</button>
                 <button type="submit" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-sm">Guardar</button>
@@ -87,5 +109,48 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Editar Tipo -->
+<div id="modalEditarTipo" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl dark:text-slate-100">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Editar Tipo de Trámite</h3>
+            <button onclick="cerrarEditarTipo()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="formEditarTipo" method="POST" class="space-y-3 text-xs">
+            <div><label class="<%= label %>">Nombre</label><input type="text" name="nombre" id="etNombre" required class="<%= campo %>"></div>
+            <div>
+                <label class="<%= label %>">Modalidad del Trámite</label>
+                <select name="modalidad" id="etModalidad" class="<%= campo %>">
+                    <option value="emision">Emisión (la institución genera y entrega un documento)</option>
+                    <option value="presentacion">Presentación (el alumno entrega documentación para validar)</option>
+                </select>
+            </div>
+            <div><label class="<%= label %>">Descripción / Instrucciones</label><textarea name="descripcion" id="etDescripcion" rows="3" class="<%= campo %>"></textarea></div>
+            <div class="flex items-end gap-6">
+                <div><label class="<%= label %>">Orden</label><input type="number" name="orden" id="etOrden" class="w-24 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white dark:placeholder-slate-400"></div>
+                <label class="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-300 pb-2"><input type="checkbox" name="activo" id="etActivo" value="1" class="rounded text-blue-600"> Activo (se ofrece a los alumnos)</label>
+            </div>
+            <div class="pt-3 flex justify-end gap-2">
+                <button type="button" onclick="cerrarEditarTipo()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-sm">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirEditarTipo(boton) {
+    const t = JSON.parse(boton.dataset.tipo);
+    document.getElementById('formEditarTipo').action = '/backoffice/tipos-solicitud/editar/' + t.id;
+    document.getElementById('etNombre').value = t.nombre || '';
+    document.getElementById('etModalidad').value = t.modalidad || 'presentacion';
+    document.getElementById('etDescripcion').value = t.descripcion || '';
+    document.getElementById('etOrden').value = t.orden || 0;
+    document.getElementById('etActivo').checked = !!t.activo;
+    document.getElementById('modalEditarTipo').classList.remove('hidden');
+}
+function cerrarEditarTipo() { document.getElementById('modalEditarTipo').classList.add('hidden'); }
+</script>
 
 <%- include('../partials/footer') %>

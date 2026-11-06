@@ -9,7 +9,7 @@
     </div>
 
     <!-- Encabezado con Estado -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 dark:text-slate-100">
         <div>
             <h1 class="text-xl font-black text-slate-800 dark:text-white"><%= solicitud.tipo_nombre %></h1>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -25,37 +25,93 @@
                 'observada': 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300',
                 'aprobada': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300',
                 'emitida': 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-300',
-                'rechazada': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300'
+                'rechazada': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300',
+                'finalizada': 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-700 dark:text-slate-200'
             };
+            const errores = {
+                transicion: 'Ese cambio de estado no está permitido desde el estado actual.',
+                motivo: 'Para observar o rechazar tenés que explicar el motivo: el alumno lo va a leer.',
+                archivo: 'Seleccioná un archivo PDF, JPG o PNG para emitir el documento.'
+            };
+            const etiquetasAccion = {
+                en_revision: 'Poner En Revisión',
+                observada: 'Observar (pedir corrección al alumno)',
+                aprobada: 'Aprobar solicitud',
+                rechazada: 'Rechazar solicitud'
+            };
+            const accionesDisponibles = ['en_revision', 'observada', 'aprobada', 'rechazada'].filter(a => siguientes.includes(a));
+            const pendientePresencial = solicitud.estado === 'aprobada' || solicitud.estado === 'emitida';
         %>
         <span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold border <%= badges[solicitud.estado] || 'bg-slate-100' %> self-start md:self-auto">
             Estado: <%= solicitud.estado.toUpperCase() %>
         </span>
     </div>
 
+    <% if (error && errores[error]) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"><i class="fa-solid fa-circle-exclamation"></i> <%= errores[error] %></div>
+    <% } %>
+
+    <!-- Cierre presencial: el alumno ya fue notificado y debe acercarse -->
+    <% if (pendientePresencial) { %>
+    <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-building-columns text-blue-600 text-xl mt-0.5 dark:text-blue-400"></i>
+            <div>
+                <p class="text-sm font-bold text-blue-900 dark:text-blue-200">Esperando que el alumno se presente</p>
+                <p class="text-xs text-blue-800 dark:text-blue-300 mt-0.5">Cuando venga a la institución y se complete el trámite, registralo para cerrarlo.</p>
+                <% if (solicitud.indicaciones_presencial) { %>
+                <p class="text-xs text-blue-700 dark:text-blue-300 mt-2 whitespace-pre-line"><strong>Indicaciones enviadas:</strong> <%= solicitud.indicaciones_presencial %></p>
+                <% } %>
+                <% if (solicitud.fecha_presencial) { %>
+                <p class="text-xs text-blue-700 dark:text-blue-300 mt-1"><strong>A partir de:</strong> <%= solicitud.fecha_presencial %></p>
+                <% } %>
+            </div>
+        </div>
+        <form action="/backoffice/solicitudes/<%= solicitud.id %>/accion" method="POST" onsubmit="return confirm('¿Confirmás que el trámite se completó presencialmente?')">
+            <input type="hidden" name="accion" value="finalizada">
+            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition inline-flex items-center gap-2 shadow">
+                <i class="fa-solid fa-circle-check"></i> Registrar finalización presencial
+            </button>
+        </form>
+    </div>
+    <% } %>
+    <% if (solicitud.estado === 'finalizada') { %>
+    <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check"></i> Trámite finalizado presencialmente<% if (solicitud.finalizada_at) { %> el <%= moment.utc(solicitud.finalizada_at).local().format('DD/MM/YYYY HH:mm') %> hs<% } %>.
+    </div>
+    <% } %>
+
     <!-- Panel de Decisiones / Acciones del Personal -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Columna de Gestión y Acciones (2 cols) -->
         <div class="md:col-span-2 space-y-6">
             <!-- Acciones de Estado -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:text-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-stamp text-blue-600"></i> Acciones del Personal
+                    <i class="fa-solid fa-stamp text-blue-600 dark:text-blue-400"></i> Acciones del Personal
                 </h3>
+                <% if (accionesDisponibles.length === 0) { %>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    <% if (solicitud.estado === 'borrador') { %>El alumno todavía no envió esta solicitud.
+                    <% } else if (solicitud.estado === 'observada') { %>Esperando que el alumno corrija y reenvíe.
+                    <% } else if (pendientePresencial) { %>Sólo queda registrar la finalización presencial (arriba).
+                    <% } else { %>No hay más acciones disponibles: la solicitud está cerrada.
+                    <% } %>
+                </p>
+                <% } else { %>
                 <form action="/backoffice/solicitudes/<%= solicitud.id %>/accion" method="POST" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Cambiar Estado</label>
-                            <select name="accion" required class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
-                                <option value="en_revision" <%= solicitud.estado === 'en_revision' ? 'selected' : '' %>>Poner En Revisión</option>
-                                <option value="observada" <%= solicitud.estado === 'observada' ? 'selected' : '' %>>Observar (Solicitar Corrección al Alumno)</option>
-                                <option value="aprobada" <%= solicitud.estado === 'aprobada' ? 'selected' : '' %>>Aprobar Solicitud</option>
-                                <option value="rechazada" <%= solicitud.estado === 'rechazada' ? 'selected' : '' %>>Rechazar Solicitud</option>
+                            <select name="accion" id="selAccion" required onchange="mostrarCamposAccion()" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800">
+                                <% accionesDisponibles.forEach(a => { %>
+                                <option value="<%= a %>"><%= etiquetasAccion[a] %></option>
+                                <% }) %>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Asignar Responsable</label>
-                            <select name="asignado_a" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white">
+                            <select name="asignado_a" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800">
                                 <option value="">Sin asignar</option>
                                 <% personal.forEach(p => { %>
                                 <option value="<%= p.id %>" <%= solicitud.asignado_a == p.id ? 'selected' : '' %>><%= p.name %></option>
@@ -63,28 +119,51 @@
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Motivo / Comentarios (notifica al alumno si se observa o rechaza)</label>
-                        <textarea name="motivo" rows="3" placeholder="Ingresá detalles de la observación o resolución..." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white"><%= solicitud.motivo_observacion || '' %></textarea>
+                    <!-- Observar / rechazar: el motivo es obligatorio y lo lee el alumno -->
+                    <div id="campoMotivo" class="hidden">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Motivo (lo ve el alumno)</label>
+                        <textarea name="motivo" id="txtMotivo" rows="3" placeholder="Explicá qué falta corregir o por qué se rechaza..." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800"></textarea>
+                    </div>
+                    <!-- Aprobar: se le explica al alumno cómo finalizar el trámite en persona -->
+                    <div id="campoPresencial" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Indicaciones para finalizar en persona</label>
+                            <textarea name="indicaciones" rows="3" placeholder="Ej: Presentarse con DNI original en Mesa de Entrada. Se retira el certificado firmado." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Puede acercarse a partir de (opcional)</label>
+                            <input type="text" name="fecha_presencial" maxlength="60" placeholder="Ej: lunes 10/11" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800">
+                        </div>
                     </div>
                     <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-2">
                         <i class="fa-solid fa-check"></i> Actualizar Solicitud
                     </button>
                 </form>
+                <script>
+                    function mostrarCamposAccion() {
+                        const a = document.getElementById('selAccion').value;
+                        const pideMotivo = a === 'observada' || a === 'rechazada';
+                        document.getElementById('campoMotivo').classList.toggle('hidden', !pideMotivo);
+                        document.getElementById('txtMotivo').required = pideMotivo;
+                        document.getElementById('campoPresencial').classList.toggle('hidden', a !== 'aprobada');
+                    }
+                    mostrarCamposAccion();
+                </script>
+                <% } %>
             </div>
 
             <!-- Subir Documento Emitido (si es modalidad emisión o está aprobada) -->
-            <% if (solicitud.tipo_modalidad === 'emision' || solicitud.estado === 'aprobada' || solicitud.estado === 'emitida') { %>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <% if (pendientePresencial) { %>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:text-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-file-arrow-up text-emerald-600"></i> Emisión de Documento Oficial
+                    <i class="fa-solid fa-file-arrow-up text-emerald-600 dark:text-emerald-400"></i> Emisión de Documento Oficial <span class="text-[10px] font-normal normal-case text-slate-400">(opcional)</span>
                 </h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Adjuntá el archivo final (constancia, certificado, programa) para que el alumno pueda descargarlo en su portal.</p>
                 
                 <% if (solicitud.documento_emitido_filename) { %>
                 <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 rounded-xl flex items-center justify-between gap-3 mb-4">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-file-circle-check text-emerald-600 text-xl"></i>
+                        <i class="fa-solid fa-file-circle-check text-emerald-600 text-xl dark:text-emerald-400"></i>
                         <div>
                             <p class="text-xs font-bold text-emerald-900 dark:text-emerald-200">Documento emitido actual</p>
                             <p class="text-[11px] text-emerald-700 dark:text-emerald-400"><%= solicitud.documento_emitido_original_name %></p>
@@ -106,9 +185,9 @@
             <% } %>
 
             <!-- Documentos presentados por el alumno -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:text-slate-100">
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-paperclip text-blue-600"></i> Documentos Presentados por el Alumno (<%= adjuntos.length %>)
+                    <i class="fa-solid fa-paperclip text-blue-600 dark:text-blue-400"></i> Documentos Presentados por el Alumno (<%= adjuntos.length %>)
                 </h3>
                 <% if (adjuntos.length === 0) { %>
                 <p class="text-xs text-slate-400 italic">El alumno no adjuntó documentación.</p>
@@ -134,9 +213,9 @@
         </div>
 
         <!-- Columna de Historial / Auditoría (1 col) -->
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit dark:text-slate-100">
             <h3 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-timeline text-blue-600"></i> Línea de Tiempo
+                <i class="fa-solid fa-timeline text-blue-600 dark:text-blue-400"></i> Línea de Tiempo
             </h3>
             <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700 text-xs">
                 <% historia.forEach(h => { %>

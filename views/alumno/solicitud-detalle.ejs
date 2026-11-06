@@ -3,7 +3,7 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
     <div class="mb-6">
         <a href="/alumno/solicitudes" class="text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-arrow-left text-xs"></i> Volver a mis solicitudes
+            <i class="fa-solid fa-arrow-left text-xs"></i> Volver a mis trámites
         </a>
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -20,7 +20,8 @@
                     observada: 'bg-amber-100 text-amber-800 border-amber-200',
                     aprobada: 'bg-green-100 text-green-800 border-green-200',
                     emitida: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-                    rechazada: 'bg-red-100 text-red-800 border-red-200'
+                    rechazada: 'bg-red-100 text-red-800 border-red-200',
+                    finalizada: 'bg-slate-200 text-slate-800 border-slate-300'
                 };
                 const estadoNames = {
                     borrador: 'Borrador',
@@ -29,7 +30,8 @@
                     observada: 'Observada',
                     aprobada: 'Aprobada',
                     emitida: 'Emitida',
-                    rechazada: 'Rechazada'
+                    rechazada: 'Rechazada',
+                    finalizada: 'Finalizada'
                 };
             %>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border <%= estadoBadges[solicitud.estado] || 'bg-slate-100 text-slate-700' %> self-start sm:self-auto">
@@ -61,8 +63,79 @@
     </div>
     <% } %>
 
+    <!-- Borrador: todavía no llegó al personal -->
+    <% if (solicitud.estado === 'borrador') { %>
+    <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-bold text-slate-800">Esta solicitud es un borrador</p>
+            <p class="text-xs text-slate-500 mt-0.5">El personal todavía no la recibió. Enviala para que empiece la revisión.</p>
+        </div>
+        <form action="/alumno/solicitudes/<%= solicitud.id %>/enviar" method="POST">
+            <button type="submit" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition shadow">
+                <i class="fa-solid fa-paper-plane"></i> Enviar solicitud
+            </button>
+        </form>
+    </div>
+    <% } %>
+
+    <!-- Rechazada: motivo -->
+    <% if (solicitud.estado === 'rechazada') { %>
+    <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-r-xl shadow-sm mb-6">
+        <h2 class="text-sm font-bold text-red-900">Esta solicitud fue rechazada</h2>
+        <p class="text-sm text-red-800 mt-1"><%= solicitud.motivo_observacion || 'Consultá en la institución para más detalles.' %></p>
+        <a href="/alumno/consultas/nueva" class="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-red-700 hover:text-red-900">
+            Hacer una consulta <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+    </div>
+    <% } %>
+
+    <!-- Aprobada / emitida: falta cerrar el trámite en persona -->
+    <% if (solicitud.estado === 'aprobada' || solicitud.estado === 'emitida') { %>
+    <div class="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-xl shadow-sm mb-6">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-building-columns text-blue-700 text-xl mt-0.5"></i>
+            <div class="flex-1">
+                <h2 class="text-sm font-bold text-blue-900">Tu trámite está aprobado: falta finalizarlo en la institución</h2>
+                <% if (solicitud.indicaciones_presencial) { %>
+                <p class="text-sm text-blue-900 mt-2 whitespace-pre-line"><%= solicitud.indicaciones_presencial %></p>
+                <% } %>
+                <dl class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <% if (solicitud.fecha_presencial) { %>
+                    <div>
+                        <dt class="text-blue-700 font-bold uppercase tracking-wider">A partir de</dt>
+                        <dd class="text-blue-900 font-semibold mt-0.5"><%= solicitud.fecha_presencial %></dd>
+                    </div>
+                    <% } %>
+                    <div>
+                        <dt class="text-blue-700 font-bold uppercase tracking-wider">Dónde</dt>
+                        <dd class="text-blue-900 font-semibold mt-0.5"><%= contenido.direccion %></dd>
+                    </div>
+                    <div>
+                        <dt class="text-blue-700 font-bold uppercase tracking-wider">Horario</dt>
+                        <dd class="text-blue-900 font-semibold mt-0.5"><%= contenido.horario_presencial %></dd>
+                    </div>
+                </dl>
+                <p class="text-xs text-blue-700 mt-3">Llevá tu DNI y mencioná el número de solicitud: <strong>#<%= solicitud.id %></strong>.</p>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Finalizada -->
+    <% if (solicitud.estado === 'finalizada') { %>
+    <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm mb-6 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-600 text-2xl"></i>
+        <div>
+            <p class="text-sm font-bold text-emerald-900">Trámite finalizado</p>
+            <p class="text-xs text-emerald-700">
+                Se cerró presencialmente<% if (solicitud.finalizada_at) { %> el <%= moment.utc(solicitud.finalizada_at).local().format('DD/MM/YYYY [a las] HH:mm') %> hs<% } %>.
+            </p>
+        </div>
+    </div>
+    <% } %>
+
     <!-- Si fue emitida: descarga de documento oficial -->
-    <% if (solicitud.estado === 'emitida' && solicitud.documento_emitido_filename) { %>
+    <% if ((solicitud.estado === 'emitida' || solicitud.estado === 'finalizada') && solicitud.documento_emitido_filename) { %>
     <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 text-xl">

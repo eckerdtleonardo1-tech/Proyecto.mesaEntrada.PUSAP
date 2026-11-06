@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+    <a href="/alumno/consultas" class="text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center gap-2 mb-4">
+        <i class="fa-solid fa-arrow-left text-xs"></i> Volver a mis consultas
+    </a>
+
+    <%
+        const estados = {
+            abierta:    { txt: 'Esperando respuesta', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
+            respondida: { txt: 'Respondida',          cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+            cerrada:    { txt: 'Cerrada',             cls: 'bg-slate-100 text-slate-600 border-slate-200' }
+        };
+        const e = estados[consulta.estado] || estados.abierta;
+    %>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-800"><%= consulta.asunto %></h1>
+            <p class="text-xs text-slate-400 mt-1"><%= consulta.categoria %> · iniciada el <%= moment.utc(consulta.created_at).local().format('DD/MM/YYYY [a las] HH:mm') %> hs</p>
+        </div>
+        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border <%= e.cls %> self-start sm:self-auto"><%= e.txt %></span>
+    </div>
+
+    <!-- Hilo de mensajes -->
+    <div class="space-y-4 mb-6">
+        <% mensajes.forEach(m => { const mio = m.autor_tipo === 'alumno'; %>
+        <div class="flex <%= mio ? 'justify-end' : 'justify-start' %>">
+            <div class="max-w-[85%] rounded-2xl px-4 py-3 shadow-sm border <%= mio ? 'bg-blue-700 text-white border-blue-700 rounded-br-md' : 'bg-white text-slate-800 border-slate-200 rounded-bl-md' %>">
+                <p class="text-[11px] font-bold mb-1 <%= mio ? 'text-blue-200' : 'text-blue-700' %>">
+                    <%= mio ? 'Vos' : (m.user_name || 'Personal') + ' · PUSAP' %>
+                </p>
+                <p class="text-sm whitespace-pre-line leading-relaxed"><%= m.mensaje %></p>
+                <p class="text-[10px] mt-2 <%= mio ? 'text-blue-200' : 'text-slate-400' %>"><%= moment.utc(m.created_at).local().format('DD/MM/YYYY HH:mm') %> hs</p>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+
+    <% if (consulta.estado === 'cerrada') { %>
+    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center">
+        <p class="text-sm text-slate-600">Esta consulta está cerrada. Si necesitás algo más, <a href="/alumno/consultas/nueva" class="text-blue-700 font-bold hover:underline">hacé una nueva consulta</a>.</p>
+    </div>
+    <% } else { %>
+    <form action="/alumno/consultas/<%= consulta.id %>/responder" method="POST" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+        <label class="block text-xs font-bold text-slate-700" for="mensaje">Agregar un mensaje</label>
+        <textarea id="mensaje" name="mensaje" rows="3" required maxlength="3000" placeholder="Escribí tu respuesta..."
+                  class="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+        <div class="flex justify-end">
+            <button type="submit" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm rounded-xl transition shadow inline-flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Enviar
+            </button>
+        </div>
+    </form>
+    <form action="/alumno/consultas/<%= consulta.id %>/cerrar" method="POST" class="text-center mt-4" onsubmit="return confirm('¿Dar por resuelta esta consulta?')">
+        <button type="submit" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline">Ya me respondieron, cerrar consulta</button>
+    </form>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

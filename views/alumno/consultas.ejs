@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center justify-between mb-2">
+        <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-comments text-orange-600"></i> Mis Consultas
+        </h1>
+        <a href="/alumno/consultas/nueva" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
+            <i class="fa-solid fa-plus"></i> Nueva consulta
+        </a>
+    </div>
+    <p class="text-xs text-slate-500 mb-6">Escribinos tus dudas académicas o administrativas. Te respondemos acá mismo y te avisamos en tus notificaciones.</p>
+
+    <% if (consultas.length === 0) { %>
+    <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+        <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-comments text-orange-500 text-2xl"></i>
+        </div>
+        <p class="text-slate-500 mb-4">Todavía no hiciste ninguna consulta.</p>
+        <a href="/alumno/consultas/nueva" class="inline-flex items-center gap-2 bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-600 transition">
+            <i class="fa-solid fa-plus"></i> Hacer una consulta
+        </a>
+    </div>
+    <% } else { %>
+    <div class="space-y-3">
+        <% consultas.forEach(c => {
+            const estados = {
+                abierta:    { txt: 'Esperando respuesta', cls: 'bg-blue-100 text-blue-700' },
+                respondida: { txt: 'Respondida',          cls: 'bg-emerald-100 text-emerald-700' },
+                cerrada:    { txt: 'Cerrada',             cls: 'bg-slate-100 text-slate-600' }
+            };
+            const e = estados[c.estado] || estados.abierta;
+        %>
+        <a href="/alumno/consultas/<%= c.id %>" class="block bg-white rounded-xl border <%= c.estado === 'respondida' ? 'border-emerald-300' : 'border-slate-200' %> p-5 hover:border-blue-300 hover:shadow-sm transition">
+            <div class="flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 truncate"><%= c.asunto %></p>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        <span class="text-slate-500 font-medium"><%= c.categoria %></span>
+                        · <%= c.cant_mensajes %> mensaje<%= c.cant_mensajes !== 1 ? 's' : '' %>
+                        · actualizada <%= moment.utc(c.updated_at).local().fromNow() %>
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <span class="text-xs px-3 py-1 rounded-full font-semibold <%= e.cls %>"><%= e.txt %></span>
+                    <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                </div>
+            </div>
+        </a>
+        <% }) %>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

@@ -2,43 +2,52 @@
 
 <div class="max-w-5xl mx-auto space-y-6">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-users-gear text-blue-700"></i>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2 dark:text-slate-100">
+            <i class="fa-solid fa-users-gear text-blue-700 dark:text-blue-400"></i>
             Gestión de Usuarios
         </h1>
-        <p class="text-slate-500 text-sm mt-1">Administrá el personal autorizado y sus roles en el sistema.</p>
+        <p class="text-slate-500 text-sm mt-1 dark:text-slate-400">Administrá el personal autorizado y sus roles en el sistema.</p>
     </div>
 
+    <% const avisosOk = { creado: 'Usuario creado.', guardado: 'Cambios guardados.', eliminado: 'Usuario eliminado.' }; %>
+    <% if (ok && avisosOk[ok]) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-circle-check"></i> <%= avisosOk[ok] %></div>
+    <% } %>
+    <% if (error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"><i class="fa-solid fa-circle-exclamation"></i> <%= error %></div>
+    <% } %>
+
     <!-- Lista de Usuarios -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
         <table class="min-w-full">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead class="bg-slate-50 border-b border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
                 <tr>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase">Nombre</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase">Usuario</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase">Área</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase">Rol</th>
-                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase">Acción</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Nombre</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Usuario</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Área</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Rol</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Acción</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 <% users.forEach(u => { %>
-                <tr class="hover:bg-slate-50">
-                    <td class="px-5 py-4 font-semibold text-sm text-slate-800"><%= u.name %></td>
-                    <td class="px-5 py-4 text-sm text-slate-600"><%= u.username %></td>
-                    <td class="px-5 py-4 text-sm text-slate-600"><%= u.area %></td>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <td class="px-5 py-4 font-semibold text-sm text-slate-800 dark:text-slate-100"><%= u.name %></td>
+                    <td class="px-5 py-4 text-sm text-slate-600 dark:text-slate-300"><%= u.username %></td>
+                    <td class="px-5 py-4 text-sm text-slate-600 dark:text-slate-300"><%= u.area %></td>
                     <td class="px-5 py-4 text-sm">
                         <span class="px-2 py-1 bg-slate-100 rounded text-xs font-bold uppercase border border-slate-200 <%= u.role === 'operador' ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-slate-600' %>">
                             <%= u.role %>
                         </span>
                     </td>
-                    <td class="px-5 py-4 text-right">
+                    <td class="px-5 py-4 text-right whitespace-nowrap">
+                        <button type="button" data-usuario="<%= JSON.stringify({ id: u.id, name: u.name, username: u.username, area: u.area, role: u.role, yo: u.id === user.id }) %>" onclick="abrirEditarUsuario(this)" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-bold mr-3" title="Editar"><i class="fa-solid fa-pen"></i> <span class="hidden sm:inline">Editar</span></button>
                         <% if(u.id !== user.id) { %>
-                        <form action="/panel/usuarios/eliminar/<%= u.id %>" method="POST" onsubmit="return confirm('¿Eliminar usuario <%= u.username %>?')">
-                            <button type="submit" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                        <form action="/panel/usuarios/eliminar/<%= u.id %>" method="POST" class="inline" onsubmit="return confirm('¿Eliminar usuario <%= u.username %>?')">
+                            <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                         </form>
                         <% } else { %>
-                            <span class="text-slate-400 text-xs">Tú</span>
+                            <span class="text-slate-500 dark:text-slate-400 text-xs ml-1">(vos)</span>
                         <% } %>
                     </td>
                 </tr>
@@ -48,32 +57,32 @@
     </div>
 
     <!-- Nuevo Usuario -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="font-bold text-slate-800 mb-4">Nuevo Usuario</h3>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <h3 class="font-bold text-slate-800 mb-4 dark:text-slate-100">Nuevo Usuario</h3>
         <form action="/panel/usuarios/nuevo" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Nombre Completo</label>
-                <input type="text" name="name" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400">Nombre Completo</label>
+                <input type="text" name="name" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Usuario</label>
-                <input type="text" name="username" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400">Usuario</label>
+                <input type="text" name="username" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Contraseña</label>
-                <input type="text" name="password" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none">
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400">Contraseña</label>
+                <input type="text" name="password" required minlength="6" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Área</label>
-                <select name="area" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white">
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400">Área</label>
+                <select name="area" required class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                     <% areas.forEach(a => { %>
                         <option value="<%= a.name %>"><%= a.name %></option>
                     <% }) %>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Rol</label>
-                <select name="role" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white">
+                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400">Rol</label>
+                <select name="role" class="w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                     <option value="interno">Interno (Solo su área)</option>
                     <option value="operador">Operador (Mesa Entrada)</option>
                 </select>
@@ -86,5 +95,62 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Editar Usuario -->
+<%
+    const cmpU = 'w-full border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400';
+    const lblU = 'block text-xs font-bold text-slate-500 mb-1 uppercase dark:text-slate-400';
+%>
+<div id="modalEditarUsuario" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-2xl dark:text-slate-100">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-white">Editar usuario</h3>
+            <button type="button" onclick="cerrarEditarUsuario()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="formEditarUsuario" method="POST" class="space-y-3">
+            <div><label class="<%= lblU %>">Nombre completo</label><input type="text" name="name" id="euName" required class="<%= cmpU %>"></div>
+            <div><label class="<%= lblU %>">Usuario</label><input type="text" name="username" id="euUsername" required class="<%= cmpU %>"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="<%= lblU %>">Área</label>
+                    <select name="area" id="euArea" required class="<%= cmpU %>">
+                        <% areas.forEach(a => { %><option value="<%= a.name %>"><%= a.name %></option><% }) %>
+                    </select>
+                </div>
+                <div>
+                    <label class="<%= lblU %>">Rol</label>
+                    <select name="role" id="euRole" class="<%= cmpU %>">
+                        <option value="interno">Interno (solo su área)</option>
+                        <option value="operador">Operador (Mesa Entrada)</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="<%= lblU %>">Nueva contraseña <span class="normal-case font-normal">(dejala vacía para no cambiarla)</span></label>
+                <input type="text" name="password" id="euPassword" autocomplete="off" minlength="6" placeholder="Mínimo 6 caracteres" class="<%= cmpU %>">
+            </div>
+            <p id="euAvisoYo" class="hidden text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-2">Estás editando tu propio usuario: no podés quitarte el rol de operador.</p>
+            <div class="pt-2 flex justify-end gap-2">
+                <button type="button" onclick="cerrarEditarUsuario()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm shadow-sm">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirEditarUsuario(boton) {
+    const u = JSON.parse(boton.dataset.usuario);
+    document.getElementById('formEditarUsuario').action = '/panel/usuarios/editar/' + u.id;
+    document.getElementById('euName').value = u.name || '';
+    document.getElementById('euUsername').value = u.username || '';
+    document.getElementById('euArea').value = u.area || '';
+    document.getElementById('euRole').value = u.role;
+    document.getElementById('euPassword').value = '';
+    document.getElementById('euAvisoYo').classList.toggle('hidden', !u.yo);
+    document.getElementById('modalEditarUsuario').classList.remove('hidden');
+}
+function cerrarEditarUsuario() { document.getElementById('modalEditarUsuario').classList.add('hidden'); }
+</script>
 
 <%- include('partials/footer') %>

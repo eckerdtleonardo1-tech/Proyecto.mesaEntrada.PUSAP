@@ -1,0 +1,94 @@
+<%- include('../partials/header') %>
+
+<%
+    const qs = (extra) => {
+        const p = new URLSearchParams();
+        if (extra.estado !== undefined ? extra.estado : estado) p.set('estado', extra.estado !== undefined ? extra.estado : estado);
+        if (search) p.set('search', search);
+        if (extra.page) p.set('page', extra.page);
+        const s = p.toString();
+        return '/backoffice/consultas' + (s ? '?' + s : '');
+    };
+    const tabs = [
+        { key: '',           label: 'Todas',       n: conteo.abierta + conteo.respondida + conteo.cerrada },
+        { key: 'abierta',    label: 'Sin responder', n: conteo.abierta },
+        { key: 'respondida', label: 'Respondidas', n: conteo.respondida },
+        { key: 'cerrada',    label: 'Cerradas',    n: conteo.cerrada }
+    ];
+    const badge = {
+        abierta:    'bg-amber-100 text-amber-800',
+        respondida: 'bg-emerald-100 text-emerald-800',
+        cerrada:    'bg-slate-100 text-slate-600'
+    };
+    const etiqueta = { abierta: 'Sin responder', respondida: 'Respondida', cerrada: 'Cerrada' };
+%>
+
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-comments text-amber-600 dark:text-amber-400"></i> Consultas de Alumnos
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Preguntas que los alumnos hacen desde su portal. Las más urgentes (sin responder) van primero.</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2">
+            <% tabs.forEach(t => { %>
+            <a href="<%= qs({ estado: t.key }) %>" class="px-4 py-2 rounded-xl text-xs font-bold border transition <%= estado === t.key ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-blue-400' %>">
+                <%= t.label %> <span class="ml-1 opacity-70">(<%= t.n %>)</span>
+            </a>
+            <% }) %>
+        </div>
+        <form method="GET" action="/backoffice/consultas" class="flex gap-2">
+            <% if (estado) { %><input type="hidden" name="estado" value="<%= estado %>"><% } %>
+            <input type="text" name="search" value="<%= search %>" placeholder="Buscar por asunto, alumno, DNI o legajo..." class="w-full lg:w-80 text-xs px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400">
+            <button class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 rounded-xl"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:text-slate-100">
+        <% if (consultas.length === 0) { %>
+        <p class="px-6 py-12 text-center text-xs text-slate-400">No hay consultas para mostrar.</p>
+        <% } else { %>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-900/40 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-slate-700 dark:text-slate-400">
+                    <tr>
+                        <th class="px-5 py-3">Asunto</th>
+                        <th class="px-5 py-3">Alumno</th>
+                        <th class="px-5 py-3">Tema</th>
+                        <th class="px-5 py-3">Atiende</th>
+                        <th class="px-5 py-3">Actividad</th>
+                        <th class="px-5 py-3">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    <% consultas.forEach(c => { %>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <td class="px-5 py-3">
+                            <a href="/backoffice/consultas/<%= c.id %>" class="font-bold text-blue-700 dark:text-blue-300 hover:underline"><%= c.asunto %></a>
+                            <span class="text-slate-400 ml-1">(<%= c.cant_mensajes %>)</span>
+                        </td>
+                        <td class="px-5 py-3 text-slate-700 dark:text-slate-200"><%= c.alumno_apellido %>, <%= c.alumno_nombre %> <span class="text-slate-400">· <%= c.legajo %></span></td>
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400"><%= c.categoria %></td>
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400"><%= c.asignado_nombre || '—' %></td>
+                        <td class="px-5 py-3 text-slate-500 whitespace-nowrap dark:text-slate-400"><%= moment.utc(c.updated_at).local().fromNow() %></td>
+                        <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold <%= badge[c.estado] %>"><%= etiqueta[c.estado] || c.estado %></span></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+    <div class="flex items-center justify-center gap-3 text-xs">
+        <% if (page > 1) { %><a href="<%= qs({ page: page - 1 }) %>" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:border-blue-400 dark:text-slate-100">&laquo; Anterior</a><% } %>
+        <span class="text-slate-500 dark:text-slate-400">Página <%= page %> de <%= totalPages %></span>
+        <% if (page < totalPages) { %><a href="<%= qs({ page: page + 1 }) %>" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:border-blue-400 dark:text-slate-100">Siguiente &raquo;</a><% } %>
+    </div>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

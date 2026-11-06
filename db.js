@@ -1,6 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const dbPath = path.join(__dirname, 'database_v2.db');
+// DB_PATH permite que los tests de integración usen una base descartable
+// sin tocar la base de desarrollo.
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'database_v2.db');
 
 const db = new sqlite3.Database(dbPath);
 
@@ -398,6 +400,68 @@ db.serialize(() => {
         activo INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    // =============================================
+    // TABLAS NUEVAS - TRES CARAS (público / alumno / personal)
+    // =============================================
+
+    // Audiencia del contenido editable: 'publico' (home abierto), 'alumnos' (portal) o 'ambos'
+    db.run("ALTER TABLE novedades ADD COLUMN audiencia TEXT DEFAULT 'ambos'", () => {});
+    db.run("ALTER TABLE faqs ADD COLUMN audiencia TEXT DEFAULT 'ambos'", () => {});
+
+    // Cierre presencial de un trámite iniciado online
+    db.run("ALTER TABLE solicitudes_doc ADD COLUMN indicaciones_presencial TEXT", () => {});
+    db.run("ALTER TABLE solicitudes_doc ADD COLUMN fecha_presencial TEXT", () => {});
+    db.run("ALTER TABLE solicitudes_doc ADD COLUMN finalizada_at DATETIME", () => {});
+
+    // Ventajas de la institución (se muestran en el home público)
+    db.run(`CREATE TABLE IF NOT EXISTS ventajas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT NOT NULL,
+        descripcion TEXT,
+        icono TEXT DEFAULT 'fa-star',
+        orden INTEGER DEFAULT 0,
+        activo INTEGER DEFAULT 1
+    )`);
+
+    db.get("SELECT COUNT(*) as count FROM ventajas", (err, row) => {
+        if (row && row.count === 0) {
+            const stmt = db.prepare("INSERT INTO ventajas (titulo, descripcion, icono, orden) VALUES (?, ?, ?, ?)");
+            stmt.run("Títulos con validez oficial", "Nuestras carreras otorgan títulos reconocidos, con salida laboral inmediata.", "fa-award", 1);
+            stmt.run("Cuerpo docente profesional", "Docentes en actividad que combinan experiencia en el campo y vocación de enseñar.", "fa-chalkboard-user", 2);
+            stmt.run("Cursada flexible", "Turnos mañana y noche, y propuestas virtuales para compatibilizar estudio y trabajo.", "fa-clock", 3);
+            stmt.run("Acompañamiento personalizado", "Mesa de Entrada y tutorías que te guían en cada trámite durante toda la carrera.", "fa-hand-holding-heart", 4);
+            stmt.run("Portal del alumno", "Consultá tus cursos y cuotas, hacé consultas y pedí trámites desde tu casa.", "fa-laptop", 5);
+            stmt.run("Becas y planes de pago", "Alternativas de financiamiento para que el costo no sea un obstáculo.", "fa-piggy-bank", 6);
+            stmt.finalize();
+        }
+    });
+
+    // Consultas del alumno al personal (hilo de mensajes)
+    db.run(`CREATE TABLE IF NOT EXISTS consultas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        alumno_id INTEGER NOT NULL,
+        categoria TEXT DEFAULT 'General',
+        asunto TEXT NOT NULL,
+        estado TEXT DEFAULT 'abierta',
+        asignado_a INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (alumno_id) REFERENCES alumnos(id),
+        FOREIGN KEY (asignado_a) REFERENCES users(id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS consulta_mensajes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consulta_id INTEGER NOT NULL,
+        autor_tipo TEXT NOT NULL,
+        user_id INTEGER,
+        user_name TEXT,
+        mensaje TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (consulta_id) REFERENCES consultas(id)
+    )`);
+
 });
 
 module.exports = db;

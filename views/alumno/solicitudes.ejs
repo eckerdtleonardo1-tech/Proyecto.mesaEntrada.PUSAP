@@ -3,21 +3,23 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-folder-open text-purple-600"></i> Mis Solicitudes
+            <i class="fa-solid fa-folder-open text-purple-600"></i> Mis Trámites
         </h1>
         <a href="/alumno/solicitudes/nueva" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
-            <i class="fa-solid fa-plus"></i> Nueva solicitud
+            <i class="fa-solid fa-plus"></i> Solicitar un trámite
         </a>
     </div>
+
+    <p class="text-xs text-slate-500 -mt-3 mb-6">Iniciás el trámite desde acá y, cuando esté aprobado, lo finalizás en persona en la institución.</p>
 
     <% if (solicitudes.length === 0) { %>
     <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
         <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <i class="fa-solid fa-folder-open text-purple-500 text-2xl"></i>
         </div>
-        <p class="text-slate-500 mb-4">No tenés solicitudes de documentación todavía.</p>
+        <p class="text-slate-500 mb-4">Todavía no solicitaste ningún trámite.</p>
         <a href="/alumno/solicitudes/nueva" class="inline-flex items-center gap-2 bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm hover:bg-blue-600 transition">
-            <i class="fa-solid fa-plus"></i> Iniciar una solicitud
+            <i class="fa-solid fa-plus"></i> Solicitar un trámite
         </a>
     </div>
     <% } else { %>
@@ -30,7 +32,8 @@
                 observada: 'bg-amber-100 text-amber-700',
                 aprobada: 'bg-green-100 text-green-700',
                 emitida: 'bg-teal-100 text-teal-700',
-                rechazada: 'bg-red-100 text-red-700'
+                rechazada: 'bg-red-100 text-red-700',
+                finalizada: 'bg-slate-200 text-slate-700'
             };
             const color = estadoColors[s.estado] || 'bg-slate-100 text-slate-600';
             const estadoLabel = {
@@ -38,9 +41,10 @@
                 enviada: 'Enviada',
                 en_revision: 'En revisión',
                 observada: '⚠ Observada',
-                aprobada: 'Aprobada',
-                emitida: '✓ Emitida',
-                rechazada: 'Rechazada'
+                aprobada: 'Aprobada · ir a la sede',
+                emitida: '✓ Emitida · ir a la sede',
+                rechazada: 'Rechazada',
+                finalizada: '✓ Finalizada'
             }[s.estado] || s.estado;
         %>
         <a href="/alumno/solicitudes/<%= s.id %>" class="block bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition">
@@ -70,6 +74,11 @@
         <% }) %>
     </div>
     <% } %>
+
+    <p class="text-center text-xs text-slate-400 mt-8">
+        ¿Buscás un expediente anterior de Mesa de Entrada?
+        <a href="/alumno/tramites" class="text-blue-600 font-semibold hover:underline">Ver expedientes anteriores</a>
+    </p>
 </div>
 
 <%- include('../partials/footer') %>

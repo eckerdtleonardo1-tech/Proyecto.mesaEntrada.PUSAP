@@ -24,7 +24,9 @@ app.set('views', path.join(__dirname, 'views'));
 // Sesión
 // ----------------------------------------------------------------
 app.use(session({
-    store: new FileStore({ path: './sessions', logFn: () => {} }),
+    // En tests se usa la memoria (store undefined): no escribe archivos de sesión en disco
+    // y evita los EPERM que aparecen en Windows/OneDrive al renombrar archivos tomados.
+    store: process.env.NODE_ENV === 'test' ? undefined : new FileStore({ path: './sessions', logFn: () => {} }),
     secret: process.env.SESSION_SECRET || 'pusap_dev_fallback_secret_cambiar',
     resave: false,
     saveUninitialized: false,
@@ -39,6 +41,7 @@ app.use(session({
 // Variables globales para todas las vistas
 // ----------------------------------------------------------------
 const moment = require('moment');
+const contenido = require('./lib/contenido');
 moment.locale('es');
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
@@ -54,7 +57,16 @@ app.use((req, res, next) => {
         res.locals.currentLayout = 'publico';
     }
 
-    next();
+    // Datos institucionales (contacto, horarios) para footer, contacto y portal del alumno.
+    // El personal no los necesita; lo demás sale de un caché en memoria.
+    if (res.locals.currentLayout === 'personal') {
+        res.locals.contenido = contenido.defaults();
+        return next();
+    }
+    contenido.obtener((datos) => {
+        res.locals.contenido = datos;
+        next();
+    });
 });
 
 // ----------------------------------------------------------------
@@ -64,14 +76,29 @@ app.use((req, res, next) => {
 // ----------------------------------------------------------------
 app.use('/uploads/publico', express.static(path.join(__dirname, 'uploads')));
 
-// Ruta autenticada para archivos privados (solicitudes, documentos emitidos)
+// Ruta autenticada para archivos privados (adjuntos de solicitudes, documentos emitidos,
+// comprobantes de pago). El personal accede a todo; un alumno sólo a lo que es suyo.
 app.get('/descargas/privado/:filename', (req, res) => {
     if (!req.session.user) return res.redirect('/ingresar');
     const filename = path.basename(req.params.filename); // evitar path traversal
     const filePath = path.join(__dirname, 'uploads', 'privado', filename);
-    res.sendFile(filePath, (err) => {
-        if (err) res.status(404).send('Archivo no encontrado.');
+    const enviar = () => res.sendFile(filePath, (err) => {
+        if (err && !res.headersSent) res.status(404).send('Archivo no encontrado.');
     });
+
+    const { role, alumno_id } = req.session.user;
+    if (role === 'operador' || role === 'interno') return enviar();
+    if (role !== 'alumno' || !alumno_id) return res.status(403).send('Acceso denegado.');
+
+    db.get(`SELECT 1 AS ok FROM solicitud_adjuntos sa
+                JOIN solicitudes_doc sd ON sd.id = sa.solicitud_id
+                WHERE sa.filename = ? AND sd.alumno_id = ?
+            UNION SELECT 1 FROM solicitudes_doc WHERE documento_emitido_filename = ? AND alumno_id = ?
+            UNION SELECT 1 FROM cuotas WHERE comprobante_filename = ? AND alumno_id = ?`,
+        [filename, alumno_id, filename, alumno_id, filename, alumno_id], (err, row) => {
+            if (err || !row) return res.status(403).send('Acceso denegado.');
+            enviar();
+        });
 });
 
 // Ruta autenticada para uploads existentes del sistema de tickets (solo personal)

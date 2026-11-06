@@ -1,0 +1,102 @@
+<%- include('../partials/header') %>
+
+<%
+    const v = (k) => (carrera[k] === undefined || carrera[k] === null) ? '' : carrera[k];
+    const campo = 'w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white';
+    const label = 'block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1';
+    const accion = esNueva ? '/backoffice/carreras/nueva' : '/backoffice/carreras/' + carrera.id + '/editar';
+%>
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <a href="/backoffice/carreras" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5">
+        <i class="fa-solid fa-arrow-left"></i> Volver a carreras y cursos
+    </a>
+
+    <div>
+        <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-blue-600 dark:text-blue-400"></i> <%= esNueva ? 'Nueva carrera o curso' : 'Editar carrera o curso' %>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Lo que completes se muestra tal cual en la página pública. Los campos vacíos no se muestran.</p>
+    </div>
+
+    <% if (error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 flex items-center gap-2 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"><i class="fa-solid fa-circle-exclamation"></i> <%= error %></div>
+    <% } %>
+
+    <form action="<%= accion %>" method="POST" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-5 dark:text-slate-100">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-3">
+                <label class="<%= label %>" for="nombre">Nombre *</label>
+                <input id="nombre" type="text" name="nombre" required maxlength="200" value="<%= v('nombre') %>" class="<%= campo %>" placeholder="Ej: Tecnicatura en Administración de Empresas">
+            </div>
+            <div>
+                <label class="<%= label %>" for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" class="<%= campo %>">
+                    <option value="carrera" <%= v('tipo') === 'carrera' ? 'selected' : '' %>>Carrera</option>
+                    <option value="curso" <%= v('tipo') === 'curso' ? 'selected' : '' %>>Curso</option>
+                </select>
+            </div>
+            <div>
+                <label class="<%= label %>" for="modalidad">Modalidad</label>
+                <select id="modalidad" name="modalidad" class="<%= campo %>">
+                    <option value="presencial" <%= v('modalidad') === 'presencial' ? 'selected' : '' %>>Presencial</option>
+                    <option value="semipresencial" <%= v('modalidad') === 'semipresencial' ? 'selected' : '' %>>Semipresencial</option>
+                    <option value="virtual" <%= v('modalidad') === 'virtual' ? 'selected' : '' %>>Virtual</option>
+                </select>
+            </div>
+            <div>
+                <label class="<%= label %>" for="orden">Orden</label>
+                <input id="orden" type="number" name="orden" value="<%= v('orden') || 0 %>" class="<%= campo %>">
+                <p class="text-[10px] text-slate-400 mt-1">Menor número = aparece primero.</p>
+            </div>
+            <div>
+                <label class="<%= label %>" for="duracion">Duración</label>
+                <input id="duracion" type="text" name="duracion" maxlength="100" value="<%= v('duracion') %>" class="<%= campo %>" placeholder="3 años">
+            </div>
+            <div>
+                <label class="<%= label %>" for="turno">Turno</label>
+                <input id="turno" type="text" name="turno" maxlength="100" value="<%= v('turno') %>" class="<%= campo %>" placeholder="mañana / noche">
+            </div>
+            <div>
+                <label class="<%= label %>" for="titulo">Título que otorga</label>
+                <input id="titulo" type="text" name="titulo" maxlength="200" value="<%= v('titulo') %>" class="<%= campo %>" placeholder="Técnico/a Superior en...">
+            </div>
+        </div>
+
+        <div>
+            <label class="<%= label %>" for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion" rows="3" class="<%= campo %>" placeholder="De qué se trata y a quién está dirigida."><%= v('descripcion') %></textarea>
+        </div>
+        <div>
+            <label class="<%= label %>" for="plan_estudios">Plan de estudios</label>
+            <textarea id="plan_estudios" name="plan_estudios" rows="4" class="<%= campo %>" placeholder="Materias o módulos principales."><%= v('plan_estudios') %></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="<%= label %>" for="requisitos_ingreso">Requisitos de ingreso</label>
+                <textarea id="requisitos_ingreso" name="requisitos_ingreso" rows="3" class="<%= campo %>"><%= v('requisitos_ingreso') %></textarea>
+            </div>
+            <div>
+                <label class="<%= label %>" for="aranceles">Aranceles</label>
+                <textarea id="aranceles" name="aranceles" rows="3" class="<%= campo %>" placeholder="Matrícula: $... Cuota mensual: $..."><%= v('aranceles') %></textarea>
+                <p class="text-[10px] text-slate-400 mt-1">En el inicio se muestra sólo la primera oración.</p>
+            </div>
+            <div class="md:col-span-2">
+                <label class="<%= label %>" for="fechas_inscripcion">Fechas de inscripción</label>
+                <textarea id="fechas_inscripcion" name="fechas_inscripcion" rows="2" class="<%= campo %>"><%= v('fechas_inscripcion') %></textarea>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="activo" name="activo" value="1" <%= carrera.activo ? 'checked' : '' %> class="rounded text-blue-600 focus:ring-blue-500 dark:text-blue-400">
+            <label for="activo" class="text-xs font-bold text-slate-700 dark:text-slate-300">Visible en el sitio público</label>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700">
+            <a href="/backoffice/carreras" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">Cancelar</a>
+            <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-sm"><%= esNueva ? 'Crear' : 'Guardar cambios' %></button>
+        </div>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,75 @@
+<%- include('../partials/header') %>
+
+<%
+    const badge = {
+        abierta:    'bg-amber-100 text-amber-800 border-amber-200',
+        respondida: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        cerrada:    'bg-slate-100 text-slate-600 border-slate-200'
+    };
+    const etiqueta = { abierta: 'Sin responder', respondida: 'Respondida', cerrada: 'Cerrada' };
+%>
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <a href="/backoffice/consultas" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Volver a consultas
+        </a>
+        <span class="text-xs font-mono text-slate-400">Consulta #<%= consulta.id %></span>
+    </div>
+
+    <!-- Encabezado -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 dark:text-slate-100">
+        <div>
+            <h1 class="text-xl font-black text-slate-800 dark:text-white"><%= consulta.asunto %></h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <span class="font-bold text-slate-700 dark:text-slate-200"><%= consulta.alumno_apellido %>, <%= consulta.alumno_nombre %></span>
+                (DNI: <%= consulta.dni %> | Legajo: <%= consulta.legajo %><% if (consulta.alumno_email) { %> | <%= consulta.alumno_email %><% } %>)
+                · Tema: <%= consulta.categoria %>
+                <% if (consulta.asignado_nombre) { %>· Atiende: <%= consulta.asignado_nombre %><% } %>
+            </p>
+        </div>
+        <span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold border <%= badge[consulta.estado] %> self-start md:self-auto">
+            <%= etiqueta[consulta.estado] || consulta.estado %>
+        </span>
+    </div>
+
+    <!-- Hilo -->
+    <div class="space-y-4">
+        <% mensajes.forEach(m => { const personal = m.autor_tipo === 'personal'; %>
+        <div class="flex <%= personal ? 'justify-end' : 'justify-start' %>">
+            <div class="max-w-[85%] rounded-2xl px-4 py-3 shadow-sm border <%= personal ? 'bg-blue-700 text-white border-blue-700 rounded-br-md' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 rounded-bl-md' %>">
+                <p class="text-[11px] font-bold mb-1 <%= personal ? 'text-blue-200' : 'text-amber-700 dark:text-amber-400' %>">
+                    <%= personal ? (m.user_name || 'Personal') : 'Alumno' %>
+                </p>
+                <p class="text-sm whitespace-pre-line leading-relaxed"><%= m.mensaje %></p>
+                <p class="text-[10px] mt-2 <%= personal ? 'text-blue-200' : 'text-slate-400' %>"><%= moment.utc(m.created_at).local().format('DD/MM/YYYY HH:mm') %> hs</p>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+
+    <!-- Responder -->
+    <form action="/backoffice/consultas/<%= consulta.id %>/responder" method="POST" class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3 dark:text-slate-100">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300" for="mensaje">Responder al alumno <span class="font-normal text-slate-400">(le llega una notificación)</span></label>
+        <textarea id="mensaje" name="mensaje" rows="4" required maxlength="3000" placeholder="Escribí la respuesta..." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800"></textarea>
+        <div class="flex items-center justify-end">
+            <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2 rounded-xl text-xs transition inline-flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Enviar respuesta
+            </button>
+        </div>
+    </form>
+
+    <div class="flex justify-end">
+        <% if (consulta.estado === 'cerrada') { %>
+        <form action="/backoffice/consultas/<%= consulta.id %>/reabrir" method="POST">
+            <button class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white underline dark:text-slate-400">Reabrir consulta</button>
+        </form>
+        <% } else { %>
+        <form action="/backoffice/consultas/<%= consulta.id %>/cerrar" method="POST" onsubmit="return confirm('¿Cerrar la consulta? El alumno podrá abrir una nueva si lo necesita.')">
+            <button class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white underline dark:text-slate-400">Cerrar consulta</button>
+        </form>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

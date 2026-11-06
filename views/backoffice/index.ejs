@@ -1,0 +1,109 @@
+<%- include('../partials/header') %>
+
+<%
+    const n = (k) => conteo[k] || 0;
+    const pendientesPresencial = n('aprobada') + n('emitida');
+    const tarjetas = [
+        { titulo: 'Solicitudes nuevas',       valor: n('enviada'),            href: '/backoffice/solicitudes?estado=enviada',     icono: 'fa-inbox',          color: 'blue',    nota: 'Esperan que alguien las tome' },
+        { titulo: 'En revisión',              valor: n('en_revision'),        href: '/backoffice/solicitudes?estado=en_revision', icono: 'fa-magnifying-glass', color: 'purple', nota: 'Las estamos analizando' },
+        { titulo: 'Para cerrar en persona',   valor: pendientesPresencial,    href: '/backoffice/solicitudes?estado=aprobada',    icono: 'fa-building-columns', color: 'emerald', nota: 'Aprobadas, falta que el alumno venga' },
+        { titulo: 'Consultas sin responder',  valor: consultasAbiertas,       href: '/backoffice/consultas?estado=abierta',       icono: 'fa-comments',       color: 'amber',   nota: 'Alumnos esperando respuesta' }
+    ];
+%>
+
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-house text-blue-600 dark:text-blue-400"></i> Hola, <%= user.name %>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Esto es lo que está esperando acción del personal.</p>
+    </div>
+
+    <!-- Contadores -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <% tarjetas.forEach(t => { %>
+        <a href="<%= t.href %>" class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-<%= t.color %>-400 transition group">
+            <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-xl bg-<%= t.color %>-100 text-<%= t.color %>-700 flex items-center justify-center">
+                    <i class="fa-solid <%= t.icono %>"></i>
+                </div>
+                <span class="text-3xl font-black text-slate-800 dark:text-white"><%= t.valor %></span>
+            </div>
+            <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mt-3"><%= t.titulo %></p>
+            <p class="text-[11px] text-slate-400 mt-0.5"><%= t.nota %></p>
+        </a>
+        <% }) %>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Solicitudes por atender -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:text-slate-100">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h2 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-folder-tree text-blue-600 dark:text-blue-400"></i> Solicitudes por atender</h2>
+                <a href="/backoffice/solicitudes" class="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400">Ver bandeja</a>
+            </div>
+            <% if (ultimasSolicitudes.length === 0) { %>
+            <p class="px-6 py-8 text-center text-xs text-slate-400">No hay solicitudes pendientes. 🎉</p>
+            <% } else { %>
+            <ul class="divide-y divide-slate-50 dark:divide-slate-700">
+                <% ultimasSolicitudes.forEach(s => { %>
+                <li>
+                    <a href="/backoffice/solicitudes/<%= s.id %>" class="px-6 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate"><%= s.tipo_nombre %></p>
+                            <p class="text-[11px] text-slate-400 truncate"><%= s.alumno_apellido %>, <%= s.alumno_nombre %> · <%= moment.utc(s.updated_at).local().fromNow() %></p>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full <%= s.estado === 'enviada' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700' %>"><%= s.estado === 'enviada' ? 'Nueva' : 'En revisión' %></span>
+                    </a>
+                </li>
+                <% }) %>
+            </ul>
+            <% } %>
+        </div>
+
+        <!-- Consultas sin responder -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden dark:text-slate-100">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <h2 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-comments text-amber-600 dark:text-amber-400"></i> Consultas sin responder</h2>
+                <a href="/backoffice/consultas" class="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400">Ver todas</a>
+            </div>
+            <% if (ultimasConsultas.length === 0) { %>
+            <p class="px-6 py-8 text-center text-xs text-slate-400">Todas las consultas están respondidas. 🎉</p>
+            <% } else { %>
+            <ul class="divide-y divide-slate-50 dark:divide-slate-700">
+                <% ultimasConsultas.forEach(c => { %>
+                <li>
+                    <a href="/backoffice/consultas/<%= c.id %>" class="px-6 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate"><%= c.asunto %></p>
+                            <p class="text-[11px] text-slate-400 truncate"><%= c.alumno_apellido %>, <%= c.alumno_nombre %> · <%= c.categoria %> · <%= moment.utc(c.updated_at).local().fromNow() %></p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                    </a>
+                </li>
+                <% }) %>
+            </ul>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Accesos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <a href="/panel" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-400 transition flex items-center gap-3 dark:text-slate-100">
+            <i class="fa-solid fa-chart-pie text-blue-600 text-lg dark:text-blue-400"></i>
+            <div><p class="font-bold text-slate-800 dark:text-white">Expedientes de Mesa</p><p class="text-slate-400"><%= expedientes %> en curso</p></div>
+        </a>
+        <% if (user.role === 'operador') { %>
+        <a href="/backoffice/alumnos" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-400 transition flex items-center gap-3 dark:text-slate-100">
+            <i class="fa-solid fa-user-graduate text-blue-600 text-lg dark:text-blue-400"></i>
+            <div><p class="font-bold text-slate-800 dark:text-white">Padrón de Alumnos</p><p class="text-slate-400"><%= totalAlumnos %> registrados</p></div>
+        </a>
+        <a href="/backoffice/carreras" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-400 transition flex items-center gap-3 dark:text-slate-100">
+            <i class="fa-solid fa-pen-ruler text-blue-600 text-lg dark:text-blue-400"></i>
+            <div><p class="font-bold text-slate-800 dark:text-white">Contenido del sitio</p><p class="text-slate-400">Carreras, ventajas, novedades, FAQs</p></div>
+        </a>
+        <% } %>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

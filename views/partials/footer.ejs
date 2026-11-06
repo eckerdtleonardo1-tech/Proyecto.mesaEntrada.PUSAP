@@ -1,17 +1,18 @@
         </main>
 <% const isStaffLayout = typeof currentLayout !== 'undefined' ? (currentLayout === 'personal' && user) : (user && user.role !== 'alumno'); %>
 <% const isAlumnoLayout = typeof currentLayout !== 'undefined' ? (currentLayout === 'alumno' && user) : (user && user.role === 'alumno'); %>
+<% const _c = (typeof contenido !== 'undefined' && contenido) ? contenido : { email: 'mesaentrada@pusap.edu.ar', telefono: '0800-PUSAP-123' }; %>
 
 <% if (isStaffLayout) { %>
     </div>
 </div>
 <!-- Footer interno del personal -->
-<footer class="border-t border-slate-200 bg-white mt-auto">
-    <div class="px-6 py-4 text-xs text-slate-500 flex justify-between items-center bg-slate-50">
+<footer class="border-t border-slate-200 bg-white mt-auto dark:bg-slate-800 dark:border-slate-700">
+    <div class="px-6 py-4 text-xs text-slate-500 flex justify-between items-center bg-slate-50 dark:bg-slate-800 dark:text-slate-400">
         <span>© <%= new Date().getFullYear() %> PUSAP — Mesa de Entrada</span>
         <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-green-500"></span>
-            <span>Sesión activa: <span class="text-blue-700 font-bold"><%= user.area || user.name %></span></span>
+            <span>Sesión activa: <span class="text-blue-700 font-bold dark:text-blue-300"><%= user.area || user.name %></span></span>
         </div>
     </div>
 </footer>
@@ -44,7 +45,7 @@
                         <span class="text-blue-400 text-xs uppercase tracking-widest font-bold">Centro Universitario</span>
                     </div>
                 </div>
-                <p class="text-sm leading-relaxed max-w-sm mb-6">Sistema integral de Mesa de Entrada Virtual. Gestioná tus trámites académicos de manera 100% digital, rápida y transparente.</p>
+                <p class="text-sm leading-relaxed max-w-sm mb-6">Conocé nuestras carreras y cursos. Si ya sos alumno, ingresá al portal para consultar, solicitar trámites y finalizarlos en la institución.</p>
                 <div class="flex gap-3">
                     <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"><i class="fa-brands fa-facebook-f text-sm"></i></a>
                     <a href="#" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-blue-600 flex items-center justify-center text-white transition-colors"><i class="fa-brands fa-instagram text-sm"></i></a>
@@ -57,10 +58,9 @@
                 <ul class="space-y-3 text-sm">
                     <li><a href="/" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Inicio</a></li>
                     <li><a href="/carreras" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Oferta Académica</a></li>
-                    <li><a href="/nuevo-tramite" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Iniciar un Trámite</a></li>
-                    <li><a href="/seguimiento" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Estado de Trámite</a></li>
+                    <li><a href="/#ventajas" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Ventajas de estudiar en PUSAP</a></li>
                     <li><a href="/contacto" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Contacto y Atención</a></li>
-                    <li><a href="/ingresar" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Ingresar al Portal</a></li>
+                    <li><a href="/ingresar" class="hover:text-blue-400 hover:translate-x-1 inline-block transition-all"><i class="fa-solid fa-chevron-right text-[10px] text-blue-600 mr-2"></i>Portal del Alumno</a></li>
                 </ul>
             </div>
             
@@ -71,14 +71,14 @@
                         <i class="fa-solid fa-envelope text-blue-500 mt-1"></i>
                         <div>
                             <p class="text-white font-medium">Email Institucional</p>
-                            <a href="mailto:mesaentrada@pusap.edu.ar" class="hover:text-blue-400 transition">mesaentrada@pusap.edu.ar</a>
+                            <a href="mailto:<%= _c.email %>" class="hover:text-blue-400 transition"><%= _c.email %></a>
                         </div>
                     </li>
                     <li class="flex items-start gap-3">
                         <i class="fa-solid fa-phone text-blue-500 mt-1"></i>
                         <div>
                             <p class="text-white font-medium">Atención Telefónica</p>
-                            <span>0800-PUSAP-123 (L a V 8-14hs)</span>
+                            <span><%= _c.telefono %></span>
                         </div>
                     </li>
                 </ul>

@@ -138,7 +138,7 @@ setTimeout(async () => {
     // Novedades de ejemplo
     db.run(`INSERT OR IGNORE INTO novedades (titulo, cuerpo, destacada, activo)
         VALUES (?, ?, 1, 1)`,
-        ['Inscripciones 2025 abiertas', 'Las inscripciones para el ciclo lectivo 2025 ya están disponibles. Acercate a la Mesa de Entrada o iniciá el trámite online.', ]);
+        ['Inscripciones 2025 abiertas', 'Las inscripciones para el ciclo lectivo 2025 ya están abiertas. Acercate a la Mesa de Entrada con tu documentación.', ]);
     db.run(`INSERT OR IGNORE INTO novedades (titulo, cuerpo, destacada, activo)
         VALUES (?, ?, 0, 1)`,
         ['Actualización del Reglamento Académico', 'Informamos que el Reglamento Académico fue actualizado. Podés descargar la versión vigente en la sección Reglamentos.']);

@@ -5,6 +5,7 @@ const PDFDocument = require('pdfkit');
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const dbp = require('../lib/dbp');
 const QRCode = require('qrcode');
 const { sendStatusUpdateEmail, sendTicketCreatedEmail } = require('../mailer');
 
@@ -34,7 +35,8 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024
 router.get('/', (req, res) => {
     const user = req.session.user;
     
-    let statsQuery = `SELECT status, expiration_date, created_at FROM tickets WHERE deleted_at IS NULL`;
+    // "area" hace falta para el gráfico "Trámites por Área" (sin ella todos quedaban bajo "undefined")
+    let statsQuery = `SELECT status, expiration_date, created_at, area FROM tickets WHERE deleted_at IS NULL`;
     let statsParams = [];
     if (user.role !== 'operador') {
         statsQuery += ` AND area = ?`;
@@ -120,9 +122,11 @@ router.get('/', (req, res) => {
 
                 db.all(`SELECT tt.ticket_id, t.id as tag_id, t.name, t.color FROM ticket_tags tt JOIN tags t ON tt.tag_id = t.id`, [], (err, allTags) => {
                     db.all(`SELECT id, name FROM users`, [], (err, allUsers) => {
+                      // El filtro de áreas sale de la tabla de áreas (se administran en Configuración)
+                      db.all(`SELECT name FROM areas ORDER BY name`, [], (errAreas, areas) => {
                         const userMap = {};
                         if(allUsers) allUsers.forEach(u => userMap[u.id] = u.name);
-                        
+
                         tickets.forEach(ticket => {
                             ticket.tags = allTags ? allTags.filter(tg => tg.ticket_id === ticket.id) : [];
                             ticket.assigned_to_name = userMap[ticket.assigned_to] || null;
@@ -130,19 +134,21 @@ router.get('/', (req, res) => {
 
                         const success_ticket = req.query.success_ticket || null;
 
-                        res.render('dashboard', { 
-                            title: 'Panel de Gestión', 
-                            tickets, 
-                            stats, 
-                            weeklyActivity, 
+                        res.render('dashboard', {
+                            title: 'Panel de Gestión',
+                            tickets,
+                            stats,
+                            weeklyActivity,
                             areaDistribution,
-                            user, 
-                            success_ticket, 
-                            page, 
-                            totalPages, 
+                            areas: areas || [],
+                            user,
+                            success_ticket,
+                            page,
+                            totalPages,
                             total,
-                            query: req.query 
+                            query: req.query
                         });
+                      });
                     });
                 });
             });
@@ -425,67 +431,125 @@ router.post('/accion-masa', (req, res) => {
     });
 });
 
-// ====== GESTIÓN DE USUARIOS ======
-router.get('/usuarios', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    db.all("SELECT id, username, name, role, area FROM users ORDER BY name", [], (err, users) => {
-        db.all("SELECT * FROM areas ORDER BY name", [], (err2, areas) => {
-            res.render('admin-users', { title: 'Gestión de Usuarios', user: req.session.user, users, areas: areas || [] });
-        });
-    });
+// ====== GESTIÓN DE USUARIOS (personal) ======
+const ROLES_PERSONAL = ['operador', 'interno'];
+const COLORES_ETIQUETA = ['red', 'yellow', 'blue'];   // los únicos colores que dibujan las vistas
+
+const soloOperador = (req, res) => {
+    if (req.session.user.role === 'operador') return true;
+    res.status(403).send('Acceso denegado');
+    return false;
+};
+// Vuelve a la pantalla con un mensaje (ok=... o error=...)
+const volverA = (res, ruta, tipo, valor) => res.redirect(`${ruta}?${tipo}=${encodeURIComponent(valor)}`);
+const texto = (v, max = 200) => String(v || '').trim().slice(0, max);
+
+router.get('/usuarios', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    // Sólo personal: las cuentas de alumnos se administran desde el Padrón de Alumnos
+    const [users, areas] = await Promise.all([
+        dbp.all(`SELECT id, username, name, role, area FROM users WHERE role IN ('operador', 'interno') ORDER BY name`),
+        dbp.all(`SELECT * FROM areas ORDER BY name`)
+    ]);
+    res.render('admin-users', { title: 'Gestión de Usuarios', user: req.session.user, users, areas, ok: req.query.ok || null, error: req.query.error || null });
 });
+
+const MSG_CLAVE = 'La contraseña debe tener al menos 6 caracteres.';
 
 router.post('/usuarios/nuevo', async (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    const { name, username, password, area, role } = req.body;
-    const hashed = await bcrypt.hash(password, 10);
-    db.run("INSERT INTO users (name, username, password, area, role) VALUES (?, ?, ?, ?, ?)", [name, username, hashed, area, role], (err) => {
-        res.redirect('/panel/usuarios');
-    });
+    if (!soloOperador(req, res)) return;
+    const name = texto(req.body.name), username = texto(req.body.username, 80), area = texto(req.body.area), role = req.body.role;
+    const password = String(req.body.password || '');
+    if (!name || !username || !area || !ROLES_PERSONAL.includes(role)) return volverA(res, '/panel/usuarios', 'error', 'Completá todos los campos.');
+    if (password.length < 6) return volverA(res, '/panel/usuarios', 'error', MSG_CLAVE);
+    if (await dbp.get(`SELECT 1 AS x FROM users WHERE username = ?`, [username])) return volverA(res, '/panel/usuarios', 'error', 'Ese nombre de usuario ya existe.');
+    await dbp.run(`INSERT INTO users (name, username, password, area, role, activo) VALUES (?, ?, ?, ?, ?, 1)`,
+        [name, username, await bcrypt.hash(password, 10), area, role]);
+    res.redirect('/panel/usuarios?ok=creado');
 });
 
-router.post('/usuarios/eliminar/:id', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    db.run("DELETE FROM users WHERE id = ?", [req.params.id], (err) => {
-        res.redirect('/panel/usuarios');
-    });
+const cantidadOperadores = async () => (await dbp.get(`SELECT COUNT(*) AS n FROM users WHERE role = 'operador' AND activo = 1`)).n;
+
+router.post('/usuarios/editar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const id = Number(req.params.id);
+    const u = await dbp.get(`SELECT * FROM users WHERE id = ? AND role IN ('operador', 'interno')`, [id]);
+    if (!u) return volverA(res, '/panel/usuarios', 'error', 'El usuario no existe.');
+
+    const name = texto(req.body.name), username = texto(req.body.username, 80), area = texto(req.body.area), role = req.body.role;
+    const password = String(req.body.password || '');   // vacía = no se cambia
+    if (!name || !username || !area || !ROLES_PERSONAL.includes(role)) return volverA(res, '/panel/usuarios', 'error', 'Completá nombre, usuario, área y rol.');
+    if (password && password.length < 6) return volverA(res, '/panel/usuarios', 'error', MSG_CLAVE);
+    if (await dbp.get(`SELECT 1 AS x FROM users WHERE username = ? AND id != ?`, [username, id])) return volverA(res, '/panel/usuarios', 'error', 'Ese nombre de usuario ya existe.');
+    // El sistema no puede quedarse sin quien lo administre
+    if (u.role === 'operador' && role !== 'operador') {
+        if (id === req.session.user.id) return volverA(res, '/panel/usuarios', 'error', 'No podés quitarte a vos mismo el rol de operador.');
+        if (await cantidadOperadores() <= 1) return volverA(res, '/panel/usuarios', 'error', 'Tiene que quedar al menos un operador.');
+    }
+
+    if (password) {
+        await dbp.run(`UPDATE users SET name = ?, username = ?, area = ?, role = ?, password = ? WHERE id = ?`, [name, username, area, role, await bcrypt.hash(password, 10), id]);
+    } else {
+        await dbp.run(`UPDATE users SET name = ?, username = ?, area = ?, role = ? WHERE id = ?`, [name, username, area, role, id]);
+    }
+    // Si se editó a sí mismo, se refleja en la sesión abierta
+    if (id === req.session.user.id) Object.assign(req.session.user, { name, username, area, role });
+    res.redirect('/panel/usuarios?ok=guardado');
+});
+
+router.post('/usuarios/eliminar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const id = Number(req.params.id);
+    if (id === req.session.user.id) return volverA(res, '/panel/usuarios', 'error', 'No podés eliminar tu propio usuario.');
+    const u = await dbp.get(`SELECT id, role FROM users WHERE id = ? AND role IN ('operador', 'interno')`, [id]);
+    if (!u) return volverA(res, '/panel/usuarios', 'error', 'El usuario no existe.');
+    if (u.role === 'operador' && await cantidadOperadores() <= 1) return volverA(res, '/panel/usuarios', 'error', 'Tiene que quedar al menos un operador.');
+    await dbp.run(`DELETE FROM users WHERE id = ?`, [id]);
+    res.redirect('/panel/usuarios?ok=eliminado');
 });
 
 // ====== CONFIGURACIÓN ======
-router.get('/config', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    db.all("SELECT * FROM config", [], (err, configRows) => {
-        const config = {};
-        if (configRows) {
-            configRows.forEach(row => config[row.key] = row.value);
-        }
-        db.all("SELECT * FROM areas ORDER BY name", [], (err2, areas) => {
-            db.all("SELECT * FROM quick_replies ORDER BY id", [], (err3, quick_replies) => {
-                res.render('admin-config', { title: 'Configuración', user: req.session.user, config, areas: areas || [], quick_replies: quick_replies || [] });
-            });
-        });
-    });
+router.get('/config', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const [configRows, areas, quick_replies, tags] = await Promise.all([
+        dbp.all(`SELECT * FROM config`),
+        // "usos" = expedientes y usuarios que usan el área (si se usa, no se puede borrar)
+        dbp.all(`SELECT a.*, (SELECT COUNT(*) FROM tickets t WHERE t.area = a.name) + (SELECT COUNT(*) FROM users u WHERE u.area = a.name) AS usos
+            FROM areas a ORDER BY a.name`),
+        dbp.all(`SELECT * FROM quick_replies ORDER BY id`),
+        dbp.all(`SELECT g.*, (SELECT COUNT(*) FROM ticket_tags tt WHERE tt.tag_id = g.id) AS usos FROM tags g ORDER BY g.name`)
+    ]);
+    const config = {};
+    configRows.forEach(row => { config[row.key] = row.value; });
+    res.render('admin-config', { title: 'Configuración', user: req.session.user, config, areas, quick_replies, tags, ok: req.query.ok || null, error: req.query.error || null });
 });
 
-router.post('/config/quick-replies/nuevo', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    const { title, content } = req.body;
-    db.run("INSERT INTO quick_replies (title, content) VALUES (?, ?)", [title, content], (err) => {
-        res.redirect('/panel/config');
-    });
+router.post('/config/quick-replies/nuevo', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const title = texto(req.body.title, 80), content = texto(req.body.content, 1000);
+    if (!title || !content) return volverA(res, '/panel/config', 'error', 'La respuesta rápida necesita título y contenido.');
+    await dbp.run(`INSERT INTO quick_replies (title, content) VALUES (?, ?)`, [title, content]);
+    res.redirect('/panel/config?ok=respuesta_creada');
 });
 
-router.post('/config/quick-replies/eliminar/:id', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    db.run("DELETE FROM quick_replies WHERE id = ?", [req.params.id], (err) => {
-        res.redirect('/panel/config');
-    });
+router.post('/config/quick-replies/editar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const title = texto(req.body.title, 80), content = texto(req.body.content, 1000);
+    if (!title || !content) return volverA(res, '/panel/config', 'error', 'La respuesta rápida necesita título y contenido.');
+    await dbp.run(`UPDATE quick_replies SET title = ?, content = ? WHERE id = ?`, [title, content, req.params.id]);
+    res.redirect('/panel/config?ok=respuesta_guardada');
+});
+
+router.post('/config/quick-replies/eliminar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    await dbp.run(`DELETE FROM quick_replies WHERE id = ?`, [req.params.id]);
+    res.redirect('/panel/config?ok=respuesta_eliminada');
 });
 
 router.post('/config/smtp', (req, res) => {
     if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
     const { smtp_host, smtp_port, smtp_user, smtp_pass } = req.body;
-    
+
     const stmt = db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)");
     stmt.run("smtp_host", smtp_host);
     stmt.run("smtp_port", smtp_port);
@@ -499,7 +563,7 @@ router.post('/config/smtp', (req, res) => {
 router.post('/config/general', (req, res) => {
     if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
     const { welcome_message } = req.body;
-    
+
     const stmt = db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)");
     stmt.run("welcome_message", welcome_message);
     stmt.finalize(() => {
@@ -510,7 +574,7 @@ router.post('/config/general', (req, res) => {
 router.post('/config/anuncio', (req, res) => {
     if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
     const { public_announcement, announcement_type } = req.body;
-    
+
     const stmt = db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)");
     stmt.run("public_announcement", public_announcement);
     stmt.run("announcement_type", announcement_type);
@@ -519,19 +583,67 @@ router.post('/config/anuncio', (req, res) => {
     });
 });
 
-router.post('/config/areas', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    const { new_area } = req.body;
-    db.run("INSERT INTO areas (name) VALUES (?)", [new_area], (err) => {
-        res.redirect('/panel/config');
-    });
+// "Mesa de Entrada" es el área por defecto de todo expediente nuevo: ni se renombra ni se borra
+const AREA_FIJA = 'Mesa de Entrada';
+
+router.post('/config/areas', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const nombre = texto(req.body.new_area, 100);
+    if (!nombre) return volverA(res, '/panel/config', 'error', 'Escribí el nombre del área.');
+    if (await dbp.get(`SELECT 1 AS x FROM areas WHERE name = ?`, [nombre])) return volverA(res, '/panel/config', 'error', 'Ya existe un área con ese nombre.');
+    await dbp.run(`INSERT INTO areas (name) VALUES (?)`, [nombre]);
+    res.redirect('/panel/config?ok=area_creada');
 });
 
-router.post('/config/areas/eliminar/:id', (req, res) => {
-    if (req.session.user.role !== 'operador') return res.status(403).send('Acceso denegado');
-    db.run("DELETE FROM areas WHERE id = ?", [req.params.id], (err) => {
-        res.redirect('/panel/config');
-    });
+// Renombrar un área también actualiza los expedientes y usuarios que la usan (se guardan por nombre)
+router.post('/config/areas/editar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const nombre = texto(req.body.name, 100);
+    const area = await dbp.get(`SELECT * FROM areas WHERE id = ?`, [req.params.id]);
+    if (!area) return volverA(res, '/panel/config', 'error', 'El área no existe.');
+    if (area.name === AREA_FIJA) return volverA(res, '/panel/config', 'error', 'El área "Mesa de Entrada" no se puede renombrar.');
+    if (!nombre) return volverA(res, '/panel/config', 'error', 'Escribí el nombre del área.');
+    if (await dbp.get(`SELECT 1 AS x FROM areas WHERE name = ? AND id != ?`, [nombre, area.id])) return volverA(res, '/panel/config', 'error', 'Ya existe un área con ese nombre.');
+    await dbp.run(`UPDATE areas SET name = ? WHERE id = ?`, [nombre, area.id]);
+    await dbp.run(`UPDATE tickets SET area = ? WHERE area = ?`, [nombre, area.name]);
+    await dbp.run(`UPDATE users SET area = ? WHERE area = ?`, [nombre, area.name]);
+    res.redirect('/panel/config?ok=area_guardada');
+});
+
+router.post('/config/areas/eliminar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const area = await dbp.get(`SELECT * FROM areas WHERE id = ?`, [req.params.id]);
+    if (!area) return volverA(res, '/panel/config', 'error', 'El área no existe.');
+    if (area.name === AREA_FIJA) return volverA(res, '/panel/config', 'error', 'El área "Mesa de Entrada" no se puede eliminar.');
+    const uso = await dbp.get(`SELECT (SELECT COUNT(*) FROM tickets WHERE area = ?) + (SELECT COUNT(*) FROM users WHERE area = ?) AS n`, [area.name, area.name]);
+    if (uso.n > 0) return volverA(res, '/panel/config', 'error', `No se puede eliminar: hay ${uso.n} expediente(s) o usuario(s) en esa área. Derivalos a otra antes.`);
+    await dbp.run(`DELETE FROM areas WHERE id = ?`, [area.id]);
+    res.redirect('/panel/config?ok=area_eliminada');
+});
+
+// Etiquetas de los expedientes
+router.post('/config/tags/nuevo', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const name = texto(req.body.name, 40), color = COLORES_ETIQUETA.includes(req.body.color) ? req.body.color : 'blue';
+    if (!name) return volverA(res, '/panel/config', 'error', 'Escribí el nombre de la etiqueta.');
+    await dbp.run(`INSERT INTO tags (name, color) VALUES (?, ?)`, [name, color]);
+    res.redirect('/panel/config?ok=etiqueta_creada');
+});
+
+router.post('/config/tags/editar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    const name = texto(req.body.name, 40), color = COLORES_ETIQUETA.includes(req.body.color) ? req.body.color : 'blue';
+    if (!name) return volverA(res, '/panel/config', 'error', 'Escribí el nombre de la etiqueta.');
+    await dbp.run(`UPDATE tags SET name = ?, color = ? WHERE id = ?`, [name, color, req.params.id]);
+    res.redirect('/panel/config?ok=etiqueta_guardada');
+});
+
+// Borrar una etiqueta la quita también de los expedientes que la tenían
+router.post('/config/tags/eliminar/:id', async (req, res) => {
+    if (!soloOperador(req, res)) return;
+    await dbp.run(`DELETE FROM ticket_tags WHERE tag_id = ?`, [req.params.id]);
+    await dbp.run(`DELETE FROM tags WHERE id = ?`, [req.params.id]);
+    res.redirect('/panel/config?ok=etiqueta_eliminada');
 });
 
 // ====== PAPELERA ======
@@ -609,7 +721,7 @@ router.get('/comprobante/:id', (req, res) => {
         doc.moveDown(2);
         doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
         doc.moveDown();
-        doc.fillColor('#64748b').fontSize(9).font('Helvetica-Oblique').text('Importante: Conserve este código. Puede consultar el estado de su trámite ingresando a nuestro portal web con su DNI y este código de seguimiento.', { align: 'justify' });
+        doc.fillColor('#64748b').fontSize(9).font('Helvetica-Oblique').text('Importante: Conserve este código. Para conocer el estado de su trámite consulte en Mesa de Entrada con este código, o ingrese al portal del alumno.', { align: 'justify' });
 
         doc.end();
     });

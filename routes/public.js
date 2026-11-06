@@ -1,77 +1,44 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const rateLimit = require('express-rate-limit');
 const PDFDocument = require('pdfkit');
 const moment = require('moment');
-const db = require('../db');
 const QRCode = require('qrcode');
-const { sendTicketCreatedEmail } = require('../mailer');
+const db = require('../db');
+const dbp = require('../lib/dbp');
 
-// Prevención de SPAM: Máximo 3 trámites por IP cada 1 hora
-const apiLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hora
-    max: 3, 
-    message: 'Has superado el límite de trámites permitidos. Por favor, intenta más tarde.'
-});
+/**
+ * Cara PÚBLICA: sólo informa (oferta académica, ventajas, contacto).
+ * Nadie inicia ni consulta trámites sin ingresar: eso vive en /alumno.
+ */
 
-// Configuración de Multer para archivos públicos
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-public-' + file.originalname.replace(/\s+/g, '_'))
-});
+router.get('/', async (req, res) => {
+    try {
+        const [cfgRows, novedades, faqs, carreras, ventajas] = await Promise.all([
+            dbp.all("SELECT key, value FROM config WHERE key IN ('welcome_message', 'public_announcement', 'announcement_type')"),
+            dbp.all("SELECT * FROM novedades WHERE activo = 1 AND audiencia IN ('publico', 'ambos') ORDER BY destacada DESC, fecha_publicacion DESC LIMIT 6"),
+            dbp.all("SELECT * FROM faqs WHERE activo = 1 AND audiencia IN ('publico', 'ambos') ORDER BY orden, categoria"),
+            dbp.all("SELECT * FROM carreras WHERE activo = 1 ORDER BY orden, nombre LIMIT 4"),
+            dbp.all("SELECT * FROM ventajas WHERE activo = 1 ORDER BY orden, id")
+        ]);
 
-const fileFilter = (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
-    if (allowed.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Tipo de archivo no permitido. Solo PDF, JPG y PNG.'), false);
-    }
-};
+        const cfg = {};
+        cfgRows.forEach(r => { cfg[r.key] = r.value; });
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // Límite de 5MB por archivo para no llenar el disco
-});
-
-const generateTrackingCode = () => 'PUSAP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-
-router.get('/', (req, res) => {
-    db.all("SELECT key, value FROM config WHERE key IN ('welcome_message', 'public_announcement', 'announcement_type')", [], (err, rows) => {
-        let welcome_message = null;
-        let announcement = null;
-        let announcement_type = 'amber';
-
-        if (rows) {
-            rows.forEach(row => {
-                if (row.key === 'welcome_message') welcome_message = row.value;
-                if (row.key === 'public_announcement') announcement = row.value;
-                if (row.key === 'announcement_type') announcement_type = row.value;
-            });
-        }
-
-        // Consultar novedades activas
-        db.all("SELECT * FROM novedades WHERE activo = 1 ORDER BY destacada DESC, fecha_publicacion DESC LIMIT 6", [], (errNov, novedades) => {
-            // Consultar FAQs activas
-            db.all("SELECT * FROM faqs WHERE activo = 1 ORDER BY orden, categoria", [], (errFaq, faqs) => {
-                // Consultar carreras destacadas
-                db.all("SELECT * FROM carreras WHERE activo = 1 ORDER BY orden, nombre LIMIT 4", [], (errCar, carreras) => {
-                    res.render('index', {
-                        title: 'Inicio - PUSAP',
-                        welcome_message,
-                        announcement,
-                        announcement_type,
-                        novedades: novedades || [],
-                        faqs: faqs || [],
-                        carreras: carreras || [],
-                        moment
-                    });
-                });
-            });
+        res.render('index', {
+            title: 'Inicio - PUSAP',
+            welcome_message: cfg.welcome_message || null,
+            announcement: cfg.public_announcement || null,
+            announcement_type: cfg.announcement_type || 'amber',
+            novedades,
+            faqs,
+            carreras,
+            ventajas,
+            moment
         });
-    });
+    } catch (err) {
+        console.error('Error cargando el home público:', err.message);
+        res.status(500).render('errors/500', { title: 'Error', user: req.session.user || null });
+    }
 });
 
 // GET: Oferta Académica (Carreras y Cursos)
@@ -86,126 +53,26 @@ router.get('/carreras', (req, res) => {
     });
 });
 
-// GET: Contacto e información institucional
+// GET: Contacto e información institucional (los datos salen de res.locals.contenido)
 router.get('/contacto', (req, res) => {
     res.render('contacto', {
         title: 'Contacto y Atención - PUSAP'
     });
 });
 
-// GET: Formulario público de nuevo trámite
-router.get('/nuevo-tramite', (req, res) => {
-    res.render('public-new-ticket', {
-        title: 'Iniciar Trámite',
-        success: false,
-        initialCategoria: req.query.categoria || '',
-        initialCarrera: req.query.carrera || ''
-    });
-});
-
-// POST: Procesar alta pública de trámite
-router.post('/nuevo-tramite', apiLimiter, upload.array('attachments', 10), (req, res) => {
-    const { first_name, last_name, dni, cuil, phone, email, category, student_notes, signature } = req.body;
-    const tracking_code = generateTrackingCode();
-
-    // Fecha por defecto: 1 semana a partir de hoy
-    const expiration_date = moment().add(7, 'days').format('YYYY-MM-DD');
-
-    const query = `INSERT INTO tickets (tracking_code, first_name, last_name, dni, cuil, phone, email, category, status, area, expiration_date, student_notes) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Iniciado', 'Mesa de Entrada', ?, ?)`;
-    
-    db.run(query, [tracking_code, first_name, last_name, dni, cuil, phone, email, category, expiration_date, student_notes], function(err) {
-        if (err) return res.status(500).send("Error al guardar: " + err.message);
-        const ticketId = this.lastID;
-
-        // Historial automático de sistema
-        db.run(`INSERT INTO ticket_history (ticket_id, user_id, user_name, old_status, new_status, old_area, new_area, comments) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
-                [ticketId, 0, 'Sistema Web', 'N/A', 'Iniciado', 'N/A', 'Mesa de Entrada', 'Trámite ingresado por el alumno vía web.']);
-
-        // Procesar firma digital
-        if (signature && signature.startsWith('data:image/png;base64,')) {
-            const fs = require('fs');
-            const path = require('path');
-            const base64Data = signature.replace(/^data:image\/png;base64,/, "");
-            const filename = Date.now() + '-firma-' + ticketId + '.png';
-            const filepath = path.join('uploads', filename);
-            fs.writeFileSync(filepath, base64Data, 'base64');
-
-            db.run(`INSERT INTO attachments (ticket_id, filename, original_name, document_type) VALUES (?, ?, ?, ?)`, 
-                   [ticketId, filename, 'Firma Digital.png', 'Firma']);
-        }
-
-        // Insertar adjuntos
-        if (req.files && req.files.length > 0) {
-            const stmt = db.prepare(`INSERT INTO attachments (ticket_id, filename, original_name) VALUES (?, ?, ?)`);
-            req.files.forEach(file => {
-                stmt.run(ticketId, file.filename, file.originalname);
-            });
-            stmt.finalize();
-        }
-
-        // Enviar email de bienvenida al alumno
-        sendTicketCreatedEmail(email, first_name, tracking_code);
-
-        res.render('public-new-ticket', { title: 'Trámite Exitoso', success: true, tracking_code });
-    });
-});
-
-router.get('/seguimiento', (req, res) => {
-    const codigo = (req.query.codigo || req.query.search || '').trim();
-    const dni = (req.query.dni || '').trim();
-
-    if (codigo && dni) {
-        db.get(`SELECT * FROM tickets WHERE tracking_code = ? AND dni = ? AND deleted_at IS NULL`, [codigo, dni], (err, row) => {
-            res.render('tracking', {
-                title: 'Seguimiento de Trámite',
-                ticket: row || null,
-                error: (!row) ? 'No se encontró ningún expediente activo con ese código y DNI.' : null,
-                initialCodigo: codigo,
-                initialDni: dni,
-                moment
-            });
-        });
-    } else {
-        res.render('tracking', {
-            title: 'Seguimiento de Trámite',
-            ticket: null,
-            error: null,
-            initialCodigo: codigo,
-            initialDni: dni,
-            moment
-        });
-    }
-});
-
-router.post('/seguimiento', (req, res) => {
-    const tracking_code = (req.body.tracking_code || '').trim();
-    const dni = (req.body.dni || '').trim();
-
-    db.get(`SELECT * FROM tickets WHERE tracking_code = ? AND dni = ? AND deleted_at IS NULL`, [tracking_code, dni], (err, row) => {
-        if (err || !row) {
-            return res.render('tracking', {
-                title: 'Seguimiento de Trámite',
-                ticket: null,
-                error: 'No se encontró ningún expediente activo con ese código y DNI. Verificá los datos ingresados.',
-                initialCodigo: tracking_code,
-                initialDni: dni,
-                moment
-            });
-        }
-        res.render('tracking', {
-            title: 'Seguimiento de Trámite',
-            ticket: row,
-            error: null,
-            initialCodigo: tracking_code,
-            initialDni: dni,
-            moment
-        });
-    });
-});
+// Rutas de la versión anterior: iniciar y seguir trámites ya no es público.
+// Se redirigen (en vez de 404) para no romper enlaces viejos, correos o marcadores.
+const haciaElPortal = (destinoAlumno) => (req, res) => {
+    const u = req.session.user;
+    if (u && u.role === 'alumno') return res.redirect(destinoAlumno);
+    if (u) return res.redirect('/backoffice');
+    res.redirect('/ingresar');
+};
+router.all('/nuevo-tramite', haciaElPortal('/alumno/solicitudes/nueva'));
+router.all('/seguimiento', haciaElPortal('/alumno/solicitudes'));
 
 // Generar PDF Comprobante Público (Solo con Tracking Code)
+// Se mantiene sólo para los expedientes históricos que ya entregaron este código.
 router.get('/comprobante/:tracking_code', (req, res) => {
     const { tracking_code } = req.params;
     db.get(`SELECT * FROM tickets WHERE tracking_code = ?`, [tracking_code], async (err, ticket) => {
@@ -231,7 +98,7 @@ router.get('/comprobante/:tracking_code', (req, res) => {
         doc.fillColor('#1e3a8a').rect(50, 150, 512, 50).stroke();
         doc.fillColor('#1e3a8a').fontSize(10).text('CÓDIGO DE SEGUIMIENTO', 60, 158);
         doc.fillColor('#1e3a8a').fontSize(22).font('Helvetica-Bold').text(ticket.tracking_code, { align: 'center', y: 165 });
-        
+
         if (qrBuffer) {
             doc.image(qrBuffer, 490, 140, { width: 65 });
         }
@@ -248,12 +115,12 @@ router.get('/comprobante/:tracking_code', (req, res) => {
             doc.fillColor('#dc2626').rect(450, 150, 112, 25).fill();
             doc.fillColor('white').fontSize(11).font('Helvetica-Bold').text('⚠ URGENTE', 455, 157);
         }
-        
+
         doc.fillColor('black');
         doc.moveDown(2);
         doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
         doc.moveDown();
-        doc.fillColor('#64748b').fontSize(9).font('Helvetica-Oblique').text('Importante: Conserve este código. Puede consultar el estado de su trámite ingresando a nuestro portal web con su DNI y este código de seguimiento.', { align: 'justify' });
+        doc.fillColor('#64748b').fontSize(9).font('Helvetica-Oblique').text('Importante: Conserve este código. Para conocer el estado de su trámite consulte en Mesa de Entrada con este código, o ingrese al portal del alumno.', { align: 'justify' });
 
         doc.end();
     });

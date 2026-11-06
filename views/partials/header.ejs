@@ -8,13 +8,34 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
-    
     <script>
-        if(localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
+        // Limpieza del service worker viejo (ver public/sw.js): ya no se registra ninguno.
+        if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); });
+        if ('caches' in window) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
     </script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    
+    <%
+        // ¿Se muestra el layout del personal (con barra lateral)? Sólo ahí existe el modo oscuro.
+        const esPersonalLayout = typeof currentLayout !== 'undefined' ? (currentLayout === 'personal' && user) : (user && user.role !== 'alumno');
+    %>
+    <% if (esPersonalLayout) { %>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
+    </script>
+    <% } %>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tiene que ir DESPUÉS del script de Tailwind: antes, "tailwind" todavía no existe, la configuración
+        // se perdía y el modo oscuro seguía al sistema operativo en vez de responder al botón.
+        tailwind.config = { darkMode: 'class' };
+
+        // Botón "Volver": retrocede en el historial si venís de este mismo sitio; si no, va a la página de respaldo.
+        function volverAtras(respaldo) {
+            var mismoSitio = false;
+            try { mismoSitio = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) { /* sin referrer */ }
+            if (mismoSitio && history.length > 1) history.back(); else location.href = respaldo;
+        }
+    </script>
     <link rel="stylesheet" href="/css/fontawesome.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.css" />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@3.1.1/dist/driver.js.iife.js"></script>
@@ -44,6 +65,11 @@
         .sidebar-link:hover { background-color: rgb(29 78 216 / 0.5); color: white; transform: translateX(0.25rem); }
         .sidebar-link.active { background-color: rgba(255, 255, 255, 0.15); color: white; font-weight: 700; border-left-width: 4px; border-color: #60a5fa; }
         
+        /* Barra de desplazamiento fina para el menú lateral del personal */
+        .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(147, 197, 253, 0.35) transparent; }
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(147, 197, 253, 0.35); border-radius: 9999px; }
+
         .nav-link { padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; transition-property: all; transition-duration: 300ms; position: relative; overflow: hidden; }
         .nav-link:hover { background-color: #1e40af; color: white; }
         .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: white; transition: all 0.3s ease; transform: translateX(-50%); }
@@ -55,7 +81,7 @@
         .step-pending .step-icon { background-color: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
     </style>
 </head>
-<body class="bg-slate-50 flex flex-col min-h-screen font-sans text-slate-800">
+<body class="bg-slate-50 flex flex-col min-h-screen font-sans text-slate-800 dark:bg-slate-900 dark:text-slate-100">
 
 
 <% if (typeof currentLayout !== 'undefined' ? (currentLayout === 'personal' && user) : (user && user.role !== 'alumno')) { %>
@@ -97,15 +123,24 @@
 
         <!-- Nav Links -->
         <% const cp = typeof currentPath !== 'undefined' ? currentPath : ''; %>
-        <nav class="flex-grow px-3 py-4 space-y-1" id="tour-sidebar">
-            <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Gestión</p>
-            <a href="/panel" class="sidebar-link text-blue-100 <%= cp === '/panel' ? 'active' : '' %>">
-                <i class="fa-solid fa-chart-pie w-4 text-center"></i>
-                <span>Panel de Trámites</span>
+        <!-- min-h-0 + overflow: el menú se desplaza solo; el logo, el usuario y "Cerrar Sesión" quedan siempre a la vista -->
+        <nav class="flex-grow min-h-0 overflow-y-auto overflow-x-hidden sidebar-scroll px-3 py-4 space-y-1" id="tour-sidebar">
+            <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Atención</p>
+            <a href="/backoffice" class="sidebar-link text-blue-100 <%= cp === '/backoffice' ? 'active' : '' %>">
+                <i class="fa-solid fa-house w-4 text-center"></i>
+                <span>Inicio</span>
             </a>
             <a href="/backoffice/solicitudes" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/solicitudes') ? 'active' : '' %>">
                 <i class="fa-solid fa-folder-tree w-4 text-center"></i>
-                <span>Bandeja Solicitudes</span>
+                <span>Solicitudes de Trámite</span>
+            </a>
+            <a href="/backoffice/consultas" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/consultas') ? 'active' : '' %>">
+                <i class="fa-solid fa-comments w-4 text-center"></i>
+                <span>Consultas</span>
+            </a>
+            <a href="/panel" class="sidebar-link text-blue-100 <%= cp === '/panel' ? 'active' : '' %>">
+                <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+                <span>Expedientes (Mesa)</span>
             </a>
             <a href="/panel/mi-perfil" class="sidebar-link text-blue-100 <%= cp === '/panel/mi-perfil' ? 'active' : '' %>">
                 <i class="fa-solid fa-user-circle w-4 text-center"></i>
@@ -119,6 +154,29 @@
             <% } %>
             <% if (user.role === 'operador') { %>
             <div class="pt-3 mt-3 border-t border-blue-800/60">
+                <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Contenido del sitio</p>
+                <a href="/backoffice/carreras" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/carreras') ? 'active' : '' %>">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i>
+                    <span>Carreras y Cursos</span>
+                </a>
+                <a href="/backoffice/ventajas" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/ventajas') ? 'active' : '' %>">
+                    <i class="fa-solid fa-award w-4 text-center"></i>
+                    <span>Ventajas</span>
+                </a>
+                <a href="/backoffice/novedades" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/novedades') ? 'active' : '' %>">
+                    <i class="fa-solid fa-bullhorn w-4 text-center"></i>
+                    <span>Novedades</span>
+                </a>
+                <a href="/backoffice/faqs" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/faqs') ? 'active' : '' %>">
+                    <i class="fa-solid fa-circle-question w-4 text-center"></i>
+                    <span>Preguntas Frecuentes</span>
+                </a>
+                <a href="/backoffice/contenido" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/contenido') ? 'active' : '' %>">
+                    <i class="fa-solid fa-address-card w-4 text-center"></i>
+                    <span>Datos Institucionales</span>
+                </a>
+            </div>
+            <div class="pt-3 mt-3 border-t border-blue-800/60">
                 <p class="text-blue-400/70 text-xs font-bold uppercase tracking-widest px-4 mb-2">Administración</p>
                 <a href="/backoffice/alumnos" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/alumnos') ? 'active' : '' %>">
                     <i class="fa-solid fa-user-graduate w-4 text-center"></i>
@@ -126,15 +184,7 @@
                 </a>
                 <a href="/backoffice/tipos-solicitud" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/tipos-solicitud') ? 'active' : '' %>">
                     <i class="fa-solid fa-list-check w-4 text-center"></i>
-                    <span>Tipos de Solicitud</span>
-                </a>
-                <a href="/backoffice/faqs" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/faqs') ? 'active' : '' %>">
-                    <i class="fa-solid fa-circle-question w-4 text-center"></i>
-                    <span>Gestión de FAQs</span>
-                </a>
-                <a href="/backoffice/novedades" class="sidebar-link text-blue-100 <%= cp.startsWith('/backoffice/novedades') ? 'active' : '' %>">
-                    <i class="fa-solid fa-bullhorn w-4 text-center"></i>
-                    <span>Novedades</span>
+                    <span>Tipos de Trámite</span>
                 </a>
                 <a href="/panel/usuarios" class="sidebar-link text-blue-100 <%= cp === '/panel/usuarios' ? 'active' : '' %>">
                     <i class="fa-solid fa-users-gear w-4 text-center"></i>
@@ -182,18 +232,23 @@
         <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-20 dark:bg-slate-800 dark:border-slate-700">
             <div class="flex items-center justify-between px-4 sm:px-6 h-14">
                 <!-- Mobile menu button -->
-                <button id="sidebarToggle" class="lg:hidden text-slate-500 hover:text-blue-700 hover:bg-blue-50 p-3 rounded-md transition" onclick="document.getElementById('mobileSidebar').classList.toggle('hidden')">
+                <button id="sidebarToggle" class="lg:hidden text-slate-500 hover:text-blue-700 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white p-3 rounded-md transition" onclick="document.getElementById('mobileSidebar').classList.toggle('hidden')">
                     <i class="fa-solid fa-bars text-lg"></i>
                 </button>
+                <% if (cp !== '/backoffice') { %>
+                <button type="button" onclick="volverAtras('/backoffice')" title="Volver" class="flex items-center gap-1.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white px-2.5 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline">Volver</span>
+                </button>
+                <% } %>
                 <div class="flex items-center gap-2 lg:hidden">
-                    <i class="fa-solid fa-building-columns text-blue-900 text-lg"></i>
-                    <span class="font-bold text-blue-900">PUSAP</span>
+                    <i class="fa-solid fa-building-columns text-blue-900 dark:text-white text-lg"></i>
+                    <span class="font-bold text-blue-900 dark:text-white">PUSAP</span>
                 </div>
                 <!-- Right side: breadcrumb / title -->
-                <div class="hidden lg:flex items-center gap-2 text-sm text-slate-500">
+                <div class="hidden lg:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <i class="fa-solid fa-house text-slate-400"></i>
                     <span>/</span>
-                    <span class="font-medium text-slate-700"><%= title %></span>
+                    <span class="font-medium text-slate-700 dark:text-slate-100"><%= title %></span>
                 </div>
                 
                 <div id="tour-search-qr" class="flex items-center gap-4 flex-grow justify-center lg:justify-start lg:ml-6 lg:flex-grow-0">
@@ -201,17 +256,17 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
                         </div>
-                        <input type="text" name="search" placeholder="Buscar código, DNI..." class="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        <input type="text" name="search" placeholder="Buscar código, DNI..." class="w-full pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-400 dark:focus:bg-slate-800">
                     </form>
                     <button onclick="openQrScanner()" class="text-slate-500 hover:text-blue-700 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 dark:hover:text-blue-400 p-2 rounded-lg transition" title="Escanear QR">
                         <i class="fa-solid fa-qrcode text-lg"></i>
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-slate-400 hidden sm:block dark:text-slate-300"><%= new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                    <span class="text-xs text-slate-500 hidden sm:block dark:text-slate-300"><%= new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></span>
                     
                     <!-- Dark mode toggle -->
-                    <button id="tour-theme" onclick="toggleDarkMode()" class="text-slate-500 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300">
+                    <button id="tour-theme" type="button" onclick="toggleDarkMode()" title="Cambiar entre modo claro y oscuro" aria-label="Cambiar entre modo claro y oscuro" class="text-slate-500 hover:text-blue-700 dark:text-slate-300 dark:hover:text-blue-300 p-1">
                         <i class="fa-solid fa-moon" id="darkIcon"></i>
                     </button>
                     
@@ -230,6 +285,11 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Cerrar sesión: siempre a la vista en la barra superior -->
+                    <a href="/logout" title="Cerrar sesión" class="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40 px-2.5 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-right-from-bracket"></i><span class="hidden md:inline">Salir</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -248,15 +308,20 @@
                     </button>
                 </div>
                 <nav class="flex-grow px-3 py-4 space-y-1 overflow-y-auto">
-                    <a href="/panel" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-chart-pie w-4"></i> Panel de Trámites</a>
-                    <a href="/backoffice/solicitudes" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-folder-tree w-4"></i> Bandeja Solicitudes</a>
+                    <a href="/backoffice" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-house w-4"></i> Inicio</a>
+                    <a href="/backoffice/solicitudes" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-folder-tree w-4"></i> Solicitudes de Trámite</a>
+                    <a href="/backoffice/consultas" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-comments w-4"></i> Consultas</a>
+                    <a href="/panel" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-chart-pie w-4"></i> Expedientes (Mesa)</a>
                     <a href="/panel/mi-perfil" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-user-circle w-4"></i> Mi Perfil</a>
                     <% if (user.role === 'operador') { %>
                     <a href="/panel/nuevo" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-file-circle-plus w-4"></i> Alta de Trámite</a>
                     <a href="/backoffice/alumnos" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-user-graduate w-4"></i> Alumnos</a>
-                    <a href="/backoffice/tipos-solicitud" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-list-check w-4"></i> Tipos de Solicitud</a>
-                    <a href="/backoffice/faqs" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-circle-question w-4"></i> FAQs</a>
+                    <a href="/backoffice/tipos-solicitud" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-list-check w-4"></i> Tipos de Trámite</a>
+                    <a href="/backoffice/carreras" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-graduation-cap w-4"></i> Carreras y Cursos</a>
+                    <a href="/backoffice/ventajas" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-award w-4"></i> Ventajas</a>
                     <a href="/backoffice/novedades" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-bullhorn w-4"></i> Novedades</a>
+                    <a href="/backoffice/faqs" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-circle-question w-4"></i> Preguntas Frecuentes</a>
+                    <a href="/backoffice/contenido" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-address-card w-4"></i> Datos Institucionales</a>
                     <% } %>
                     <a href="/" target="_blank" class="sidebar-link text-blue-100 text-base py-3.5"><i class="fa-solid fa-arrow-up-right-from-square w-4"></i> Portal Público</a>
                 </nav>
@@ -336,6 +401,7 @@ function toggleDarkMode() {
   const isDark = document.documentElement.classList.toggle('dark');
   localStorage.setItem('darkMode', isDark);
   document.getElementById('darkIcon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+  if (window.aplicarTemaGraficos) window.aplicarTemaGraficos();   // el dashboard repinta sus gráficos
 }
 document.addEventListener('DOMContentLoaded', () => {
   if(localStorage.getItem('darkMode') === 'true') {
@@ -479,7 +545,13 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <div class="flex justify-between items-center h-16">
             <!-- Logo -->
-            <a href="/alumno" class="flex items-center gap-3 group">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <% if ((typeof currentPath !== 'undefined' ? currentPath : '') !== '/alumno') { %>
+                <button type="button" onclick="volverAtras('/alumno')" title="Volver" class="flex items-center gap-1.5 text-blue-100 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline">Volver</span>
+                </button>
+                <% } %>
+                <a href="/alumno" class="flex items-center gap-3 group">
                 <div class="w-9 h-9 bg-white/10 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition">
                     <i class="fa-solid fa-building-columns text-white"></i>
                 </div>
@@ -488,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="text-blue-300 text-[10px] uppercase font-bold tracking-widest">Portal del Alumno</span>
                 </div>
             </a>
+            </div>
 
             <!-- Desktop nav alumno -->
             <% const cpa = typeof currentPath !== 'undefined' ? currentPath : ''; %>
@@ -495,8 +568,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="/alumno" class="nav-link text-blue-100 <%= cpa === '/alumno' ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-house mr-1.5 opacity-70"></i>Inicio</a>
                 <a href="/alumno/cursos" class="nav-link text-blue-100 <%= cpa.startsWith('/alumno/cursos') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-chalkboard-user mr-1.5 opacity-70"></i>Cursos</a>
                 <a href="/alumno/cuotas" class="nav-link text-blue-100 <%= cpa.startsWith('/alumno/cuotas') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-file-invoice-dollar mr-1.5 opacity-70"></i>Cuotas</a>
-                <a href="/alumno/solicitudes" class="nav-link text-blue-100 <%= cpa.startsWith('/alumno/solicitudes') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-folder-open mr-1.5 opacity-70"></i>Solicitudes</a>
-                <a href="/alumno/tramites" class="nav-link text-blue-100 <%= cpa.startsWith('/alumno/tramites') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-receipt mr-1.5 opacity-70"></i>Trámites</a>
+                <a href="/alumno/solicitudes" class="nav-link text-blue-100 <%= (cpa.startsWith('/alumno/solicitudes') || cpa.startsWith('/alumno/tramites')) ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-folder-open mr-1.5 opacity-70"></i>Trámites</a>
+                <a href="/alumno/consultas" class="nav-link text-blue-100 <%= cpa.startsWith('/alumno/consultas') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-comments mr-1.5 opacity-70"></i>Consultas</a>
             </nav>
 
             <!-- Derecha: perfil + notif + logout -->
@@ -531,8 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="/alumno" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-house w-5"></i>Inicio</a>
                 <a href="/alumno/cursos" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-chalkboard-user w-5"></i>Mis Cursos</a>
                 <a href="/alumno/cuotas" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-file-invoice-dollar w-5"></i>Mis Cuotas</a>
-                <a href="/alumno/solicitudes" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-folder-open w-5"></i>Mis Solicitudes</a>
-                <a href="/alumno/tramites" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-receipt w-5"></i>Mis Trámites</a>
+                <a href="/alumno/solicitudes" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-folder-open w-5"></i>Mis Trámites</a>
+                <a href="/alumno/consultas" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-comments w-5"></i>Mis Consultas</a>
                 <a href="/alumno/perfil" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-user-circle w-5"></i>Mi Perfil</a>
                 <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-300 rounded-xl hover:bg-white/10 transition font-medium"><i class="fa-solid fa-right-from-bracket w-5"></i>Cerrar sesión</a>
             </div>
@@ -572,6 +645,12 @@ setInterval(fetchAlumnoNotifCount, 60000);
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                <% if ((typeof currentPath !== 'undefined' ? currentPath : '') !== '/') { %>
+                <button type="button" onclick="volverAtras('/')" title="Volver" class="flex items-center gap-1.5 text-blue-100 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline">Volver</span>
+                </button>
+                <% } %>
                 <a href="/" class="flex items-center gap-3 group">
                     <div class="w-10 h-10 bg-white/10 group-hover:bg-white/20 rounded-xl flex items-center justify-center transition shadow-inner">
                         <i class="fa-solid fa-building-columns text-white text-lg"></i>
@@ -582,14 +661,14 @@ setInterval(fetchAlumnoNotifCount, 60000);
                     </div>
                     <span class="font-bold text-xl sm:hidden">PUSAP</span>
                 </a>
+            </div>
 
                 <!-- Desktop Nav -->
                 <% const cpp = typeof currentPath !== 'undefined' ? currentPath : ''; %>
                 <nav class="hidden md:flex items-center gap-1.5">
                     <a href="/" class="nav-link text-blue-100 <%= cpp === '/' ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-house mr-1.5 opacity-70"></i>Inicio</a>
                     <a href="/carreras" class="nav-link text-blue-100 <%= cpp.startsWith('/carreras') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-graduation-cap mr-1.5 opacity-70"></i>Oferta Académica</a>
-                    <a href="/nuevo-tramite" class="nav-link text-blue-100 <%= cpp.startsWith('/nuevo-tramite') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-file-signature mr-1.5 opacity-70"></i>Iniciar Trámite</a>
-                    <a href="/seguimiento" class="nav-link text-blue-100 <%= cpp.startsWith('/seguimiento') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-magnifying-glass mr-1.5 opacity-70"></i>Seguimiento</a>
+                    <a href="/#ventajas" class="nav-link text-blue-100"><i class="fa-solid fa-award mr-1.5 opacity-70"></i>Ventajas</a>
                     <a href="/contacto" class="nav-link text-blue-100 <%= cpp.startsWith('/contacto') ? 'bg-white/20 font-bold text-white shadow-sm' : '' %>"><i class="fa-solid fa-headset mr-1.5 opacity-70"></i>Contacto</a>
                 </nav>
 
@@ -618,8 +697,7 @@ setInterval(fetchAlumnoNotifCount, 60000);
                 <div class="py-3 border-t border-blue-800 space-y-2 pb-4">
                     <a href="/" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-house"></i></div>Inicio</a>
                     <a href="/carreras" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></div>Oferta Académica</a>
-                    <a href="/nuevo-tramite" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-file-signature"></i></div>Iniciar Trámite</a>
-                    <a href="/seguimiento" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass"></i></div>Ver mi Trámite</a>
+                    <a href="/#ventajas" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-award"></i></div>Ventajas</a>
                     <a href="/contacto" class="flex items-center gap-3 px-4 py-3 text-blue-100 rounded-xl hover:bg-white/10 transition text-base font-medium"><div class="w-8 h-8 rounded-lg bg-blue-800 flex items-center justify-center"><i class="fa-solid fa-headset"></i></div>Contacto y Atención</a>
                     <% if (user) { %>
                     <a href="<%= user.role === 'alumno' ? '/alumno' : '/backoffice' %>" class="flex items-center gap-3 px-4 py-3 text-emerald-300 rounded-xl hover:bg-white/10 border border-emerald-500/30 transition text-base font-medium mt-2"><div class="w-8 h-8 rounded-lg bg-emerald-900 flex items-center justify-center border border-emerald-700"><i class="fa-solid fa-gauge-high"></i></div>Ir a mi panel</a>

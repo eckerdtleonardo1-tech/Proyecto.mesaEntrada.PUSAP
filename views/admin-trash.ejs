@@ -2,54 +2,54 @@
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-trash-can text-red-600"></i>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2 dark:text-slate-100">
+            <i class="fa-solid fa-trash-can text-red-600 dark:text-red-400"></i>
             Papelera de Trámites
         </h1>
-        <p class="text-slate-500 text-sm mt-1">
+        <p class="text-slate-500 text-sm mt-1 dark:text-slate-400">
             Trámites eliminados que pueden ser restaurados.
         </p>
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
     <div class="overflow-x-auto">
         <table class="min-w-full">
             <thead>
-                <tr class="border-b border-slate-200 bg-slate-50">
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Código</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Solicitante / DNI</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Trámite</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha Eliminación</th>
-                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
+                <tr class="border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Código</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Solicitante / DNI</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Trámite</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Fecha Eliminación</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 <% if (tickets.length === 0) { %>
-                    <tr><td colspan="5" class="px-5 py-4 text-center text-sm text-slate-500">La papelera está vacía.</td></tr>
+                    <tr><td colspan="5" class="px-5 py-4 text-center text-sm text-slate-500 dark:text-slate-400">La papelera está vacía.</td></tr>
                 <% } else { %>
                     <% tickets.forEach(t => { %>
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-5 py-4 whitespace-nowrap text-sm font-mono font-bold text-blue-600">
+                    <tr class="hover:bg-slate-50 transition-colors dark:hover:bg-slate-700">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm font-mono font-bold text-blue-600 dark:text-blue-400">
                             <%= t.tracking_code %>
                         </td>
                         <td class="px-5 py-4 whitespace-nowrap">
-                            <div class="font-semibold text-slate-900 text-sm"><%= t.first_name %> <%= t.last_name %></div>
-                            <div class="text-xs text-slate-500"><%= t.dni %></div>
+                            <div class="font-semibold text-slate-900 text-sm dark:text-slate-100"><%= t.first_name %> <%= t.last_name %></div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400"><%= t.dni %></div>
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-700">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200">
                             <%= t.category %>
                         </td>
-                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500">
+                        <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                             <%= new Date(t.deleted_at).toLocaleString('es-AR') %>
                         </td>
                         <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <form action="/panel/papelera/restaurar/<%= t.id %>" method="POST" class="inline" onsubmit="return confirm('¿Restaurar este trámite?');">
-                                <button type="submit" class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition">
+                                <button type="submit" class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition dark:text-green-400 dark:hover:text-green-300 dark:bg-green-900/30 dark:hover:bg-green-900/40">
                                     <i class="fa-solid fa-rotate-left mr-1"></i> Restaurar
                                 </button>
                             </form>
-                            <a href="/panel/tramite/<%= t.id %>" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition ml-2">
+                            <a href="/panel/tramite/<%= t.id %>" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition ml-2 dark:text-blue-400 dark:hover:text-blue-300 dark:bg-blue-900/30 dark:hover:bg-blue-900/40">
                                 <i class="fa-regular fa-eye"></i> Ver
                             </a>
                         </td>

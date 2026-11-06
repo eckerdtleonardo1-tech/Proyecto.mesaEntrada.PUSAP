@@ -26,7 +26,7 @@
 <div class="max-w-5xl mx-auto">
     <!-- Back button -->
     <div class="mb-6 print:hidden">
-        <a href="/panel" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700 transition-colors">
+        <a href="/panel" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700 transition-colors dark:text-slate-400 dark:hover:text-blue-300">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             Volver al Panel
         </a>
@@ -38,7 +38,7 @@
         <div class="lg:col-span-2 space-y-6">
 
             <!-- Info del expediente -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
                 <div class="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-4 flex items-start justify-between gap-4">
                     <div>
                         <p class="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">Expediente</p>
@@ -61,7 +61,7 @@
                 </div>
 
                 <!-- Visual Status Panel -->
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
                     <div class="flex items-center gap-3">
                         <% 
                         let sColor = 'text-slate-500 bg-slate-100';
@@ -76,46 +76,46 @@
                             <i class="fa-solid <%= sIcon %>"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase">Estado Actual</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Estado Actual</p>
                             <p class="text-sm font-bold <%= sColor.split(' ')[0] %>"><%= ticket.status %></p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Área Responsable</p>
-                        <p class="text-sm font-semibold text-slate-700"><i class="fa-solid fa-building text-slate-400 mr-1"></i><%= ticket.area %></p>
+                        <p class="text-xs font-bold text-slate-500 uppercase dark:text-slate-400">Área Responsable</p>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200"><i class="fa-solid fa-building text-slate-500 mr-1 dark:text-slate-400"></i><%= ticket.area %></p>
                     </div>
                 </div>
 
                 <div class="p-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Solicitante</p>
-                            <p class="text-slate-900 font-semibold text-sm"><%= ticket.first_name %> <%= ticket.last_name %></p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Solicitante</p>
+                            <p class="text-slate-900 font-semibold text-sm dark:text-slate-100"><%= ticket.first_name %> <%= ticket.last_name %></p>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">DNI / CUIL</p>
-                            <p class="text-slate-900 font-semibold text-sm"><%= ticket.dni %> <% if(ticket.cuil) { %>/ <%= ticket.cuil %><% } %></p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">DNI / CUIL</p>
+                            <p class="text-slate-900 font-semibold text-sm dark:text-slate-100"><%= ticket.dni %> <% if(ticket.cuil) { %>/ <%= ticket.cuil %><% } %></p>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email</p>
-                            <p class="text-slate-900 text-sm truncate"><%= ticket.email %></p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Email</p>
+                            <p class="text-slate-900 text-sm truncate dark:text-slate-100"><%= ticket.email %></p>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Teléfono</p>
-                            <p class="text-slate-900 text-sm"><%= ticket.phone %></p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Teléfono</p>
+                            <p class="text-slate-900 text-sm dark:text-slate-100"><%= ticket.phone %></p>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo de Trámite</p>
-                            <span class="inline-block bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-lg text-sm font-semibold">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Tipo de Trámite</p>
+                            <span class="inline-block bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-lg text-sm font-semibold dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                                 <%= ticket.category %>
                             </span>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Prioridad</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Prioridad</p>
                             <% if(ticket.priority === 'urgente') { %>
-                                <span class="inline-block bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded-lg text-sm font-bold uppercase"><i class="fa-solid fa-bolt mr-1"></i>Urgente</span>
+                                <span class="inline-block bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded-lg text-sm font-bold uppercase dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"><i class="fa-solid fa-bolt mr-1"></i>Urgente</span>
                             <% } else { %>
-                                <span class="inline-block bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1 rounded-lg text-sm font-semibold uppercase">Normal</span>
+                                <span class="inline-block bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1 rounded-lg text-sm font-semibold uppercase dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700">Normal</span>
                             <% } %>
                         </div>
                         <% if (ticket.expiration_date) { 
@@ -124,7 +124,7 @@
                             const isNear = daysLeft >= 0 && daysLeft <= 7;
                         %>
                         <div class="sm:col-span-2">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Vencimiento</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">Vencimiento</p>
                             <div class="flex items-center gap-2">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold border 
                                     <%= isExpired ? 'bg-red-50 text-red-700 border-red-200' : (isNear ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-slate-50 text-slate-700 border-slate-200') %>">
@@ -132,9 +132,9 @@
                                     <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
                                 </span>
                                 <% if (isExpired) { %>
-                                    <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">VENCIDO</span>
+                                    <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full dark:text-red-400 dark:bg-red-900/30">VENCIDO</span>
                                 <% } else if (isNear) { %>
-                                    <span class="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">Vence en <%= daysLeft %> día(s)</span>
+                                    <span class="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full dark:text-orange-400 dark:bg-orange-900/30">Vence en <%= daysLeft %> día(s)</span>
                                 <% } %>
                             </div>
                         </div>
@@ -142,21 +142,21 @@
                     </div>
 
                     <!-- Otros trámites del mismo DNI -->
-                    <div class="mt-6 pt-4 border-t border-slate-100">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3"><i class="fa-solid fa-folder-open mr-1"></i>Otros trámites de este DNI</p>
+                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 dark:text-slate-400"><i class="fa-solid fa-folder-open mr-1"></i>Otros trámites de este DNI</p>
                         <% if (typeof otrosTramites !== 'undefined' && otrosTramites && otrosTramites.length > 0) { %>
                             <ul class="space-y-2">
                             <% otrosTramites.forEach(ot => { %>
                                 <li>
-                                    <a href="/panel/tramite/<%= ot.id %>" class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
+                                    <a href="/panel/tramite/<%= ot.id %>" class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100 dark:bg-slate-900 dark:border-slate-700 dark:text-blue-400 dark:hover:text-blue-300">
                                         <span><strong><%= ot.tracking_code %></strong> - <%= ot.category %></span>
-                                        <span class="text-xs text-slate-500"><%= moment(ot.created_at).format('DD/MM/YY') %> | <%= ot.status %></span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400"><%= moment(ot.created_at).format('DD/MM/YY') %> | <%= ot.status %></span>
                                     </a>
                                 </li>
                             <% }) %>
                             </ul>
                         <% } else { %>
-                            <p class="text-sm text-slate-500 italic">No hay otros trámites.</p>
+                            <p class="text-sm text-slate-500 italic dark:text-slate-400">No hay otros trámites.</p>
                         <% } %>
                     </div>
                 </div>
@@ -164,29 +164,29 @@
 
             <% if (ticket.student_notes) { %>
             <!-- Observaciones del estudiante -->
-            <div class="bg-yellow-50 rounded-2xl border border-yellow-200 shadow-sm overflow-hidden p-6 mt-6">
-                <h3 class="font-bold text-yellow-900 flex items-center gap-2 mb-2">
-                    <i class="fa-solid fa-note-sticky text-yellow-600"></i> Observaciones del Estudiante
+            <div class="bg-yellow-50 rounded-2xl border border-yellow-200 shadow-sm overflow-hidden p-6 mt-6 dark:bg-yellow-900/30 dark:border-yellow-800">
+                <h3 class="font-bold text-yellow-900 flex items-center gap-2 mb-2 dark:text-yellow-300">
+                    <i class="fa-solid fa-note-sticky text-yellow-600 dark:text-yellow-400"></i> Observaciones del Estudiante
                 </h3>
-                <p class="text-yellow-800 text-sm whitespace-pre-wrap"><%= ticket.student_notes %></p>
+                <p class="text-yellow-800 text-sm whitespace-pre-wrap dark:text-yellow-300"><%= ticket.student_notes %></p>
             </div>
             <% } %>
 
             <!-- Formulario de Gestión -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-arrows-turn-right text-blue-700 text-sm"></i>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3 dark:border-slate-700">
+                    <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center dark:bg-blue-900/30">
+                        <i class="fa-solid fa-arrows-turn-right text-blue-700 text-sm dark:text-blue-400"></i>
                     </div>
-                    <h3 class="font-bold text-slate-900">Actualizar Expediente</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Actualizar Expediente</h3>
                 </div>
                 <div class="p-6">
                     <form action="/panel/tramite/<%= ticket.id %>" method="POST" id="updateForm" class="space-y-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- Estado -->
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado del Trámite</label>
-                                <select name="status" class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Estado del Trámite</label>
+                                <select name="status" class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                                     <option value="Iniciado" <%= ticket.status === 'Iniciado' ? 'selected' : '' %>>🔵 Iniciado</option>
                                     <option value="En Revisión" <%= ticket.status === 'En Revisión' ? 'selected' : '' %>>🟣 En Revisión</option>
                                     <option value="Pendiente de Documentación" <%= ticket.status === 'Pendiente de Documentación' ? 'selected' : '' %>>🟠 Pendiente de Documentación</option>
@@ -196,8 +196,8 @@
                             </div>
                             <!-- Área -->
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Derivar a Área</label>
-                                <select name="area" class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Derivar a Área</label>
+                                <select name="area" class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-slate-800 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                                     <option value="Mesa de Entrada" <%= ticket.area === 'Mesa de Entrada' ? 'selected' : '' %>>Mesa de Entrada</option>
                                     <option value="Dto. Ingresos" <%= ticket.area === 'Dto. Ingresos' ? 'selected' : '' %>>Dto. Ingresos</option>
                                     <option value="Secretaría Académica" <%= ticket.area === 'Secretaría Académica' ? 'selected' : '' %>>Secretaría Académica</option>
@@ -206,9 +206,9 @@
                             </div>
                             <!-- Vencimiento -->
                             <div class="sm:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">
                                     Fecha de Vencimiento
-                                    <span class="font-normal text-slate-400 ml-1">(opcional)</span>
+                                    <span class="font-normal text-slate-500 ml-1 dark:text-slate-400">(opcional)</span>
                                 </label>
                                 <div class="flex gap-2 items-center">
                                     <input 
@@ -216,9 +216,9 @@
                                         name="expiration_date" 
                                         id="expDateInput"
                                         value="<%= ticket.expiration_date ? moment(ticket.expiration_date).format('YYYY-MM-DD') : '' %>" 
-                                        class="block border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                                        class="block border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-400"
                                     >
-                                    <button type="button" onclick="document.getElementById('expDateInput').value=''" class="text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-300 px-3 py-2.5 rounded-xl transition whitespace-nowrap">
+                                    <button type="button" onclick="document.getElementById('expDateInput').value=''" class="text-xs text-red-500 hover:text-red-700 border border-red-200 hover:border-red-300 px-3 py-2.5 rounded-xl transition whitespace-nowrap dark:text-red-400 dark:hover:text-red-300 dark:border-red-800">
                                         <i class="fa-solid fa-calendar-xmark mr-1"></i>Quitar fecha
                                     </button>
                                 </div>
@@ -226,14 +226,14 @@
                             
                             <!-- Notas Internas -->
                             <div class="sm:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">
                                     Notas internas
-                                    <span class="font-normal text-slate-400 ml-1">(Privado para operadores)</span>
+                                    <span class="font-normal text-slate-500 ml-1 dark:text-slate-400">(Privado para operadores)</span>
                                 </label>
                                 <textarea 
                                     name="notes" 
                                     rows="2" 
-                                    class="block w-full border border-yellow-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-yellow-50 resize-none" 
+                                    class="block w-full border border-yellow-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-yellow-50 resize-none dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400" 
                                     placeholder="Agregá notas o recordatorios que solo verá el staff..."
                                 ><%= ticket.notes || '' %></textarea>
                             </div>
@@ -241,22 +241,22 @@
                         </div>
                         <!-- Comentario al Solicitante -->
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">
                                 Comentario al solicitante
-                                <span class="font-normal text-slate-400 ml-1">(se enviará por email)</span>
+                                <span class="font-normal text-slate-500 ml-1 dark:text-slate-400">(se enviará por email)</span>
                             </label>
                             <textarea 
                                 id="commentsField"
                                 name="comments" 
                                 rows="3" 
-                                class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none" 
+                                class="block w-full border border-slate-300 rounded-xl py-2.5 px-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400" 
                                 placeholder="Ej: Falta el certificado de título original. Por favor, adjuntarlo a la brevedad."
                             ></textarea>
                             <div class="mt-2 flex flex-wrap gap-2">
                                 <% quick_replies.forEach(qr => { %>
-                                <button type="button" onclick="document.getElementById('commentsField').value='<%= qr.content %>'" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 transition"><%= qr.title %></button>
+                                <button type="button" onclick="document.getElementById('commentsField').value='<%= qr.content %>'" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded border border-slate-200 transition dark:bg-slate-700 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-600"><%= qr.title %></button>
                                 <% }) %>
-                                <button type="button" onclick="document.getElementById('commentsField').value=''" class="text-xs text-red-500 hover:text-red-700 px-2 py-1">Limpiar</button>
+                                <button type="button" onclick="document.getElementById('commentsField').value=''" class="text-xs text-red-500 hover:text-red-700 px-2 py-1 dark:text-red-400 dark:hover:text-red-300">Limpiar</button>
                             </div>
                         </div>
                         <!-- Action buttons -->
@@ -265,15 +265,15 @@
                                 <i class="fa-solid fa-paper-plane"></i>
                                 Guardar y Notificar
                             </button>
-                            <a href="/panel" class="flex-1 sm:flex-none flex items-center justify-center text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-6 min-h-[44px] rounded-xl transition text-sm">
+                            <a href="/panel" class="flex-1 sm:flex-none flex items-center justify-center text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-6 min-h-[44px] rounded-xl transition text-sm dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                                 Cancelar
                             </a>
                         </div>
                     </form>
                     <% if (user.role === 'operador') { %>
-                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-end dark:border-slate-700">
                         <form action="/panel/tramite/eliminar/<%= ticket.id %>" method="POST" onsubmit="return confirm('¿Estás seguro de mover este trámite a la papelera?');">
-                            <button type="submit" class="text-sm text-red-600 hover:text-red-800 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 transition">
+                            <button type="submit" class="text-sm text-red-600 hover:text-red-800 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 transition dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/40">
                                 <i class="fa-solid fa-trash-can"></i> Mover a Papelera
                             </button>
                         </form>
@@ -287,19 +287,19 @@
         <div class="space-y-6">
 
             <!-- Asignación y Etiquetas -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-users text-indigo-600 text-sm"></i>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3 dark:border-slate-700">
+                    <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center dark:bg-indigo-900/30">
+                        <i class="fa-solid fa-users text-indigo-600 text-sm dark:text-indigo-400"></i>
                     </div>
-                    <h3 class="font-bold text-slate-900 text-sm">Asignación y Etiquetas</h3>
+                    <h3 class="font-bold text-slate-900 text-sm dark:text-slate-100">Asignación y Etiquetas</h3>
                 </div>
                 <div class="p-5 space-y-4">
                     <!-- Asignar Empleado -->
                     <form action="/panel/tramite/<%= ticket.id %>/asignar" method="POST">
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Asignar a Empleado</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 dark:text-slate-400">Asignar a Empleado</label>
                         <div class="flex gap-2">
-                            <select name="assigned_to" class="flex-1 border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <select name="assigned_to" class="flex-1 border border-slate-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                                 <option value="">-- Sin asignar --</option>
                                 <% employees.forEach(emp => { %>
                                     <option value="<%= emp.id %>" <%= ticket.assigned_to === emp.id ? 'selected' : '' %>><%= emp.name %></option>
@@ -311,13 +311,13 @@
 
                     <!-- Etiquetas -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Etiquetas del Trámite</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 dark:text-slate-400">Etiquetas del Trámite</label>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <% 
                             const activeTags = allTags.filter(t => assignedTagIds.includes(t.id));
                             if (activeTags.length === 0) { 
                             %>
-                                <span class="text-xs text-slate-400">Sin etiquetas</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Sin etiquetas</span>
                             <% } else {
                                 activeTags.forEach(tag => { 
                                     let colorClass = 'bg-slate-100 text-slate-700 border-slate-200';
@@ -329,14 +329,14 @@
                                     <%= tag.name %>
                                     <form action="/panel/tramite/<%= ticket.id %>/tags/quitar" method="POST" class="inline ml-1">
                                         <input type="hidden" name="tag_id" value="<%= tag.id %>">
-                                        <button type="submit" class="text-slate-400 hover:text-slate-600 focus:outline-none">&times;</button>
+                                        <button type="submit" class="text-slate-500 hover:text-slate-600 focus:outline-none dark:text-slate-400">&times;</button>
                                     </form>
                                 </span>
                             <%  });
                             } %>
                         </div>
                         <form action="/panel/tramite/<%= ticket.id %>/tags" method="POST" class="flex gap-2">
-                            <select name="tag_id" class="flex-1 border border-slate-300 rounded-lg py-1.5 px-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <select name="tag_id" class="flex-1 border border-slate-300 rounded-lg py-1.5 px-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
                                 <option value="">Agregar etiqueta...</option>
                                 <% allTags.forEach(tag => { 
                                     if(!assignedTagIds.includes(tag.id)) {
@@ -344,39 +344,39 @@
                                     <option value="<%= tag.id %>"><%= tag.name %></option>
                                 <% } }) %>
                             </select>
-                            <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1.5 rounded-lg text-xs font-medium transition"><i class="fa-solid fa-plus"></i></button>
+                            <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1.5 rounded-lg text-xs font-medium transition dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600"><i class="fa-solid fa-plus"></i></button>
                         </form>
                     </div>
                 </div>
             </div>
 
             <!-- Documentación Adjunta -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-paperclip text-slate-600 text-sm"></i>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3 dark:border-slate-700">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center dark:bg-slate-700 dark:text-slate-100">
+                        <i class="fa-solid fa-paperclip text-slate-600 text-sm dark:text-slate-300"></i>
                     </div>
-                    <h3 class="font-bold text-slate-900 text-sm">Documentación Adjunta</h3>
+                    <h3 class="font-bold text-slate-900 text-sm dark:text-slate-100">Documentación Adjunta</h3>
                     <% if (attachments && attachments.length > 0) { %>
-                    <span class="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full"><%= attachments.length %></span>
+                    <span class="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full dark:bg-blue-900/30 dark:text-blue-400"><%= attachments.length %></span>
                     <% } %>
                 </div>
                 <div class="p-5">
                     <% if (attachments && attachments.length > 0) { %>
                         <ul class="space-y-2">
                             <% attachments.forEach(file => { %>
-                                <li class="flex items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition group">
+                                <li class="flex items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition group dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-blue-900/40">
                                     <div class="flex items-center gap-2 overflow-hidden">
                                         <% if (file.filename.match(/\.(jpg|jpeg|png)$/i)) { %>
-                                            <div class="w-8 h-8 rounded overflow-hidden shadow-sm flex-shrink-0 border border-slate-200">
+                                            <div class="w-8 h-8 rounded overflow-hidden shadow-sm flex-shrink-0 border border-slate-200 dark:border-slate-700">
                                                 <img src="/uploads/<%= file.filename %>" class="w-full h-full object-cover" alt="Preview">
                                             </div>
                                         <% } else { %>
-                                            <i class="fa-solid fa-file-pdf text-red-500 text-lg flex-shrink-0"></i>
+                                            <i class="fa-solid fa-file-pdf text-red-500 text-lg flex-shrink-0 dark:text-red-400"></i>
                                         <% } %>
-                                        <span class="text-xs text-slate-700 truncate font-medium" title="<%= file.original_name %>"><%= file.original_name %></span>
+                                        <span class="text-xs text-slate-700 truncate font-medium dark:text-slate-200" title="<%= file.original_name %>"><%= file.original_name %></span>
                                     </div>
-                                    <a href="/uploads/<%= file.filename %>" target="_blank" class="text-slate-400 group-hover:text-blue-600 transition flex-shrink-0" title="Descargar">
+                                    <a href="/uploads/<%= file.filename %>" target="_blank" class="text-slate-500 group-hover:text-blue-600 transition flex-shrink-0 dark:text-slate-400" title="Descargar">
                                         <i class="fa-solid fa-download text-sm"></i>
                                     </a>
                                 </li>
@@ -385,19 +385,19 @@
                     <% } else { %>
                         <div class="text-center py-6">
                             <i class="fa-regular fa-folder-open text-slate-300 text-3xl mb-2"></i>
-                            <p class="text-sm text-slate-400">Sin archivos adjuntos</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Sin archivos adjuntos</p>
                         </div>
                     <% } %>
                 </div>
             </div>
 
             <!-- Historial / Timeline -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-600 text-sm"></i>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+                <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3 dark:border-slate-700">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center dark:bg-slate-700 dark:text-slate-100">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-600 text-sm dark:text-slate-300"></i>
                     </div>
-                    <h3 class="font-bold text-slate-900 text-sm">Historial de Cambios</h3>
+                    <h3 class="font-bold text-slate-900 text-sm dark:text-slate-100">Historial de Cambios</h3>
                 </div>
                 <div class="p-5">
                     <% if (history && history.length > 0) { %>
@@ -421,37 +421,37 @@
                                     <i class="fa-solid <%= isNote ? 'fa-thumbtack' : 'fa-rotate' %> <%= iconColor %> text-[10px]"></i>
                                 </div>
                                 <% if (index < history.length - 1) { %>
-                                <div class="w-px h-full bg-slate-200 -mt-1 min-h-[30px]"></div>
+                                <div class="w-px h-full bg-slate-200 -mt-1 min-h-[30px] dark:bg-slate-600"></div>
                                 <% } %>
                             </div>
                             <!-- Content -->
                             <div class="flex-1 pb-5 pt-0.5">
                                 <div class="flex items-baseline justify-between gap-2 mb-1">
-                                    <span class="text-xs font-bold text-slate-800"><%= isNote ? 'Nota Interna' : h.new_status %></span>
-                                    <time class="text-xs text-slate-400 whitespace-nowrap"><%= moment.utc(h.created_at).local().format('DD/MM HH:mm') %></time>
+                                    <span class="text-xs font-bold text-slate-800 dark:text-slate-100"><%= isNote ? 'Nota Interna' : h.new_status %></span>
+                                    <time class="text-xs text-slate-500 whitespace-nowrap dark:text-slate-400"><%= moment.utc(h.created_at).local().format('DD/MM HH:mm') %></time>
                                 </div>
                                 <% if (!isNote) { %>
-                                <p class="text-xs text-slate-500"><i class="fa-solid fa-building text-slate-300 mr-1"></i><%= h.new_area %></p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-building text-slate-300 mr-1"></i><%= h.new_area %></p>
                                 <% } %>
-                                <p class="text-xs text-slate-400 mt-0.5"><%= isNote ? 'Agregada por:' : 'Por:' %> <span class="font-medium text-slate-600"><%= h.user_name %></span></p>
+                                <p class="text-xs text-slate-500 mt-0.5 dark:text-slate-400"><%= isNote ? 'Agregada por:' : 'Por:' %> <span class="font-medium text-slate-600 dark:text-slate-300"><%= h.user_name %></span></p>
                                 
                                 <% if (isNote && h.comments) { %>
-                                <div class="mt-2 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 p-2.5 rounded-lg leading-relaxed shadow-sm">
-                                    <i class="fa-solid fa-pen text-yellow-500 mr-1"></i><strong>Privado:</strong> <%= h.comments %>
+                                <div class="mt-2 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 p-2.5 rounded-lg leading-relaxed shadow-sm dark:text-yellow-300 dark:bg-yellow-900/30 dark:border-yellow-800">
+                                    <i class="fa-solid fa-pen text-yellow-500 mr-1 dark:text-yellow-400"></i><strong>Privado:</strong> <%= h.comments %>
                                 </div>
                                 <% } else if (h.comments && h.comments !== 'N/A' && h.comments !== 'Trámite ingresado al sistema.' && h.comments !== 'Trámite ingresado por el alumno vía web.') { %>
-                                <div class="mt-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 p-2.5 rounded-lg leading-relaxed">
-                                    <i class="fa-solid fa-comment text-slate-400 mr-1"></i><%= h.comments %>
+                                <div class="mt-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 p-2.5 rounded-lg leading-relaxed dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700">
+                                    <i class="fa-solid fa-comment text-slate-500 mr-1 dark:text-slate-400"></i><%= h.comments %>
                                 </div>
                                 <% } else if (h.comments) { %>
-                                <p class="text-xs text-slate-400 italic mt-1"><%= h.comments %></p>
+                                <p class="text-xs text-slate-500 italic mt-1 dark:text-slate-400"><%= h.comments %></p>
                                 <% } %>
                             </div>
                         </div>
                         <% }) %>
                     </div>
                     <% } else { %>
-                        <p class="text-sm text-slate-400 text-center py-6">Sin historial disponible.</p>
+                        <p class="text-sm text-slate-500 text-center py-6 dark:text-slate-400">Sin historial disponible.</p>
                     <% } %>
                 </div>
             </div>

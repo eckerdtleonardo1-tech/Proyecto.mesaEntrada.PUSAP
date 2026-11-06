@@ -19,25 +19,25 @@ if (expiringToday.length > 0) {
 <!-- Page Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-chart-pie text-blue-700"></i>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2 dark:text-slate-100">
+            <i class="fa-solid fa-chart-pie text-blue-700 dark:text-blue-400"></i>
             Panel de Control
         </h1>
-        <p class="text-slate-500 text-sm mt-1">
-            Área: <strong class="text-blue-700"><%= user.area %></strong>
-            <% if (user.role === 'operador') { %><span class="ml-2 text-xs text-slate-400">— Vista global de todos los expedientes</span><% } %>
+        <p class="text-slate-500 text-sm mt-1 dark:text-slate-400">
+            Área: <strong class="text-blue-700 dark:text-blue-400"><%= user.area %></strong>
+            <% if (user.role === 'operador') { %><span class="ml-2 text-xs text-slate-500 dark:text-slate-400">— Vista global de todos los expedientes</span><% } %>
         </p>
     </div>
-    <div class="flex items-center gap-3">
-        <div class="text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg font-medium flex items-center gap-2 border border-slate-200">
+    <div class="flex flex-wrap items-center gap-3">
+        <div class="text-xs text-slate-500 bg-slate-100 px-3 py-2 rounded-lg font-medium flex items-center gap-2 border border-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700">
             <i class="fa-solid fa-arrows-rotate animate-spin-slow"></i>
-            Actualiza en <span id="refreshCounter" class="font-bold text-blue-600 w-5 text-center">60</span>s
+            Actualiza en <span id="refreshCounter" class="font-bold text-blue-600 w-5 text-center dark:text-blue-400">60</span>s
         </div>
-        <a href="/panel/reporte-mensual" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm">
-            <i class="fa-solid fa-file-pdf text-red-600"></i> Descargar Reporte Mensual (PDF)
+        <a href="/panel/reporte-mensual" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm dark:bg-slate-700 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-file-pdf text-red-600 dark:text-red-400"></i> Descargar Reporte Mensual (PDF)
         </a>
-        <a href="/panel/exportar-csv" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm" title="Descargar todos los trámites en archivo CSV compatible con Excel">
-            <i class="fa-solid fa-file-csv text-emerald-600"></i> Exportar CSV
+        <a href="/panel/exportar-csv" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl transition border border-slate-200 text-sm dark:bg-slate-700 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-600" title="Descargar todos los trámites en archivo CSV compatible con Excel">
+            <i class="fa-solid fa-file-csv text-emerald-600 dark:text-emerald-400"></i> Exportar CSV
         </a>
         <% if (user.role === 'operador') { %>
         <a href="/panel/nuevo" class="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm">
@@ -50,60 +50,60 @@ if (expiringToday.length > 0) {
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total</p>
-        <p class="text-3xl font-extrabold text-slate-800"><%= stats.total %></p>
-        <p class="text-xs text-slate-400 mt-1">expedientes</p>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 dark:text-slate-400">Total</p>
+        <p class="text-3xl font-extrabold text-slate-800 dark:text-slate-100"><%= stats.total %></p>
+        <p class="text-xs text-slate-500 mt-1 dark:text-slate-400">expedientes</p>
         <i class="fa-solid fa-chart-line absolute -right-2 -bottom-2 text-5xl text-slate-50 opacity-50"></i>
     </div>
-    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">Iniciados</p>
-        <p class="text-3xl font-extrabold text-blue-700"><%= stats.iniciados %></p>
-        <div class="mt-2 w-full bg-blue-50 h-1.5 rounded-full overflow-hidden"><div class="bg-blue-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.iniciados/stats.total*100) : 0 %>%"></div></div>
+    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-blue-800">
+        <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 dark:text-blue-400">Iniciados</p>
+        <p class="text-3xl font-extrabold text-blue-700 dark:text-blue-400"><%= stats.iniciados %></p>
+        <div class="mt-2 w-full bg-blue-50 h-1.5 rounded-full overflow-hidden dark:bg-blue-900/30"><div class="bg-blue-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.iniciados/stats.total*100) : 0 %>%"></div></div>
     </div>
-    <div class="bg-white rounded-2xl border border-purple-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">En Revisión</p>
-        <p class="text-3xl font-extrabold text-purple-700"><%= stats.en_revision %></p>
-        <div class="mt-2 w-full bg-purple-50 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.en_revision/stats.total*100) : 0 %>%"></div></div>
+    <div class="bg-white rounded-2xl border border-purple-100 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-purple-800">
+        <p class="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2 dark:text-purple-400">En Revisión</p>
+        <p class="text-3xl font-extrabold text-purple-700 dark:text-purple-400"><%= stats.en_revision %></p>
+        <div class="mt-2 w-full bg-purple-50 h-1.5 rounded-full overflow-hidden dark:bg-purple-900/30"><div class="bg-purple-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.en_revision/stats.total*100) : 0 %>%"></div></div>
     </div>
-    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-orange-400 uppercase tracking-wider mb-2">Falta Doc.</p>
-        <p class="text-3xl font-extrabold text-orange-600"><%= stats.pendientes_doc %></p>
-        <div class="mt-2 w-full bg-orange-50 h-1.5 rounded-full overflow-hidden"><div class="bg-orange-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.pendientes_doc/stats.total*100) : 0 %>%"></div></div>
+    <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-orange-800">
+        <p class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-2 dark:text-orange-400">Falta Doc.</p>
+        <p class="text-3xl font-extrabold text-orange-600 dark:text-orange-400"><%= stats.pendientes_doc %></p>
+        <div class="mt-2 w-full bg-orange-50 h-1.5 rounded-full overflow-hidden dark:bg-orange-900/30"><div class="bg-orange-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.pendientes_doc/stats.total*100) : 0 %>%"></div></div>
     </div>
-    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-green-400 uppercase tracking-wider mb-2">Aprobados</p>
-        <p class="text-3xl font-extrabold text-green-700"><%= stats.aprobados %></p>
-        <div class="mt-2 w-full bg-green-50 h-1.5 rounded-full overflow-hidden"><div class="bg-green-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.aprobados/stats.total*100) : 0 %>%"></div></div>
+    <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-green-800">
+        <p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-2 dark:text-green-400">Aprobados</p>
+        <p class="text-3xl font-extrabold text-green-700 dark:text-green-400"><%= stats.aprobados %></p>
+        <div class="mt-2 w-full bg-green-50 h-1.5 rounded-full overflow-hidden dark:bg-green-900/30"><div class="bg-green-500 h-full rounded-full" style="width: <%= stats.total > 0 ? Math.round(stats.aprobados/stats.total*100) : 0 %>%"></div></div>
     </div>
-    <div class="bg-red-50 rounded-2xl border border-red-200 shadow-sm p-5 flex flex-col relative overflow-hidden">
-        <p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+    <div class="bg-red-50 rounded-2xl border border-red-200 shadow-sm p-5 flex flex-col relative overflow-hidden dark:bg-red-900/30 dark:border-red-800">
+        <p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1 dark:text-red-400">
             <i class="fa-solid fa-triangle-exclamation text-xs"></i> Por Vencer
         </p>
-        <p class="text-3xl font-extrabold text-red-600"><%= stats.por_vencer %></p>
-        <p class="text-xs text-red-400 mt-1">≤ 7 días</p>
+        <p class="text-3xl font-extrabold text-red-600 dark:text-red-400"><%= stats.por_vencer %></p>
+        <p class="text-xs text-red-500 mt-1 dark:text-red-400">≤ 7 días</p>
     </div>
 </div>
 
 <!-- Charts -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="font-bold text-slate-800 text-sm mb-4">Distribución de Trámites por Estado</h3>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 dark:text-slate-100">Distribución de Trámites por Estado</h3>
         <div class="relative h-64 w-full">
             <canvas id="statusChart"></canvas>
         </div>
     </div>
     
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="font-bold text-slate-800 text-sm mb-4">Trámites por Área</h3>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 dark:text-slate-100">Trámites por Área</h3>
         <div class="relative h-64 w-full">
             <canvas id="areaChart"></canvas>
         </div>
     </div>
-</div>
-    
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="font-bold text-slate-800 text-sm mb-4">Actividad de los últimos 7 días</h3>
+
+    <!-- Actividad semanal: ocupa todo el ancho de la grilla -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 dark:text-slate-100">Actividad de los últimos 7 días</h3>
         <div class="flex items-end justify-between h-20 mt-2 gap-2">
             <% 
             const maxActivity = Math.max(...Object.values(weeklyActivity), 1);
@@ -111,12 +111,12 @@ if (expiringToday.length > 0) {
                 const count = weeklyActivity[dateStr];
                 const heightPercent = (count / maxActivity) * 100;
             %>
-            <div class="flex flex-col items-center flex-1 group">
-                <div class="relative w-full flex justify-center h-full items-end">
+            <div class="flex flex-col items-center flex-1 group h-full">
+                <div class="relative w-full flex justify-center flex-1 min-h-0 items-end">
                     <div class="absolute -top-8 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10"><%= count %> trámites</div>
-                    <div class="w-full max-w-[2rem] bg-blue-200 rounded-t-sm group-hover:bg-blue-400 transition-colors" style="height: <%= heightPercent %>%"></div>
+                    <div class="w-full max-w-[2rem] bg-blue-300 rounded-t-sm min-h-[2px] group-hover:bg-blue-500 transition-colors dark:bg-blue-500/60" style="height: <%= heightPercent %>%"></div>
                 </div>
-                <span class="text-[10px] text-slate-400 mt-2 font-medium truncate w-full text-center"><%= moment(dateStr).format('DD/MM') %></span>
+                <span class="text-[10px] text-slate-500 mt-2 font-medium truncate w-full text-center dark:text-slate-400"><%= moment(dateStr).format('DD/MM') %></span>
             </div>
             <% }) %>
         </div>
@@ -124,23 +124,23 @@ if (expiringToday.length > 0) {
 </div>
 
 <!-- Filters & Search -->
-<form method="GET" action="/panel" class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-4 p-4" id="filterForm">
-    <div class="flex flex-col sm:flex-row gap-3 items-center">
+<form method="GET" action="/panel" class="bg-white rounded-2xl border border-slate-200 shadow-sm mb-4 p-4 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700" id="filterForm">
+    <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-center">
         <!-- Search -->
-        <div class="relative flex-grow w-full">
+        <div class="relative flex-grow w-full sm:w-auto sm:flex-1 sm:min-w-[14rem]">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+                <i class="fa-solid fa-magnifying-glass text-slate-500 text-sm dark:text-slate-400"></i>
             </div>
             <input 
                 type="text" 
                 name="search" 
                 value="<%= query.search || '' %>"
                 placeholder="Buscar por código, nombre, DNI..." 
-                class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50"
+                class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:placeholder-slate-400"
             >
         </div>
         <!-- Status filter -->
-        <select name="status" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+        <select name="status" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             <option value="">Todos los estados</option>
             <option value="Iniciado" <%= query.status === 'Iniciado' ? 'selected' : '' %>>Iniciados</option>
             <option value="En Revisión" <%= query.status === 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
@@ -150,16 +150,15 @@ if (expiringToday.length > 0) {
         </select>
         <!-- Area Filter -->
         <% if (user.role === 'operador') { %>
-        <select name="area" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+        <select name="area" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             <option value="">Todas las áreas</option>
-            <option value="Mesa de Entrada" <%= query.area === 'Mesa de Entrada' ? 'selected' : '' %>>Mesa de Entrada</option>
-            <option value="Dto. Ingresos" <%= query.area === 'Dto. Ingresos' ? 'selected' : '' %>>Dto. Ingresos</option>
-            <option value="Secretaría Académica" <%= query.area === 'Secretaría Académica' ? 'selected' : '' %>>Sec. Académica</option>
-            <option value="Dto. Sistema" <%= query.area === 'Dto. Sistema' ? 'selected' : '' %>>Dto. Sistema</option>
+            <% areas.forEach(a => { %>
+            <option value="<%= a.name %>" <%= query.area === a.name ? 'selected' : '' %>><%= a.name %></option>
+            <% }) %>
         </select>
         <% } %>
         <!-- Priority Filter -->
-        <select name="priority" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
+        <select name="priority" class="w-full sm:w-auto border border-slate-200 rounded-xl text-sm py-2.5 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:placeholder-slate-400">
             <option value="">Todas las prioridades</option>
             <option value="urgente" <%= query.priority === 'urgente' ? 'selected' : '' %>>Urgente</option>
             <option value="normal" <%= query.priority === 'normal' ? 'selected' : '' %>>Normal</option>
@@ -168,7 +167,7 @@ if (expiringToday.length > 0) {
         <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 rounded-xl transition font-medium">
             <i class="fa-solid fa-filter mr-1"></i> Filtrar
         </button>
-        <a href="/panel" class="w-full text-center sm:w-auto text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 text-sm px-4 py-2.5 rounded-xl border border-slate-200 transition font-medium">
+        <a href="/panel" class="w-full text-center sm:w-auto text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 text-sm px-4 py-2.5 rounded-xl border border-slate-200 transition font-medium dark:bg-slate-700 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-600 dark:hover:text-white">
             Limpiar
         </a>
     </div>
@@ -177,12 +176,12 @@ if (expiringToday.length > 0) {
 <!-- Toggle View -->
 <div class="flex justify-end gap-2 mb-4">
     <button id="btnViewList" onclick="setView('lista')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">📋 Lista</button>
-    <button id="btnViewKanban" onclick="setView('kanban')" class="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">🗂️ Kanban</button>
+    <button id="btnViewKanban" onclick="setView('kanban')" class="bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">🗂️ Kanban</button>
 </div>
 
 <!-- Action Bar -->
-<div id="bulkActions" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center justify-between">
-    <span class="text-sm font-semibold text-blue-800"><span id="selectedCount">0</span> seleccionados</span>
+<div id="bulkActions" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 flex items-center justify-between dark:bg-blue-900/30 dark:border-blue-800">
+    <span class="text-sm font-semibold text-blue-800 dark:text-blue-300"><span id="selectedCount">0</span> seleccionados</span>
     <div class="flex gap-2">
         <form id="bulkForm" action="/panel/accion-masa" method="POST" class="inline">
             <input type="hidden" name="ids" id="bulkIds">
@@ -200,32 +199,32 @@ if (expiringToday.length > 0) {
 </div>
 
 <!-- Table -->
-<div id="listView" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+<div id="listView" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">
     <% if (tickets.length === 0) { %>
         <div class="flex flex-col items-center justify-center py-20 text-center">
-            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
-                <i class="fa-regular fa-folder-open text-slate-400 text-3xl"></i>
+            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4 dark:bg-slate-700 dark:text-slate-100">
+                <i class="fa-regular fa-folder-open text-slate-500 text-3xl dark:text-slate-400"></i>
             </div>
-            <p class="text-slate-600 font-semibold text-lg mb-1">No hay expedientes</p>
-            <p class="text-slate-400 text-sm">Esta área no tiene expedientes asignados actualmente.</p>
+            <p class="text-slate-600 font-semibold text-lg mb-1 dark:text-slate-300">No hay expedientes</p>
+            <p class="text-slate-500 text-sm dark:text-slate-400">Esta área no tiene expedientes asignados actualmente.</p>
         </div>
     <% } else { %>
     <div class="overflow-x-auto">
         <table class="min-w-full" id="ticketsTable">
             <thead>
-                <tr class="border-b border-slate-200 bg-slate-50">
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-10">
+                <tr class="border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-10 dark:text-slate-400">
                         <input type="checkbox" id="selectAll" onclick="toggleAll(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                     </th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Código</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Solicitante</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">Trámite / Fecha</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Prioridad</th>
-                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acción</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Código</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Solicitante</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell dark:text-slate-400">Trámite / Fecha</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Prioridad</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Estado</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Acción</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100" id="tableBody">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700" id="tableBody">
                 <% tickets.forEach(function(ticket) {
                     const isExpiringSoon = ticket.expiration_date && moment(ticket.expiration_date).diff(moment(), 'days') <= 7 && !['Aprobado', 'Rechazado'].includes(ticket.status);
                     const isExpired = ticket.expiration_date && moment(ticket.expiration_date).diff(moment(), 'days') < 0 && !['Aprobado', 'Rechazado'].includes(ticket.status);
@@ -241,35 +240,35 @@ if (expiringToday.length > 0) {
                     
                     const ticketDate = moment.utc(ticket.created_at).local().format('YYYY-MM-DD');
                 %>
-                <tr class="hover:bg-slate-50 transition-colors ticket-row" 
+                <tr class="hover:bg-slate-50 transition-colors ticket-row dark:hover:bg-slate-700" 
                     data-search="<%= ticket.tracking_code %> <%= ticket.first_name %> <%= ticket.last_name %> <%= ticket.dni %> <%= ticket.category %>".toLowerCase()
                     data-status="<%= ticket.status %>"
                     data-area="<%= ticket.area %>"
                     data-date="<%= ticketDate %>">
                     <td class="px-5 py-4 whitespace-nowrap">
-                        <input type="checkbox" name="selectedTickets" value="<%= ticket.id %>" onchange="updateBulkActions()" class="ticket-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                        <input type="checkbox" name="selectedTickets" value="<%= ticket.id %>" onchange="updateBulkActions()" class="ticket-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:text-blue-400">
                     </td>
                     <!-- Código -->
                     <td class="px-5 py-4 whitespace-nowrap">
-                        <div class="font-mono font-bold text-blue-800 text-sm"><%= ticket.tracking_code %></div>
+                        <div class="font-mono font-bold text-blue-800 text-sm dark:text-blue-300"><%= ticket.tracking_code %></div>
                         <% if (ticket.expiration_date) { %>
-                        <div class="text-xs mt-1 flex items-center gap-1 <%= isExpired ? 'text-red-600 font-bold' : (isToday ? 'text-red-500 font-bold' : (isExpiringSoon ? 'text-orange-600 font-semibold' : 'text-slate-400')) %>">
+                        <div class="text-xs mt-1 flex items-center gap-1 <%= isExpired ? 'text-red-600 font-bold' : (isToday ? 'text-red-500 font-bold' : (isExpiringSoon ? 'text-orange-600 font-semibold' : 'text-slate-500')) %>">
                             <i class="fa-regular fa-calendar-xmark text-xs"></i>
                             Vence: <%= moment(ticket.expiration_date).format('DD/MM/YYYY') %>
-                            <% if (isExpired && !isToday) { %><span class="bg-red-100 text-red-700 px-1 rounded text-[10px]">VENCIDO</span><% } %>
+                            <% if (isExpired && !isToday) { %><span class="bg-red-100 text-red-700 px-1 rounded text-[10px] dark:bg-red-900/30 dark:text-red-400">VENCIDO</span><% } %>
                             <% if (isToday) { %><span class="bg-red-500 text-white px-1.5 rounded text-[10px] animate-pulse">HOY</span><% } %>
                         </div>
                         <% } %>
                     </td>
                     <!-- Solicitante -->
                     <td class="px-5 py-4">
-                        <div class="font-semibold text-slate-900 text-sm"><%= ticket.first_name %> <%= ticket.last_name %></div>
-                        <div class="text-xs text-slate-500 mt-0.5">DNI: <%= ticket.dni %></div>
+                        <div class="font-semibold text-slate-900 text-sm dark:text-slate-100"><%= ticket.first_name %> <%= ticket.last_name %></div>
+                        <div class="text-xs text-slate-500 mt-0.5 dark:text-slate-400">DNI: <%= ticket.dni %></div>
                     </td>
                     <!-- Trámite / Fecha -->
                     <td class="px-5 py-4 hidden md:table-cell">
-                        <div class="text-sm text-slate-700 font-medium"><%= ticket.category %></div>
-                        <div class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-clock mr-1"></i><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
+                        <div class="text-sm text-slate-700 font-medium dark:text-slate-200"><%= ticket.category %></div>
+                        <div class="text-xs text-slate-500 mt-0.5 dark:text-slate-400"><i class="fa-regular fa-clock mr-1"></i><%= moment.utc(ticket.created_at).local().format('DD/MM/YYYY HH:mm') %></div>
                         <% if (ticket.tags && ticket.tags.length > 0) { %>
                             <div class="flex flex-wrap gap-1 mt-1.5">
                                 <% ticket.tags.forEach(tag => { 
@@ -286,25 +285,25 @@ if (expiringToday.length > 0) {
                     <!-- Prioridad -->
                     <td class="px-5 py-4 whitespace-nowrap">
                         <% if(ticket.priority === 'urgente') { %>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase border border-red-200">
-                                <i class="fa-solid fa-bolt text-red-600"></i> Urgente
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 uppercase border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+                                <i class="fa-solid fa-bolt text-red-600 dark:text-red-400"></i> Urgente
                             </span>
                         <% } else { %>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase border border-slate-200">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase border border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-700">
                                 Normal
                             </span>
                         <% } %>
                     </td>
                     <!-- Estado -->
                     <td class="px-5 py-4 whitespace-nowrap">
-                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1 hidden lg:block"><i class="fa-solid fa-building mr-1"></i><%= ticket.area %></div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-1 hidden lg:block dark:text-slate-400"><i class="fa-solid fa-building mr-1"></i><%= ticket.area %></div>
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border <%= badgeClass %>">
                             <span class="w-1.5 h-1.5 rounded-full <%= dotColor %>"></span>
                             <%= ticket.status %>
                         </span>
                         <% if (ticket.assigned_to_name) { %>
-                        <div class="mt-2 text-xs text-slate-600 flex items-center gap-1">
-                            <div class="w-4 h-4 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[8px] font-bold"><%= ticket.assigned_to_name.charAt(0).toUpperCase() %></div>
+                        <div class="mt-2 text-xs text-slate-600 flex items-center gap-1 dark:text-slate-300">
+                            <div class="w-4 h-4 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[8px] font-bold dark:bg-indigo-900/30 dark:text-indigo-400"><%= ticket.assigned_to_name.charAt(0).toUpperCase() %></div>
                             <%= ticket.assigned_to_name %>
                         </div>
                         <% } %>
@@ -317,18 +316,18 @@ if (expiringToday.length > 0) {
                     </td>
                 </tr>
                 <% }); %>
-                <tr id="noResultsRow" style="display: none;" class="bg-slate-50">
+                <tr id="noResultsRow" style="display: none;" class="bg-slate-50 dark:bg-slate-900 dark:text-slate-100">
                     <td colspan="6" class="px-5 py-12 text-center">
                         <i class="fa-solid fa-magnifying-glass text-slate-300 text-3xl mb-2"></i>
-                        <p class="text-slate-500 font-medium">No se encontraron expedientes</p>
-                        <p class="text-slate-400 text-xs mt-1">Intentá buscar con otros términos o filtros.</p>
+                        <p class="text-slate-500 font-medium dark:text-slate-400">No se encontraron expedientes</p>
+                        <p class="text-slate-500 text-xs mt-1 dark:text-slate-400">Intentá buscar con otros términos o filtros.</p>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div class="text-xs text-slate-500 font-medium">
+    <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700">
+        <div class="text-xs text-slate-500 font-medium dark:text-slate-400">
             Mostrando <%= total > 0 ? (page - 1) * 20 + 1 : 0 %>-<%= Math.min(page * 20, total) %> de <%= total %> expedientes
         </div>
         <% if (totalPages > 1) { %>
@@ -371,17 +370,17 @@ function renderKanban() {
     let html = '';
     columns.forEach(col => {
         const colTickets = allTickets.filter(t => t.status === col.id);
-        html += `<div class="bg-slate-100 rounded-xl p-3 w-72 flex-shrink-0">`;
+        html += `<div class="bg-slate-100 rounded-xl p-3 w-72 flex-shrink-0 dark:bg-slate-700 dark:text-slate-100">`;
         html += `<div class="flex justify-between items-center mb-3">`;
-        html += `<h3 class="font-bold text-slate-700 text-sm">${col.title}</h3>`;
-        html += `<span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full">${colTickets.length}</span>`;
+        html += `<h3 class="font-bold text-slate-700 text-sm dark:text-slate-200">${col.title}</h3>`;
+        html += `<span class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full dark:bg-slate-600 dark:text-slate-300">${colTickets.length}</span>`;
         html += `</div>`;
         html += `<div class="space-y-3">`;
         colTickets.forEach(t => {
-            html += `<div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200">`;
-            html += `<div class="text-xs font-mono font-bold text-blue-700 mb-1">${t.tracking_code}</div>`;
-            html += `<div class="font-semibold text-sm text-slate-800">${t.first_name} ${t.last_name}</div>`;
-            html += `<div class="text-xs text-slate-500 mt-1 truncate">${t.category}</div>`;
+            html += `<div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700">`;
+            html += `<div class="text-xs font-mono font-bold text-blue-700 mb-1 dark:text-blue-400">${t.tracking_code}</div>`;
+            html += `<div class="font-semibold text-sm text-slate-800 dark:text-slate-100">${t.first_name} ${t.last_name}</div>`;
+            html += `<div class="text-xs text-slate-500 mt-1 truncate dark:text-slate-400">${t.category}</div>`;
             
             // Add tags
             if (t.tags && t.tags.length > 0) {
@@ -398,12 +397,12 @@ function renderKanban() {
 
             // Add assignment
             if (t.assigned_to_name) {
-                html += `<div class="text-[10px] text-slate-600 mt-2 flex items-center gap-1 font-medium"><i class="fa-solid fa-user text-slate-400"></i> ${t.assigned_to_name}</div>`;
+                html += `<div class="text-[10px] text-slate-600 mt-2 flex items-center gap-1 font-medium dark:text-slate-300"><i class="fa-solid fa-user text-slate-500 dark:text-slate-400"></i> ${t.assigned_to_name}</div>`;
             }
 
-            html += `<div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-100">`;
-            html += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase">${t.area}</span>`;
-            html += `<a href="/panel/tramite/${t.id}" class="text-blue-600 hover:text-blue-800 text-xs font-bold">Ver &rarr;</a>`;
+            html += `<div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-100 dark:border-slate-700">`;
+            html += `<span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold uppercase dark:bg-slate-700 dark:text-slate-400">${t.area}</span>`;
+            html += `<a href="/panel/tramite/${t.id}" class="text-blue-600 hover:text-blue-800 text-xs font-bold dark:text-blue-400 dark:hover:text-blue-300">Ver &rarr;</a>`;
             html += `</div></div>`;
         });
         html += `</div></div>`;
@@ -484,6 +483,15 @@ function exportSelected() {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Colores de texto y líneas de los gráficos según el modo claro/oscuro (y se actualizan al cambiar de modo)
+    window.aplicarTemaGraficos = function () {
+        const oscuro = document.documentElement.classList.contains('dark');
+        Chart.defaults.color = oscuro ? '#cbd5e1' : '#475569';
+        Chart.defaults.borderColor = oscuro ? 'rgba(148, 163, 184, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+        Object.values(Chart.instances).forEach(function (c) { c.update(); });
+    };
+    window.aplicarTemaGraficos();
+
     const statusData = <%- JSON.stringify(stats) %>;
     const areaData = <%- JSON.stringify(areaDistribution || {}) %>;
     
@@ -531,15 +539,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Toast de éxito -->
 <% if (typeof success_ticket !== 'undefined' && success_ticket) { %>
-<div id="successToast" class="fixed bottom-6 right-6 bg-white border border-green-200 rounded-2xl shadow-2xl z-50 flex items-center gap-4 p-4 min-w-72 max-w-sm animate-bounce" style="animation: slideIn 0.3s ease;">
-    <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-        <i class="fa-solid fa-circle-check text-green-600 text-lg"></i>
+<div id="successToast" class="fixed bottom-6 right-6 bg-white border border-green-200 rounded-2xl shadow-2xl z-50 flex items-center gap-4 p-4 min-w-72 max-w-sm animate-bounce dark:bg-slate-800 dark:text-slate-100 dark:border-green-800" style="animation: slideIn 0.3s ease;">
+    <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0 dark:bg-green-900/30">
+        <i class="fa-solid fa-circle-check text-green-600 text-lg dark:text-green-400"></i>
     </div>
     <div class="flex-1">
-        <p class="font-bold text-slate-900 text-sm">¡Trámite guardado!</p>
-        <p class="text-slate-500 text-xs mt-0.5">El talón de recepción se descargará en un momento.</p>
+        <p class="font-bold text-slate-900 text-sm dark:text-slate-100">¡Trámite guardado!</p>
+        <p class="text-slate-500 text-xs mt-0.5 dark:text-slate-400">El talón de recepción se descargará en un momento.</p>
     </div>
-    <button onclick="document.getElementById('successToast').remove()" class="text-slate-400 hover:text-slate-600 ml-1">
+    <button onclick="document.getElementById('successToast').remove()" class="text-slate-500 hover:text-slate-600 ml-1 dark:text-slate-400">
         <i class="fa-solid fa-xmark"></i>
     </button>
 </div>
